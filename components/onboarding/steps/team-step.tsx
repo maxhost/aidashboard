@@ -111,7 +111,11 @@ export function TeamStep({
   );
 }
 
-export function isTeamValid(data: OnboardingData): boolean {
+export function getTeamMissing(data: OnboardingData): string[] {
   const t = data.team;
-  return Boolean(t && t.size && t.annualVolume && t.brokerage);
+  const missing: string[] = [];
+  if (!t?.size) missing.push("Team size");
+  if (!t?.annualVolume) missing.push("Annual volume");
+  if (!t?.brokerage) missing.push("Brokerage");
+  return missing;
 }

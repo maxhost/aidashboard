@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, PieChart } from "lucide-react";
+import { ArrowLeft, ArrowRight, AlertCircle, PieChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +14,7 @@ export function WizardShell({
   canNext,
   nextLabel = "Continue",
   hideFooter = false,
+  missing = [],
   children,
 }: {
   step: number;
@@ -25,6 +26,7 @@ export function WizardShell({
   canNext?: boolean;
   nextLabel?: string;
   hideFooter?: boolean;
+  missing?: string[];
   children: React.ReactNode;
 }) {
   const progress = ((step + 1) / totalSteps) * 100;
@@ -72,29 +74,45 @@ export function WizardShell({
       {/* Footer with Back / Next */}
       {!hideFooter && (
         <footer className="px-4 sm:px-6 lg:px-10 py-4 border-t border-border/60 bg-card sticky bottom-0">
-          <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={onBack}
-              disabled={!canBack}
-              className={cn(
-                "gap-1.5 text-muted-foreground",
-                !canBack && "invisible"
-              )}
-            >
-              <ArrowLeft className="h-4 w-4" strokeWidth={1.75} />
-              Back
-            </Button>
-            <Button
-              type="button"
-              onClick={onNext}
-              disabled={!canNext}
-              className="gap-1.5 min-w-[140px]"
-            >
-              {nextLabel}
-              <ArrowRight className="h-4 w-4" strokeWidth={2} />
-            </Button>
+          <div className="max-w-3xl mx-auto flex flex-col gap-3">
+            {!canNext && missing.length > 0 && (
+              <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-100 px-3 py-2 text-[12px] text-amber-900">
+                <AlertCircle
+                  className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5"
+                  strokeWidth={2}
+                />
+                <div>
+                  <span className="font-semibold">Missing to continue:</span>{" "}
+                  <span className="text-amber-800">
+                    {missing.join(" · ")}
+                  </span>
+                </div>
+              </div>
+            )}
+            <div className="flex items-center justify-between gap-3">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={onBack}
+                disabled={!canBack}
+                className={cn(
+                  "gap-1.5 text-muted-foreground",
+                  !canBack && "invisible"
+                )}
+              >
+                <ArrowLeft className="h-4 w-4" strokeWidth={1.75} />
+                Back
+              </Button>
+              <Button
+                type="button"
+                onClick={onNext}
+                disabled={!canNext}
+                className="gap-1.5 min-w-[140px]"
+              >
+                {nextLabel}
+                <ArrowRight className="h-4 w-4" strokeWidth={2} />
+              </Button>
+            </div>
           </div>
         </footer>
       )}

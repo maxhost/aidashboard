@@ -93,12 +93,12 @@ export function MarketStep({
   );
 }
 
-export function isMarketValid(data: OnboardingData): boolean {
+export function getMarketMissing(data: OnboardingData): string[] {
   const m = data.market;
-  return Boolean(
-    m &&
-      m.mainMarket.trim().length > 1 &&
-      m.propertyTypes.length > 0 &&
-      m.clientTypes.length > 0
-  );
+  const missing: string[] = [];
+  if (!m || m.mainMarket.trim().length < 2) missing.push("Main market");
+  if (!m || m.propertyTypes.length === 0)
+    missing.push("At least 1 property type");
+  if (!m || m.clientTypes.length === 0) missing.push("At least 1 client type");
+  return missing;
 }

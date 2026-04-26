@@ -86,6 +86,7 @@ export function TechStackStep({
               values={values}
               onToggle={(v) => toggle(group.key, v)}
               columns={3}
+              withBrandIcon
             />
           </div>
         );
@@ -107,9 +108,11 @@ export function TechStackStep({
   );
 }
 
-export function isTechStackValid(data: OnboardingData): boolean {
+export function getTechStackMissing(data: OnboardingData): string[] {
   const s = data.techStack;
-  if (!s) return false;
-  // require at least one CRM (most important field)
-  return s.crm.length > 0 && Boolean(s.monthlySpend);
+  const missing: string[] = [];
+  if (!s || s.crm.length === 0)
+    missing.push("At least 1 CRM (most important data point)");
+  if (!s || !s.monthlySpend) missing.push("Monthly software spend");
+  return missing;
 }

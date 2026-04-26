@@ -2,6 +2,7 @@
 
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BrandIcon } from "./brand-icon";
 
 type OptionCardProps = {
   label: string;
@@ -102,6 +103,7 @@ type ChipMultiSelectProps = {
   values: string[];
   onToggle: (value: string) => void;
   columns?: 2 | 3 | 4;
+  withBrandIcon?: boolean;
 };
 
 export function ChipMultiSelect({
@@ -109,6 +111,7 @@ export function ChipMultiSelect({
   values,
   onToggle,
   columns = 3,
+  withBrandIcon = false,
 }: ChipMultiSelectProps) {
   const gridCols =
     columns === 2
@@ -127,16 +130,18 @@ export function ChipMultiSelect({
             type="button"
             onClick={() => onToggle(opt)}
             className={cn(
-              "relative px-3 py-2.5 rounded-lg border-2 text-left text-[13px] font-medium transition-all hover:border-foreground/30",
+              "relative flex items-center gap-2.5 px-3 py-2 rounded-lg border-2 text-left text-[13px] font-medium transition-all hover:border-foreground/30",
+              withBrandIcon ? "pr-8" : "pr-7",
               selected
                 ? "border-primary bg-accent-subtle text-foreground"
                 : "border-border bg-card text-foreground"
             )}
           >
-            {opt}
+            {withBrandIcon && <BrandIcon name={opt} size={26} />}
+            <span className="leading-tight truncate">{opt}</span>
             {selected && (
               <Check
-                className="absolute top-2 right-2 h-3.5 w-3.5 text-primary"
+                className="absolute top-1/2 right-2 -translate-y-1/2 h-3.5 w-3.5 text-primary"
                 strokeWidth={3}
               />
             )}

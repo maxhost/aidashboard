@@ -1,7 +1,7 @@
 "use client";
 
 import { Star } from "lucide-react";
-import { ChipMultiSelect } from "@/components/onboarding/option-card";
+import { BrandIcon } from "@/components/onboarding/brand-icon";
 import { StepHeader } from "@/components/onboarding/wizard-shell";
 import { LEAD_SOURCE_GROUPS } from "@/lib/onboarding/options";
 import type { OnboardingData } from "@/lib/onboarding/types";
@@ -90,13 +90,14 @@ export function LeadSourcesStep({
                     type="button"
                     onClick={() => toggleSource(item)}
                     className={cn(
-                      "w-full px-3 py-2.5 pr-8 rounded-lg border-2 text-left text-[13px] font-medium transition-all hover:border-foreground/30",
+                      "w-full flex items-center gap-2.5 px-3 py-2 pr-8 rounded-lg border-2 text-left text-[13px] font-medium transition-all hover:border-foreground/30",
                       selected
                         ? "border-primary bg-accent-subtle text-foreground"
                         : "border-border bg-card text-foreground"
                     )}
                   >
-                    {item}
+                    {group.branded && <BrandIcon name={item} size={26} />}
+                    <span className="leading-tight truncate">{item}</span>
                   </button>
                   {selected && (
                     <button
@@ -126,18 +127,14 @@ export function LeadSourcesStep({
         </div>
       ))}
 
-      {/* Fallback: simple chip select shown if no group preferred */}
-      <div className="hidden">
-        <ChipMultiSelect
-          options={[]}
-          values={leadSources.sources}
-          onToggle={toggleSource}
-        />
-      </div>
     </div>
   );
 }
 
-export function isLeadSourcesValid(data: OnboardingData): boolean {
-  return Boolean(data.leadSources && data.leadSources.sources.length > 0);
+export function getLeadSourcesMissing(data: OnboardingData): string[] {
+  const ls = data.leadSources;
+  const missing: string[] = [];
+  if (!ls || ls.sources.length === 0)
+    missing.push("Pick at least 1 lead source");
+  return missing;
 }

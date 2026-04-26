@@ -91,14 +91,13 @@ export function BusinessStep({
   );
 }
 
-export function isBusinessValid(data: OnboardingData): boolean {
+export function getBusinessMissing(data: OnboardingData): string[] {
   const i = data.basicInfo;
-  return Boolean(
-    i &&
-      i.name.trim().length > 1 &&
-      i.email.includes("@") &&
-      i.company.trim().length > 1 &&
-      i.role &&
-      i.yearsInRE
-  );
+  const missing: string[] = [];
+  if (!i || i.name.trim().length < 2) missing.push("Your name");
+  if (!i || !i.email.includes("@")) missing.push("Email");
+  if (!i || i.company.trim().length < 2) missing.push("Company name");
+  if (!i?.role) missing.push("Your role");
+  if (!i?.yearsInRE) missing.push("Years in RE");
+  return missing;
 }

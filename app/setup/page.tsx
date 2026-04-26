@@ -5,28 +5,31 @@ import { WizardShell } from "@/components/onboarding/wizard-shell";
 import { WelcomeStep } from "@/components/onboarding/steps/welcome-step";
 import {
   BusinessStep,
-  isBusinessValid,
+  getBusinessMissing,
 } from "@/components/onboarding/steps/business-step";
-import { TeamStep, isTeamValid } from "@/components/onboarding/steps/team-step";
+import {
+  TeamStep,
+  getTeamMissing,
+} from "@/components/onboarding/steps/team-step";
 import {
   MarketStep,
-  isMarketValid,
+  getMarketMissing,
 } from "@/components/onboarding/steps/market-step";
 import {
   LeadSourcesStep,
-  isLeadSourcesValid,
+  getLeadSourcesMissing,
 } from "@/components/onboarding/steps/lead-sources-step";
 import {
   TechStackStep,
-  isTechStackValid,
+  getTechStackMissing,
 } from "@/components/onboarding/steps/tech-stack-step";
 import {
   WorkflowsStep,
-  isWorkflowsValid,
+  getWorkflowsMissing,
 } from "@/components/onboarding/steps/workflows-step";
 import {
   GoalsStep,
-  isGoalsValid,
+  getGoalsMissing,
 } from "@/components/onboarding/steps/goals-step";
 import { CompleteStep } from "@/components/onboarding/steps/complete-step";
 import { STEPS } from "@/lib/onboarding/types";
@@ -66,28 +69,28 @@ export default function SetupPage() {
     setStep((s) => Math.max(s - 1, 0));
   }
 
-  function canAdvance(): boolean {
+  function getMissing(): string[] {
     switch (currentStep.key) {
-      case "welcome":
-        return true;
       case "business":
-        return isBusinessValid(data);
+        return getBusinessMissing(data);
       case "team":
-        return isTeamValid(data);
+        return getTeamMissing(data);
       case "market":
-        return isMarketValid(data);
+        return getMarketMissing(data);
       case "leadSources":
-        return isLeadSourcesValid(data);
+        return getLeadSourcesMissing(data);
       case "techStack":
-        return isTechStackValid(data);
+        return getTechStackMissing(data);
       case "workflows":
-        return isWorkflowsValid(data);
+        return getWorkflowsMissing(data);
       case "goals":
-        return isGoalsValid(data);
+        return getGoalsMissing(data);
       default:
-        return true;
+        return [];
     }
   }
+  const missing = getMissing();
+  const canAdvance = missing.length === 0;
 
   if (!hydrated) {
     return (
@@ -105,7 +108,8 @@ export default function SetupPage() {
       onBack={back}
       onNext={next}
       canBack={step > 0 && !isComplete}
-      canNext={canAdvance() && !isComplete}
+      canNext={canAdvance && !isComplete}
+      missing={missing}
       nextLabel={
         currentStep.key === "welcome"
           ? "Get started"

@@ -107,15 +107,14 @@ export function WorkflowsStep({
   );
 }
 
-export function isWorkflowsValid(data: OnboardingData): boolean {
+export function getWorkflowsMissing(data: OnboardingData): string[] {
   const w = data.workflows;
-  return Boolean(
-    w &&
-      w.leadCapture &&
-      w.responseTime &&
-      w.followUpCadence &&
-      w.leadScoring &&
-      w.showings &&
-      w.closing
-  );
+  const missing: string[] = [];
+  if (!w?.leadCapture) missing.push("Lead capture");
+  if (!w?.responseTime) missing.push("Response time goal");
+  if (!w?.followUpCadence) missing.push("Follow-up cadence");
+  if (!w?.leadScoring) missing.push("Lead scoring approach");
+  if (!w?.showings) missing.push("Showings approach");
+  if (!w?.closing) missing.push("Closing process");
+  return missing;
 }

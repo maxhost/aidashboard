@@ -98,14 +98,18 @@ export function GoalsStep({
   );
 }
 
-export function isGoalsValid(data: OnboardingData): boolean {
+export function getGoalsMissing(data: OnboardingData): string[] {
   const g = data.goals;
-  if (!g || !g.biggestPain || g.successMetrics.length === 0) return false;
-  if (g.biggestPain === "other" && !g.biggestPainOther?.trim()) return false;
+  const missing: string[] = [];
+  if (!g?.biggestPain) missing.push("Biggest pain point");
+  if (!g || g.successMetrics.length === 0)
+    missing.push("At least 1 success metric");
+  if (g?.biggestPain === "other" && !g.biggestPainOther?.trim())
+    missing.push("Describe the pain");
   if (
-    g.successMetrics.includes("Specific revenue target") &&
+    g?.successMetrics.includes("Specific revenue target") &&
     !g.revenueTarget?.trim()
   )
-    return false;
-  return true;
+    missing.push("Revenue target");
+  return missing;
 }
