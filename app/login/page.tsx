@@ -207,13 +207,13 @@ export default function LoginPage() {
 
           {/* Footer */}
           <p className="mt-5 text-center text-xs text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <button
-              type="button"
+            New here?{" "}
+            <a
+              href="/setup"
               className="font-medium text-foreground hover:text-primary"
             >
-              Request access
-            </button>
+              Set up your workspace →
+            </a>
           </p>
           <p className="mt-2 text-center text-[10px] text-muted-foreground/70 font-mono">
             This is a demo workspace. No real authentication.
