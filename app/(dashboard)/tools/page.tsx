@@ -1,7 +1,8 @@
-import { Box, Boxes, Search } from "lucide-react";
-import { ToolCard } from "@/components/dashboard/tool-card";
+import { Box, Boxes, Grid3x3 } from "lucide-react";
+import { ToolsTable } from "@/components/dashboard/tools-table";
 import {
-  TOOL_CATEGORIES,
+  getCategoryOptions,
+  getFlatTools,
   totalToolCount,
   uniqueToolCount,
 } from "@/lib/tools/data";
@@ -11,9 +12,10 @@ export const metadata = {
 };
 
 export default function ToolsPage() {
+  const tools = getFlatTools();
+  const categories = getCategoryOptions();
   const total = totalToolCount();
   const unique = uniqueToolCount();
-  const categories = TOOL_CATEGORIES.length;
 
   return (
     <div className="px-4 sm:px-6 py-8 lg:px-8 lg:py-10 max-w-[1440px] mx-auto space-y-8">
@@ -25,7 +27,7 @@ export default function ToolsPage() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1.5 max-w-2xl">
             Every tool a US real estate team might already have in their stack.
-            Curated by category — click any card to visit the official site.
+            Click any row to visit the official site.
           </p>
         </div>
       </header>
@@ -42,16 +44,16 @@ export default function ToolsPage() {
         <StatCard
           label="Unique tools"
           value={unique.toString()}
-          hint="some appear in multiple categories"
+          hint="some live in multiple lanes"
           accent="bg-emerald-100 text-emerald-600"
           icon={<Box className="h-5 w-5" strokeWidth={1.75} />}
         />
         <StatCard
           label="Categories"
-          value={categories.toString()}
+          value={categories.length.toString()}
           hint="from CRM to phone systems"
           accent="bg-amber-100 text-amber-600"
-          icon={<Search className="h-5 w-5" strokeWidth={1.75} />}
+          icon={<Grid3x3 className="h-5 w-5" strokeWidth={1.75} />}
         />
         <div className="rounded-xl border border-dashed border-border/70 bg-muted/30 p-5 flex flex-col justify-center">
           <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -66,29 +68,8 @@ export default function ToolsPage() {
         </div>
       </section>
 
-      {/* Category sections */}
-      <section className="space-y-10">
-        {TOOL_CATEGORIES.map((cat) => (
-          <div key={cat.key}>
-            <div className="flex flex-col gap-1 mb-4 pb-3 border-b border-border/60">
-              <div className="flex items-baseline gap-2.5">
-                <h2 className="text-lg font-semibold text-foreground">
-                  {cat.title}
-                </h2>
-                <span className="inline-flex items-center justify-center min-w-[20px] h-5 rounded-full bg-muted text-[10px] font-mono font-semibold tabular-nums text-muted-foreground px-1.5">
-                  {cat.tools.length}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">{cat.description}</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-              {cat.tools.map((tool) => (
-                <ToolCard key={`${cat.key}-${tool.name}`} tool={tool} />
-              ))}
-            </div>
-          </div>
-        ))}
-      </section>
+      {/* Searchable filterable table */}
+      <ToolsTable tools={tools} categories={categories} />
     </div>
   );
 }

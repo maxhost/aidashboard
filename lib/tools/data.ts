@@ -635,3 +635,28 @@ export function uniqueToolCount(): number {
   TOOL_CATEGORIES.forEach((c) => c.tools.forEach((t) => seen.add(t.name)));
   return seen.size;
 }
+
+export type FlatTool = Tool & {
+  categoryKey: string;
+  categoryTitle: string;
+};
+
+/** Flat list of every (tool, category) pair — shown directly in the table view. */
+export function getFlatTools(): FlatTool[] {
+  return TOOL_CATEGORIES.flatMap((cat) =>
+    cat.tools.map((t) => ({
+      ...t,
+      categoryKey: cat.key,
+      categoryTitle: cat.title,
+    }))
+  ).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** Just the categories, for the filter bar. */
+export function getCategoryOptions(): { key: string; title: string; count: number }[] {
+  return TOOL_CATEGORIES.map((c) => ({
+    key: c.key,
+    title: c.title,
+    count: c.tools.length,
+  }));
+}
