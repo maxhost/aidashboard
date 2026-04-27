@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { isLoggedIn } from "@/lib/auth";
+import { PulsorMark } from "@/components/brand/pulsor";
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -19,9 +20,11 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   if (!ready) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex items-center gap-3 text-muted-foreground">
-          <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-          <span className="text-sm">Loading workspace…</span>
+        <div className="flex flex-col items-center gap-4">
+          <PulsorMark size={48} className="animate-pulse" />
+          <span className="text-sm text-muted-foreground">
+            Loading workspace…
+          </span>
         </div>
       </div>
     );
