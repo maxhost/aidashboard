@@ -2,7 +2,7 @@
 
 import { ArrowLeft, ArrowRight, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { VyzorLockup } from "@/components/brand/vyzor";
+import { PulsorLockup } from "@/components/brand/pulsor";
 import { cn } from "@/lib/utils";
 
 export function WizardShell({
@@ -38,10 +38,10 @@ export function WizardShell({
       <header className="px-4 sm:px-6 lg:px-10 py-5 border-b border-border/60 bg-card sticky top-0 z-10">
         <div className="max-w-3xl mx-auto flex items-center gap-4">
           <div className="shrink-0 hidden sm:block">
-            <VyzorLockup size={28} textClassName="text-sm" />
+            <PulsorLockup size={28} textClassName="text-sm" />
           </div>
           <div className="shrink-0 sm:hidden">
-            <VyzorLockup size={28} textClassName="text-sm hidden" />
+            <PulsorLockup size={28} textClassName="text-sm hidden" />
           </div>
 
           <div className="flex-1 flex items-center gap-3 min-w-0">

@@ -12,8 +12,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Vyzor",
-    template: "%s · Vyzor",
+    default: "Pulsor",
+    template: "%s · Pulsor",
   },
   description:
     "The AI layer that turns your real estate stack into decisions.",

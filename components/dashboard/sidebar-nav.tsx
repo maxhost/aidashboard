@@ -12,7 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { VyzorLockup } from "@/components/brand/vyzor";
+import { PulsorLockup } from "@/components/brand/pulsor";
 
 const NAV_PRIMARY = [
   { href: "/overview", label: "Overview", icon: LayoutDashboard },
@@ -83,7 +83,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 function Brand() {
   return (
     <div className="flex h-16 items-center gap-2.5 px-5 border-b border-border">
-      <VyzorLockup size={32} />
+      <PulsorLockup size={32} />
     </div>
   );
 }
@@ -120,7 +120,7 @@ export function MobileSidebar({
         )}
       >
         <div className="flex h-16 items-center justify-between gap-2.5 px-5 border-b border-border">
-          <VyzorLockup size={32} />
+          <PulsorLockup size={32} />
           <button
             type="button"
             aria-label="Close menu"

@@ -1,7 +1,6 @@
 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="64" height="64" rx="14" fill="#7C3AED"/>
   <path
-    fill="white"
+    fill="currentColor"
     fill-rule="evenodd"
     d="M22 9 H36 C43 9 50 15 50 23 C50 31 43 37 36 37 H30 V49 L26 57 L22 49 Z M30 17 V29 H35 C38 29 41 26 41 23 C41 20 38 17 35 17 Z"
   />

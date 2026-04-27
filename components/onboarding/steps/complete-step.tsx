@@ -9,7 +9,7 @@ import { signIn } from "@/lib/auth";
 
 const TASKS = [
   "Saving your workspace profile",
-  "Notifying the Vyzor team",
+  "Notifying the Pulsor team",
   "Mapping your tech stack",
   "Calibrating benchmarks",
   "Personalizing your dashboard",

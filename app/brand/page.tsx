@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 export const metadata = {
-  title: "Vyzor — Brand",
+  title: "Brand",
 };
 
 export default function BrandPage() {
@@ -9,43 +9,62 @@ export default function BrandPage() {
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-6 py-12 space-y-10">
         <header>
-          <h1 className="text-3xl font-bold tracking-tight">Vyzor brand kit</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Pulsor brand kit</h1>
           <p className="text-sm text-muted-foreground mt-2">
-            Logo variants + colors. Click any asset to download the SVG.
+            Logo variants, palette, and typography. Click any asset to download
+            the SVG.
           </p>
         </header>
 
         {/* Hero — primary lockup */}
         <section className="rounded-2xl border border-border bg-card p-12 flex items-center justify-center">
           <Image
-            src="/vyzor-lockup.svg"
-            alt="Vyzor"
-            width={220}
+            src="/pulsor-lockup.svg"
+            alt="Pulsor"
+            width={240}
             height={64}
             priority
           />
+        </section>
+
+        {/* Concept callout */}
+        <section className="rounded-xl border border-border bg-card p-6">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+            Concept
+          </div>
+          <p className="text-sm leading-relaxed text-foreground/90">
+            The mark is a bold <strong>P</strong> whose vertical stem extends
+            downward and tapers to a point — a letter monogram that doubles as
+            a map pin. Reads as the brand letter first; the address /
+            location metaphor surfaces on second look. Real estate&apos;s most
+            fundamental data unit, embedded in the brand letter.
+          </p>
         </section>
 
         {/* Variants grid */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Tile
             title="Primary mark"
-            subtitle="Purple bg · white symbol · 16px radius"
+            subtitle="Purple bg · white shape · 25% radius"
             bg="bg-card"
           >
-            <Image src="/vyzor-mark.svg" alt="Vyzor mark" width={96} height={96} />
+            <Image
+              src="/pulsor-mark.svg"
+              alt="Pulsor mark"
+              width={96}
+              height={96}
+            />
           </Tile>
 
           <Tile
             title="Mono mark — light"
             subtitle="On dark surfaces · uses currentColor"
             bg="bg-[#0A0A0A]"
-            tileTextLight
           >
             <span className="text-white">
               <Image
-                src="/vyzor-mark-mono.svg"
-                alt="Vyzor mark mono"
+                src="/pulsor-mark-mono.svg"
+                alt="Pulsor mark mono"
                 width={96}
                 height={96}
               />
@@ -53,14 +72,14 @@ export default function BrandPage() {
           </Tile>
 
           <Tile
-            title="Wordmark"
+            title="Wordmark — ink"
             subtitle="Inter Bold · -0.04 tracking · uses currentColor"
             bg="bg-card"
           >
             <span className="text-foreground">
               <Image
-                src="/vyzor-wordmark.svg"
-                alt="Vyzor wordmark"
+                src="/pulsor-wordmark.svg"
+                alt="Pulsor wordmark"
                 width={140}
                 height={42}
               />
@@ -74,8 +93,8 @@ export default function BrandPage() {
           >
             <span className="text-primary">
               <Image
-                src="/vyzor-wordmark.svg"
-                alt="Vyzor wordmark purple"
+                src="/pulsor-wordmark.svg"
+                alt="Pulsor wordmark purple"
                 width={140}
                 height={42}
               />
@@ -111,23 +130,6 @@ export default function BrandPage() {
             </p>
           </div>
         </section>
-
-        {/* Usage notes */}
-        <section>
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">
-            Concept
-          </h2>
-          <div className="rounded-xl border border-border bg-card p-6 text-sm leading-relaxed text-foreground/90">
-            <p>
-              The mark is a stylized <strong>V</strong> drawn as a chart
-              line — descending into a low point and ascending to a peak with
-              a data point. It carries two readings at once: the brand letter
-              <em> and</em> a recovery chart, the visual signature of the
-              product&apos;s job — turning a noisy real estate stack into
-              clear decisions and rising performance.
-            </p>
-          </div>
-        </section>
       </div>
     </div>
   );
@@ -137,13 +139,11 @@ function Tile({
   title,
   subtitle,
   bg,
-  tileTextLight,
   children,
 }: {
   title: string;
   subtitle: string;
   bg: string;
-  tileTextLight?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -153,11 +153,7 @@ function Tile({
       >
         {children}
       </div>
-      <div
-        className={`px-5 py-3 border-t border-border ${
-          tileTextLight ? "bg-card" : "bg-card"
-        }`}
-      >
+      <div className="px-5 py-3 border-t border-border bg-card">
         <div className="text-sm font-semibold text-foreground">{title}</div>
         <div className="text-xs text-muted-foreground mt-0.5">{subtitle}</div>
       </div>
@@ -176,11 +172,7 @@ function Swatch({
 }) {
   return (
     <div className="rounded-xl overflow-hidden border border-border">
-      <div
-        className="h-24 w-full"
-        style={{ backgroundColor: hex }}
-        aria-hidden
-      />
+      <div className="h-24 w-full" style={{ backgroundColor: hex }} aria-hidden />
       <div className="px-3 py-2 bg-card">
         <div className="text-sm font-semibold text-foreground">{name}</div>
         <div

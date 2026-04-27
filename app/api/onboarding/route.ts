@@ -7,7 +7,7 @@ import {
 import type { OnboardingData } from "@/lib/onboarding/types";
 
 const NOTIFICATION_RECIPIENT = "guido@grays.vc";
-const FROM_ADDRESS = "Vyzor <onboarding@resend.dev>";
+const FROM_ADDRESS = "Pulsor <onboarding@resend.dev>";
 
 export const runtime = "nodejs";
 

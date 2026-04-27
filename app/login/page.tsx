@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { VyzorLockup } from "@/components/brand/vyzor";
+import { PulsorLockup } from "@/components/brand/pulsor";
 import { signIn } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
@@ -45,7 +45,7 @@ export default function LoginPage() {
 
       {/* Top brand */}
       <header className="px-6 lg:px-10 py-6">
-        <VyzorLockup size={32} />
+        <PulsorLockup size={32} />
       </header>
 
       {/* Centered card */}

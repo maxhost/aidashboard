@@ -1,11 +1,12 @@
 import { cn } from "@/lib/utils";
 
 /**
- * VyzorMark — the brand symbol.
- * Renders a purple rounded square with a stylized V drawn as a chart line.
- * Use anywhere the brand identity appears (sidebars, login, emails, etc.).
+ * PulsorMark — the brand symbol.
+ * A bold "P" whose vertical stem extends downward and tapers into a
+ * map-pin point. Reads as a letter monogram first; the location/address
+ * metaphor surfaces on second look. Square purple background, white shape.
  */
-export function VyzorMark({
+export function PulsorMark({
   size = 32,
   className,
 }: {
@@ -21,26 +22,22 @@ export function VyzorMark({
       xmlns="http://www.w3.org/2000/svg"
       className={cn("shrink-0 shadow-sm rounded-[25%]", className)}
       role="img"
-      aria-label="Vyzor"
+      aria-label="Pulsor"
     >
       <rect width="64" height="64" rx="16" fill="#7C3AED" />
       <path
-        d="M14 21 L32 45 L50 17"
-        stroke="white"
-        strokeWidth="6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
+        fill="white"
+        fillRule="evenodd"
+        d="M22 9 H36 C43 9 50 15 50 23 C50 31 43 37 36 37 H30 V49 L26 57 L22 49 Z M30 17 V29 H35 C38 29 41 26 41 23 C41 20 38 17 35 17 Z"
       />
-      <circle cx="50" cy="17" r="3.5" fill="white" />
     </svg>
   );
 }
 
 /**
- * VyzorWordmark — text-only brand. Inherits color via currentColor.
+ * PulsorWordmark — text-only brand. Inherits color via currentColor.
  */
-export function VyzorWordmark({ className }: { className?: string }) {
+export function PulsorWordmark({ className }: { className?: string }) {
   return (
     <span
       className={cn(
@@ -48,16 +45,16 @@ export function VyzorWordmark({ className }: { className?: string }) {
         className
       )}
     >
-      Vyzor
+      Pulsor
     </span>
   );
 }
 
 /**
- * VyzorLockup — mark + wordmark side by side. The default brand block
+ * PulsorLockup — mark + wordmark side by side. The default brand block
  * used in sidebars, login pages, wizards, etc.
  */
-export function VyzorLockup({
+export function PulsorLockup({
   size = 32,
   className,
   textClassName,
@@ -68,8 +65,8 @@ export function VyzorLockup({
 }) {
   return (
     <div className={cn("inline-flex items-center gap-2.5", className)}>
-      <VyzorMark size={size} />
-      <VyzorWordmark className={cn("text-[15px]", textClassName)} />
+      <PulsorMark size={size} />
+      <PulsorWordmark className={cn("text-[15px]", textClassName)} />
     </div>
   );
 }

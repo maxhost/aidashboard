@@ -72,7 +72,7 @@ export function renderOnboardingEmailHtml(data: OnboardingData): string {
           <!-- Header -->
           <tr>
             <td style="padding:24px 28px;border-bottom:1px solid ${COLORS.border};background:${COLORS.bgSubtle};">
-              <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${COLORS.primary};">Vyzor · Onboarding</div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${COLORS.primary};">Pulsor · Onboarding</div>
               <div style="font-size:22px;font-weight:700;letter-spacing:-0.02em;margin-top:6px;">
                 ${escape(i?.name ?? "Unknown")} <span style="color:${COLORS.muted};font-weight:500;">— ${escape(i?.company ?? "—")}</span>
               </div>
