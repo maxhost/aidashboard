@@ -7,6 +7,7 @@ import {
   Workflow,
   Users,
   Sparkles,
+  Boxes,
   Settings,
   LifeBuoy,
   X,
@@ -19,6 +20,7 @@ const NAV_PRIMARY = [
   { href: "/workflows", label: "Workflows", icon: Workflow },
   { href: "/team", label: "Team", icon: Users },
   { href: "/insights", label: "Insights", icon: Sparkles },
+  { href: "/tools", label: "Tools", icon: Boxes },
 ] as const;
 
 const NAV_SECONDARY = [

@@ -127,6 +127,15 @@ const BRANDS: Record<string, Brand> = {
   Aircall: { bg: "#00B388", text: "Ac" },
   Dialpad: { bg: "#7C3AED", text: "Dp" },
 
+  // Additional tools surfaced in /tools directory
+  Brevo: { bg: "#0B996E", text: "Br" },
+  "Dropbox Sign": { bg: "#0061FF", text: "DB" },
+  Notarize: { bg: "#1F2937", text: "Nt" },
+  AgentFire: { bg: "#F25822", text: "AF" },
+  "Showcase IDX": { bg: "#0EA5E9", text: "SX" },
+  iHomeFinder: { bg: "#1E40AF", text: "iH" },
+  "Easy Agent Pro": { bg: "#16A34A", text: "EA" },
+
   // Generic Other
   Other: { bg: "#94A3B8", text: "+" },
 };

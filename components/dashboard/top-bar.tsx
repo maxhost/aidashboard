@@ -22,6 +22,7 @@ const PAGE_LABEL: Record<string, string> = {
   workflows: "Workflows",
   team: "Team",
   insights: "Insights",
+  tools: "Tools",
 };
 
 export function TopBar({
