@@ -1,8 +1,9 @@
-import { Box, Boxes, Grid3x3 } from "lucide-react";
+import { Box, Boxes, Grid3x3, Home } from "lucide-react";
 import { ToolsTable } from "@/components/dashboard/tools-table";
 import {
   getCategoryOptions,
   getFlatTools,
+  reNativeToolCount,
   totalToolCount,
   uniqueToolCount,
 } from "@/lib/tools/data";
@@ -16,6 +17,8 @@ export default function ToolsPage() {
   const categories = getCategoryOptions();
   const total = totalToolCount();
   const unique = uniqueToolCount();
+  const reNative = reNativeToolCount();
+  const reNativePct = Math.round((reNative / unique) * 100);
 
   return (
     <div className="px-4 sm:px-6 py-8 lg:px-8 lg:py-10 max-w-[1440px] mx-auto space-y-8">
@@ -49,23 +52,19 @@ export default function ToolsPage() {
           icon={<Box className="h-5 w-5" strokeWidth={1.75} />}
         />
         <StatCard
+          label="RE-native"
+          value={reNative.toString()}
+          hint={`${reNativePct}% of unique tools`}
+          accent="bg-amber-100 text-amber-600"
+          icon={<Home className="h-5 w-5" strokeWidth={1.75} />}
+        />
+        <StatCard
           label="Categories"
           value={categories.length.toString()}
           hint="from CRM to phone systems"
-          accent="bg-amber-100 text-amber-600"
+          accent="bg-sky-100 text-sky-600"
           icon={<Grid3x3 className="h-5 w-5" strokeWidth={1.75} />}
         />
-        <div className="rounded-xl border border-dashed border-border/70 bg-muted/30 p-5 flex flex-col justify-center">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Missing one?
-          </div>
-          <a
-            href="mailto:guido@grays.vc?subject=Tool%20to%20add%20to%20Pulsor%20directory"
-            className="text-sm font-medium text-foreground mt-1 hover:text-primary"
-          >
-            Suggest a tool →
-          </a>
-        </div>
       </section>
 
       {/* Searchable filterable table */}

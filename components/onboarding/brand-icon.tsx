@@ -55,6 +55,7 @@ const BRANDS: Record<string, Brand> = {
   Placester: { bg: "#1F2937", text: "Pl" },
 
   // Communication
+  Conduit: { bg: "#1F2937", text: "Cd" },
   BombBomb: { bg: "#FF6B35", text: "BB" },
   Vidyard: { bg: "#9333EA", text: "Vy" },
   Loom: { bg: "#625DF5", text: "L" },

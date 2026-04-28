@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowUpRight, Inbox, Search, X } from "lucide-react";
+import { ArrowUpRight, Home, Inbox, Search, X } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -25,10 +25,12 @@ export function ToolsTable({
 }) {
   const [query, setQuery] = useState("");
   const [activeCategories, setActiveCategories] = useState<string[]>([]);
+  const [reNativeOnly, setReNativeOnly] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return tools.filter((t) => {
+      if (reNativeOnly && !t.reNative) return false;
       if (
         activeCategories.length > 0 &&
         !activeCategories.includes(t.categoryKey)
@@ -42,7 +44,7 @@ export function ToolsTable({
         t.website.toLowerCase().includes(q)
       );
     });
-  }, [tools, query, activeCategories]);
+  }, [tools, query, activeCategories, reNativeOnly]);
 
   function toggleCategory(key: string) {
     setActiveCategories((prev) =>
@@ -53,9 +55,11 @@ export function ToolsTable({
   function clearFilters() {
     setQuery("");
     setActiveCategories([]);
+    setReNativeOnly(false);
   }
 
-  const hasFilters = query.length > 0 || activeCategories.length > 0;
+  const hasFilters =
+    query.length > 0 || activeCategories.length > 0 || reNativeOnly;
 
   return (
     <div className="space-y-4">
@@ -99,6 +103,26 @@ export function ToolsTable({
             </button>
           )}
         </div>
+      </div>
+
+      {/* RE-native toggle (its own row, more prominent) */}
+      <div className="flex flex-wrap items-center gap-2 pt-1">
+        <button
+          type="button"
+          onClick={() => setReNativeOnly((v) => !v)}
+          className={cn(
+            "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold transition-colors border",
+            reNativeOnly
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-card text-foreground border-border hover:border-foreground/30"
+          )}
+        >
+          <Home className="h-3.5 w-3.5" strokeWidth={2} />
+          Real estate native only
+        </button>
+        <span className="text-[11px] text-muted-foreground">
+          Hides Slack, Canva, Mailchimp, ChatGPT, etc. — only tools built for real estate.
+        </span>
       </div>
 
       {/* Category chips */}
@@ -176,9 +200,21 @@ export function ToolsTable({
                     <TableCell className="py-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <BrandIcon name={tool.name} size={32} />
-                        <span className="text-[14px] font-semibold text-foreground truncate">
-                          {tool.name}
-                        </span>
+                        <div className="min-w-0 flex flex-col">
+                          <span className="text-[14px] font-semibold text-foreground truncate">
+                            {tool.name}
+                          </span>
+                          {tool.reNative ? (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary mt-0.5">
+                              <Home className="h-2.5 w-2.5" strokeWidth={2.5} />
+                              RE-native
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground mt-0.5">
+                              General tool
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>

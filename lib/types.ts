@@ -1,6 +1,12 @@
 export type LeadStatus = "hot" | "warm" | "cold";
-export type InsightPriority = "critical" | "warning" | "success" | "neutral";
-export type InsightState = "pending" | "implemented" | "ignored";
+export type InsightType = "critical" | "warning" | "opportunity" | "info";
+export type InsightState = "pending" | "snoozed" | "implemented" | "ignored";
+export type InsightCategory =
+  | "Workflow"
+  | "Pipeline"
+  | "Spend"
+  | "Agent"
+  | "Tooling";
 export type WorkflowStatus = "performing" | "underperforming" | "healthy" | "broken";
 export type Tool =
   | "Follow Up Boss"
@@ -136,15 +142,18 @@ export type Workflow = {
 
 export type Insight = {
   id: string;
-  priority: InsightPriority;
+  type: InsightType;
+  category: InsightCategory;
+  /** One-line headline, max 60 chars. Drives the 1st of "3 questions in 3 seconds". */
   title: string;
-  description: string;
-  evidence?: string;
-  primaryAction: { label: string; intent: "implement" | "view" | "investigate" | "scale" };
-  secondaryAction?: { label: string; intent: "ignore" | "dismiss" | "details" };
+  /** Concrete metric / dollar / count that makes the magnitude obvious. */
+  impact: string;
+  /** Optional longer explanation shown only inside the detail sheet. */
+  detail?: string;
+  /** The single primary CTA on the card. */
+  primaryAction: { label: string };
   state: InsightState;
   createdAt: string; // ISO
-  category: "Workflow" | "Agent" | "Pipeline" | "Spend" | "Tooling";
 };
 
 export type DashboardData = {

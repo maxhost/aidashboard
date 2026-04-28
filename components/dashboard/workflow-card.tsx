@@ -1,74 +1,70 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
   Clock,
+  DollarSign,
   Pause,
   Play,
-  Zap,
 } from "lucide-react";
-import { ResponsiveContainer, LineChart, Line, YAxis } from "recharts";
-import { formatDistanceToNowStrict } from "date-fns";
+import { BrandIcon } from "@/components/onboarding/brand-icon";
 import type { Workflow, WorkflowStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { dashboardData } from "@/lib/mock-data";
+import {
+  buildNarrativeLine,
+  formatHours,
+  timeSavedHours,
+} from "@/lib/workflows/manual-time";
 import { WorkflowDetailSheet } from "./workflow-detail-sheet";
 
 const STATUS_CONFIG: Record<
   WorkflowStatus,
-  { label: string; dot: string; text: string; sparkline: string }
+  { label: string; dot: string; text: string }
 > = {
   performing: {
     label: "Performing",
     dot: "bg-emerald-500",
     text: "text-emerald-700",
-    sparkline: "#10b981",
   },
   healthy: {
     label: "Healthy",
     dot: "bg-sky-500",
     text: "text-sky-700",
-    sparkline: "#0ea5e9",
   },
   underperforming: {
     label: "Underperforming",
     dot: "bg-amber-500",
     text: "text-amber-700",
-    sparkline: "#f59e0b",
   },
   broken: {
     label: "Broken",
     dot: "bg-rose-500",
     text: "text-rose-700",
-    sparkline: "#dc2626",
   },
 };
 
-function formatCompactCurrency(n: number) {
+function formatCompactCurrency(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
-  return `$${n}`;
+  return n > 0 ? `$${n}` : "—";
 }
 
 export function WorkflowCard({ workflow }: { workflow: Workflow }) {
   const [open, setOpen] = useState(false);
   const status = STATUS_CONFIG[workflow.status];
-  const sparklineData = workflow.trend.map((v, i) => ({ x: i, y: v }));
   const isUp = workflow.weeklyChange >= 0;
-  const owner = workflow.ownerAgentId
-    ? dashboardData.agents.find((a) => a.id === workflow.ownerAgentId)
-    : null;
+  const hours = timeSavedHours(workflow);
+  const narrative = buildNarrativeLine(workflow);
 
   return (
     <>
       <Card className="p-5 shadow-sm border-border/70 hover:shadow-md hover:border-border transition-all flex flex-col gap-4">
-        {/* Header: status + change pill */}
+        {/* Header: status + delta pill */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <span className={cn("h-2 w-2 rounded-full shrink-0", status.dot)} />
@@ -95,96 +91,58 @@ export function WorkflowCard({ workflow }: { workflow: Workflow }) {
           )}
         </div>
 
-        {/* Title + description */}
+        {/* Title + 1-line description */}
         <div>
           <h3 className="text-[15px] font-semibold leading-tight text-foreground">
             {workflow.name}
           </h3>
-          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+          <p className="text-xs italic text-muted-foreground mt-1 line-clamp-1">
             {workflow.description}
           </p>
         </div>
 
-        {/* Tools */}
-        <div className="flex flex-wrap gap-1.5">
-          {workflow.tools.map((tool) => (
-            <Badge
-              key={tool}
-              variant="outline"
-              className="bg-muted/50 text-muted-foreground border-border/50 font-medium text-[10px] py-0 px-2 h-5"
-            >
-              {tool}
-            </Badge>
+        {/* Flow chip — the integration story */}
+        <div className="flex items-center gap-2 rounded-lg border border-border/50 bg-muted/30 px-3 py-2 overflow-x-auto">
+          {workflow.tools.map((tool, idx) => (
+            <Fragment key={tool}>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <BrandIcon name={tool} size={22} />
+                <span className="text-[12px] font-medium text-foreground whitespace-nowrap">
+                  {tool}
+                </span>
+              </div>
+              {idx < workflow.tools.length - 1 && (
+                <ArrowRight
+                  className="h-3 w-3 text-muted-foreground/60 shrink-0"
+                  strokeWidth={2}
+                />
+              )}
+            </Fragment>
           ))}
         </div>
 
-        {/* Metrics + sparkline */}
-        <div className="grid grid-cols-[1fr_auto] gap-4 items-end">
-          <div className="grid grid-cols-4 gap-3">
-            <Metric
-              label="Triggered"
-              value={workflow.metrics.triggered.toLocaleString()}
-            />
-            <Metric
-              label="Completion"
-              value={`${workflow.metrics.completionRate.toFixed(0)}%`}
-            />
-            <Metric
-              label="ROI"
-              value={
-                workflow.metrics.roi > 0
-                  ? `${workflow.metrics.roi.toFixed(1)}x`
-                  : "—"
-              }
-            />
-            <Metric
-              label="Revenue"
-              value={
-                workflow.metrics.revenueAttributed > 0
-                  ? formatCompactCurrency(workflow.metrics.revenueAttributed)
-                  : "—"
-              }
-            />
-          </div>
-          <div className="h-10 w-20 shrink-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={sparklineData}>
-                <YAxis hide domain={["dataMin", "dataMax"]} />
-                <Line
-                  type="monotone"
-                  dataKey="y"
-                  stroke={status.sparkline}
-                  strokeWidth={1.75}
-                  dot={false}
-                  isAnimationActive={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Meta row */}
-        <div className="grid grid-cols-3 gap-3 rounded-lg bg-muted/40 px-3 py-2.5">
-          <MetaItem
-            icon={<Zap className="h-3 w-3" strokeWidth={2} />}
-            label="Triggers/day"
-            value={workflow.triggersPerDay.toFixed(1)}
+        {/* Hero metrics: time saved + money */}
+        <div className="grid grid-cols-2 gap-3">
+          <HeroMetric
+            icon={<Clock className="h-4.5 w-4.5" strokeWidth={1.75} />}
+            iconClass="bg-emerald-100 text-emerald-600"
+            value={formatHours(hours)}
+            label="saved this month"
           />
-          <MetaItem
-            icon={<Clock className="h-3 w-3" strokeWidth={2} />}
-            label="Last run"
-            value={`${formatDistanceToNowStrict(
-              new Date(workflow.lastTriggeredAt)
-            )} ago`}
-          />
-          <MetaItem
-            icon={null}
-            label="Owner"
-            value={owner ? owner.name.split(" ")[0] : "—"}
+          <HeroMetric
+            icon={<DollarSign className="h-4.5 w-4.5" strokeWidth={1.75} />}
+            iconClass="bg-violet-100 text-violet-600"
+            value={formatCompactCurrency(workflow.metrics.revenueAttributed)}
+            label="pipeline driven"
           />
         </div>
 
-        {/* Actions */}
+        {/* Narrative line */}
+        <p className="text-xs text-muted-foreground leading-snug">
+          {narrative}
+        </p>
+
+        {/* Footer */}
         <div className="flex items-center pt-1 border-t border-border/60 -mx-5 -mb-5 px-5 py-3 mt-auto">
           <Button
             size="sm"
@@ -208,7 +166,7 @@ export function WorkflowCard({ workflow }: { workflow: Workflow }) {
             className="h-8 px-3 text-xs gap-1 ml-auto"
             onClick={() => setOpen(true)}
           >
-            View details
+            Open details
             <ArrowRight className="h-3 w-3" strokeWidth={2} />
           </Button>
         </div>
@@ -223,36 +181,34 @@ export function WorkflowCard({ workflow }: { workflow: Workflow }) {
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
-        {label}
-      </div>
-      <div className="font-mono text-sm font-bold tabular-nums text-foreground mt-0.5">
-        {value}
-      </div>
-    </div>
-  );
-}
-
-function MetaItem({
+function HeroMetric({
   icon,
-  label,
+  iconClass,
   value,
+  label,
 }: {
   icon: React.ReactNode;
-  label: string;
+  iconClass: string;
   value: string;
+  label: string;
 }) {
   return (
-    <div className="min-w-0">
-      <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
+    <div className="rounded-lg border border-border/40 bg-card p-3 flex items-center gap-3">
+      <span
+        className={cn(
+          "h-10 w-10 rounded-xl flex items-center justify-center shrink-0",
+          iconClass
+        )}
+      >
         {icon}
-        {label}
-      </div>
-      <div className="text-[11px] font-mono font-semibold tabular-nums text-foreground mt-0.5 truncate">
-        {value}
+      </span>
+      <div className="min-w-0">
+        <div className="font-mono text-lg font-bold tabular-nums text-foreground leading-none">
+          {value}
+        </div>
+        <div className="text-[11px] text-muted-foreground mt-1 leading-tight">
+          {label}
+        </div>
       </div>
     </div>
   );

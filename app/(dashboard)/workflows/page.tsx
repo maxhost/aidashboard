@@ -4,6 +4,10 @@ import { CompletionRateChart } from "@/components/dashboard/completion-rate-char
 import { WorkflowStatusMix } from "@/components/dashboard/workflow-status-mix";
 import { WorkflowCard } from "@/components/dashboard/workflow-card";
 import { PeriodSelector } from "@/components/dashboard/period-selector";
+import {
+  formatHours,
+  totalTimeSavedHours,
+} from "@/lib/workflows/manual-time";
 import type { KPI, Workflow, WorkflowCategory } from "@/lib/types";
 
 function formatCompactCurrency(n: number) {
@@ -154,47 +158,40 @@ function CategorySection({
   category: WorkflowCategory;
   items: Workflow[];
 }) {
-  const triggered = items.reduce((a, w) => a + w.metrics.triggered, 0);
   const revenue = items.reduce((a, w) => a + w.metrics.revenueAttributed, 0);
-  const active = items.filter((w) => w.metrics.triggered > 0);
-  const avgRoi =
-    active.length > 0
-      ? active.reduce((a, w) => a + w.metrics.roi, 0) / active.length
-      : 0;
+  const hoursSaved = totalTimeSavedHours(items);
   const broken = items.filter((w) => w.status === "broken").length;
+
+  // Build a narrative line. If everything is broken / zero, swap copy.
+  const valueParts: string[] = [];
+  if (hoursSaved > 0) valueParts.push(`saved ${formatHours(hoursSaved)}`);
+  if (revenue > 0) valueParts.push(`drove ${formatCompactCurrency(revenue)} pipeline`);
+  const narrative =
+    valueParts.length > 0
+      ? valueParts.join(" · ") + " this month"
+      : "no value generated this month — needs attention.";
 
   return (
     <div>
-      {/* Section header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-4 pb-3 border-b border-border/60">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-lg font-semibold text-foreground">{category}</h2>
-            <span className="inline-flex items-center justify-center min-w-[20px] h-5 rounded-full bg-muted text-[10px] font-mono font-semibold tabular-nums text-muted-foreground px-1.5">
-              {items.length}
+      {/* Section header — narrative, not technical */}
+      <div className="mb-4 pb-3 border-b border-border/60">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <h2 className="text-lg font-semibold text-foreground">{category}</h2>
+          <span className="text-xs text-muted-foreground">·</span>
+          <span className="text-sm text-muted-foreground">
+            {items.length} {items.length === 1 ? "workflow" : "workflows"}
+          </span>
+          {broken > 0 && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold text-rose-700">
+              <span className="h-1 w-1 rounded-full bg-rose-500" />
+              {broken} broken
             </span>
-            {broken > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold text-rose-700">
-                <span className="h-1 w-1 rounded-full bg-rose-500" />
-                {broken} broken
-              </span>
-            )}
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            {CATEGORY_DESC[category]}
-          </p>
+          )}
         </div>
-        <div className="flex items-center gap-5 text-[11px] font-mono tabular-nums shrink-0">
-          <SectionStat label="Triggered" value={triggered.toLocaleString()} />
-          <SectionStat
-            label="Revenue"
-            value={revenue > 0 ? formatCompactCurrency(revenue) : "—"}
-          />
-          <SectionStat
-            label="Avg ROI"
-            value={avgRoi > 0 ? `${avgRoi.toFixed(1)}x` : "—"}
-          />
-        </div>
+        <p className="text-sm text-foreground/70 mt-1.5 leading-snug">
+          {CATEGORY_DESC[category]}{" "}
+          <span className="font-medium text-foreground">{narrative}</span>
+        </p>
       </div>
 
       {/* Cards */}
@@ -202,17 +199,6 @@ function CategorySection({
         {items.map((w) => (
           <WorkflowCard key={w.id} workflow={w} />
         ))}
-      </div>
-    </div>
-  );
-}
-
-function SectionStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="text-right">
-      <div className="font-bold text-foreground">{value}</div>
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mt-0.5">
-        {label}
       </div>
     </div>
   );
