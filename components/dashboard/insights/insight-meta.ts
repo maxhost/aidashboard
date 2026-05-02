@@ -1,6 +1,16 @@
 import type { LucideIcon } from "lucide-react";
-import { AlertOctagon, Info, Sparkles, TriangleAlert } from "lucide-react";
-import type { InsightType } from "@/lib/types";
+import {
+  AlertOctagon,
+  BarChart3,
+  Boxes,
+  Info,
+  Magnet,
+  Sparkles,
+  Target,
+  TriangleAlert,
+  Workflow,
+} from "lucide-react";
+import type { InsightCategory, InsightType } from "@/lib/types";
 
 /** Centralized visual language for insight types — keeps cards consistent. */
 export const TYPE_META: Record<
@@ -48,12 +58,50 @@ export const TYPE_META: Record<
     borderClass: "border-l-emerald-500",
   },
   info: {
-    label: "FYI",
+    label: "Pattern",
     icon: Info,
     color: "#0284c7",
     labelClass: "text-sky-700",
     chipClass: "bg-sky-50 text-sky-700 border-sky-200",
     dotClass: "bg-sky-500",
     borderClass: "border-l-sky-500",
+  },
+};
+
+/** Visual metadata per insight category — drives the [All / Marketing / …]
+    filter chips and the icon shown on each uniform card. */
+export const CATEGORY_META: Record<
+  InsightCategory,
+  { label: string; icon: LucideIcon; iconBg: string; iconColor: string }
+> = {
+  Marketing: {
+    label: "Marketing",
+    icon: Target,
+    iconBg: "bg-violet-100",
+    iconColor: "text-violet-600",
+  },
+  Performance: {
+    label: "Performance",
+    icon: BarChart3,
+    iconBg: "bg-emerald-100",
+    iconColor: "text-emerald-600",
+  },
+  Workflow: {
+    label: "Workflow",
+    icon: Workflow,
+    iconBg: "bg-amber-100",
+    iconColor: "text-amber-600",
+  },
+  "Lead Gen": {
+    label: "Lead Gen",
+    icon: Magnet,
+    iconBg: "bg-sky-100",
+    iconColor: "text-sky-600",
+  },
+  "Tech Stack": {
+    label: "Tech Stack",
+    icon: Boxes,
+    iconBg: "bg-rose-100",
+    iconColor: "text-rose-600",
   },
 };

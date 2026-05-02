@@ -9,12 +9,10 @@ import { TYPE_META } from "./insight-meta";
 export function WorthKnowingItem({
   insight,
   onPrimary,
-  onSnooze,
   onOpenDetail,
 }: {
   insight: Insight;
   onPrimary: () => void;
-  onSnooze: () => void;
   onOpenDetail: () => void;
 }) {
   const meta = TYPE_META[insight.type];
@@ -49,21 +47,14 @@ export function WorthKnowingItem({
       </div>
 
       <Button
-        size="sm"
+        size="icon"
         onClick={onPrimary}
-        variant="ghost"
-        className="h-8 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground shrink-0"
+        aria-label={insight.primaryAction.label}
+        title={insight.primaryAction.label}
+        className="h-8 w-8 rounded-full shrink-0"
       >
-        {insight.primaryAction.label}
-        <ArrowRight className="h-3 w-3" strokeWidth={2} />
+        <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
       </Button>
-      <button
-        type="button"
-        onClick={onSnooze}
-        className="text-[11px] font-medium text-muted-foreground hover:text-foreground shrink-0"
-      >
-        Snooze
-      </button>
     </article>
   );
 }

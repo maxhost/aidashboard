@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
+  TrendingUp,
+  Megaphone,
   Workflow,
   Users,
   Sparkles,
@@ -17,8 +19,10 @@ import { PulsorLockup } from "@/components/brand/pulsor";
 
 const NAV_PRIMARY = [
   { href: "/overview", label: "Overview", icon: LayoutDashboard },
-  { href: "/workflows", label: "Workflows", icon: Workflow },
+  { href: "/sales", label: "Sales", icon: TrendingUp },
+  { href: "/marketing", label: "Marketing", icon: Megaphone },
   { href: "/team", label: "Team", icon: Users },
+  { href: "/workflows", label: "Workflows", icon: Workflow },
   { href: "/insights", label: "Insights", icon: Sparkles },
   { href: "/tools", label: "Tools", icon: Boxes },
 ] as const;

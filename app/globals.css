@@ -81,16 +81,21 @@
   --text-num-l--line-height: 28px;
   --text-num-l--font-weight: 700;
 
+  --text-num-hero: 40px;
+  --text-num-hero--line-height: 44px;
+  --text-num-hero--font-weight: 700;
+  --text-num-hero--letter-spacing: -0.02em;
+
   /* Radii */
   --radius-sm: calc(var(--radius) - 6px);
   --radius-md: calc(var(--radius) - 4px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(15, 15, 15, 0.04), 0 1px 1px rgba(15, 15, 15, 0.03);
-  --shadow-md: 0 4px 6px rgba(15, 15, 15, 0.05), 0 2px 4px rgba(15, 15, 15, 0.04);
-  --shadow-lg: 0 10px 15px rgba(15, 15, 15, 0.06), 0 4px 6px rgba(15, 15, 15, 0.04);
+  /* Shadows (Luma — softer, more diffuse) */
+  --shadow-sm: 0 1px 2px rgba(15, 15, 15, 0.025);
+  --shadow-md: 0 4px 16px rgba(15, 15, 15, 0.04);
+  --shadow-lg: 0 12px 32px rgba(15, 15, 15, 0.06);
 }
 
 :root {
@@ -141,7 +146,7 @@
   --chart-5: #6b7280;
 
   /* Radius */
-  --radius: 0.75rem;
+  --radius: 2rem;
 
   /* Sidebar (light) */
   --sidebar: #ffffff;

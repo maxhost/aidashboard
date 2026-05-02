@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MessageCircle } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, YAxis } from "recharts";
@@ -57,6 +57,9 @@ export function AgentCard({ agent }: { agent: Agent }) {
         {/* Header: avatar + name + status */}
         <div className="flex items-start gap-3">
           <Avatar className="h-12 w-12 shrink-0">
+            {agent.avatarUrl && (
+              <AvatarImage src={agent.avatarUrl} alt={agent.name} />
+            )}
             <AvatarFallback
               className={cn("text-white text-sm font-semibold", agent.avatarColor)}
             >

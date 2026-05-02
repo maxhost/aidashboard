@@ -4,7 +4,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowUpRight } from "lucide-react";
 import type { Agent } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -93,6 +93,9 @@ export function AgentLeaderboard({ agents }: { agents: Agent[] }) {
                   {idx + 1}
                 </span>
                 <Avatar className="h-9 w-9">
+                  {agent.avatarUrl && (
+                    <AvatarImage src={agent.avatarUrl} alt={agent.name} />
+                  )}
                   <AvatarFallback
                     className={cn(
                       "text-white text-xs font-semibold",

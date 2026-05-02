@@ -2,11 +2,11 @@ export type LeadStatus = "hot" | "warm" | "cold";
 export type InsightType = "critical" | "warning" | "opportunity" | "info";
 export type InsightState = "pending" | "snoozed" | "implemented" | "ignored";
 export type InsightCategory =
+  | "Marketing"
+  | "Performance"
   | "Workflow"
-  | "Pipeline"
-  | "Spend"
-  | "Agent"
-  | "Tooling";
+  | "Lead Gen"
+  | "Tech Stack";
 export type WorkflowStatus = "performing" | "underperforming" | "healthy" | "broken";
 export type Tool =
   | "Follow Up Boss"
@@ -92,6 +92,13 @@ export type Agent = {
   trend: number[]; // last 8 weeks deals/leads sparkline
   status: "top" | "rising" | "steady" | "needs-coaching";
   coachingNote?: string;
+  /** AI adoption score 0–100. Weighted from CRM usage, AI tools adoption,
+      response time, workflow compliance, performance metrics. */
+  aiAdoptionScore: number;
+  /** One-line nudge shown on the team scorecard. */
+  aiTip: string;
+  /** Optional headshot URL. Falls back to colored initials if missing. */
+  avatarUrl?: string;
 };
 
 export type Lead = {

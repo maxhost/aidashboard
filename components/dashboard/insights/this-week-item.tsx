@@ -9,12 +9,10 @@ import { TYPE_META } from "./insight-meta";
 export function ThisWeekItem({
   insight,
   onPrimary,
-  onSnooze,
   onOpenDetail,
 }: {
   insight: Insight;
   onPrimary: () => void;
-  onSnooze: () => void;
   onOpenDetail: () => void;
 }) {
   const meta = TYPE_META[insight.type];
@@ -58,23 +56,15 @@ export function ThisWeekItem({
           </p>
         </div>
 
-        <div className="flex flex-col items-end gap-2 shrink-0">
-          <Button
-            size="sm"
-            onClick={onPrimary}
-            className="h-8 px-3 text-xs gap-1 font-semibold"
-          >
-            {insight.primaryAction.label}
-            <ArrowRight className="h-3 w-3" strokeWidth={2.5} />
-          </Button>
-          <button
-            type="button"
-            onClick={onSnooze}
-            className="text-[11px] font-medium text-muted-foreground hover:text-foreground"
-          >
-            Snooze
-          </button>
-        </div>
+        <Button
+          size="icon"
+          onClick={onPrimary}
+          aria-label={insight.primaryAction.label}
+          title={insight.primaryAction.label}
+          className="h-8 w-8 rounded-full shrink-0"
+        >
+          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+        </Button>
       </div>
     </article>
   );

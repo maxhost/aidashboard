@@ -9,12 +9,10 @@ import { TYPE_META } from "./insight-meta";
 export function ActNowCard({
   insight,
   onPrimary,
-  onSnooze,
   onOpenDetail,
 }: {
   insight: Insight;
   onPrimary: () => void;
-  onSnooze: () => void;
   onOpenDetail: () => void;
 }) {
   const meta = TYPE_META[insight.type];
@@ -63,22 +61,16 @@ export function ActNowCard({
             {insight.impact}
           </p>
 
-          <div className="mt-5 flex items-center gap-3">
+          <div className="mt-5 flex items-center justify-end">
             <Button
-              size="sm"
+              size="icon"
               onClick={onPrimary}
-              className="h-9 px-4 text-sm gap-1.5 font-semibold"
+              aria-label={insight.primaryAction.label}
+              title={insight.primaryAction.label}
+              className="h-10 w-10 rounded-full"
             >
-              {insight.primaryAction.label}
-              <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+              <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
             </Button>
-            <button
-              type="button"
-              onClick={onSnooze}
-              className="text-xs font-medium text-muted-foreground hover:text-foreground"
-            >
-              Snooze
-            </button>
           </div>
         </div>
       </div>

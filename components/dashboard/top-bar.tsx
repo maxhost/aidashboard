@@ -19,8 +19,10 @@ import { cn } from "@/lib/utils";
 
 const PAGE_LABEL: Record<string, string> = {
   overview: "Overview",
-  workflows: "Workflows",
+  sales: "Sales",
+  marketing: "Marketing",
   team: "Team",
+  workflows: "Workflows",
   insights: "Insights",
   tools: "Tools",
 };

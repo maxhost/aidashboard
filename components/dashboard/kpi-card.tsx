@@ -62,6 +62,13 @@ const TONE_STYLES: Record<
   },
 };
 
+/**
+ * Luma-style KPI card. Vertical stack:
+ *   [small icon] · LABEL          [delta pill]
+ *   $value                          ← hero number, full width
+ *   [optional sparkline]
+ *   hint · period
+ */
 export function KpiCard({ kpi }: { kpi: KPI }) {
   const Icon = ICON_MAP[kpi.iconKey];
   const styles = TONE_STYLES[kpi.tone];
@@ -74,60 +81,54 @@ export function KpiCard({ kpi }: { kpi: KPI }) {
     deltaTone = isImprovement ? "positive" : "negative";
   }
 
-  const sparklineData =
-    kpi.trend?.map((v, i) => ({ x: i, y: v })) ?? [];
+  const sparklineData = kpi.trend?.map((v, i) => ({ x: i, y: v })) ?? [];
 
   return (
-    <Card className="p-5 shadow-sm border-border/70 hover:shadow-md transition-shadow">
-      <div className="flex items-start gap-4">
-        <span
-          className={cn(
-            "h-12 w-12 rounded-2xl shrink-0 flex items-center justify-center",
-            styles.iconBg
-          )}
-        >
-          <Icon className={cn("h-5 w-5", styles.iconColor)} strokeWidth={2} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {kpi.label}
-          </div>
-          <div className="mt-1.5 flex items-baseline gap-2 flex-wrap">
-            <span className="font-mono text-[26px] font-bold text-foreground tabular-nums leading-none">
-              {kpi.value}
-            </span>
-            {kpi.delta && (
-              <span
-                className={cn(
-                  "inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full font-mono text-[11px] font-semibold tabular-nums",
-                  deltaTone === "positive" &&
-                    "bg-emerald-50 text-emerald-700",
-                  deltaTone === "negative" && "bg-rose-50 text-rose-700"
-                )}
-              >
-                {isUp ? (
-                  <ArrowUpRight className="h-3 w-3" strokeWidth={2.5} />
-                ) : (
-                  <ArrowDownRight className="h-3 w-3" strokeWidth={2.5} />
-                )}
-                {Math.abs(kpi.delta.value).toFixed(1)}%
-              </span>
+    <Card className="p-6 shadow-sm border-border/40 hover:shadow-md transition-shadow">
+      {/* Top row: icon + label (left)  ·  delta pill (right) */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span
+            className={cn(
+              "h-7 w-7 rounded-xl shrink-0 flex items-center justify-center",
+              styles.iconBg
             )}
-          </div>
-          {(kpi.hint || kpi.delta?.period) && (
-            <div className="text-xs text-muted-foreground mt-1">
-              {kpi.hint && <span>{kpi.hint}</span>}
-              {kpi.hint && kpi.delta?.period && (
-                <span className="text-muted-foreground/50"> · </span>
-              )}
-              {kpi.delta?.period}
-            </div>
-          )}
+          >
+            <Icon
+              className={cn("h-3.5 w-3.5", styles.iconColor)}
+              strokeWidth={2}
+            />
+          </span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground truncate">
+            {kpi.label}
+          </span>
         </div>
+        {kpi.delta && (
+          <span
+            className={cn(
+              "inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full font-mono text-[11px] font-semibold tabular-nums shrink-0",
+              deltaTone === "positive" && "bg-emerald-50 text-emerald-700",
+              deltaTone === "negative" && "bg-rose-50 text-rose-700"
+            )}
+          >
+            {isUp ? (
+              <ArrowUpRight className="h-3 w-3" strokeWidth={2.5} />
+            ) : (
+              <ArrowDownRight className="h-3 w-3" strokeWidth={2.5} />
+            )}
+            {Math.abs(kpi.delta.value).toFixed(1)}%
+          </span>
+        )}
       </div>
 
+      {/* Hero value (full width) */}
+      <div className="mt-4 font-mono text-num-hero font-bold text-foreground tabular-nums leading-none">
+        {kpi.value}
+      </div>
+
+      {/* Sparkline */}
       {sparklineData.length > 0 && (
-        <div className="mt-4 -mx-1 h-10">
+        <div className="mt-4 -mx-1 h-8">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={sparklineData}>
               <YAxis hide domain={["dataMin", "dataMax"]} />
@@ -141,6 +142,17 @@ export function KpiCard({ kpi }: { kpi: KPI }) {
               />
             </LineChart>
           </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Hint / period */}
+      {(kpi.hint || kpi.delta?.period) && (
+        <div className="text-[11px] text-muted-foreground mt-3">
+          {kpi.hint && <span>{kpi.hint}</span>}
+          {kpi.hint && kpi.delta?.period && (
+            <span className="text-muted-foreground/50"> · </span>
+          )}
+          {kpi.delta?.period}
         </div>
       )}
     </Card>

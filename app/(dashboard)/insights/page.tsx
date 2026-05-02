@@ -10,21 +10,34 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { dashboardData } from "@/lib/mock-data";
-import type { Insight, InsightState } from "@/lib/types";
+import type { Insight, InsightCategory, InsightState } from "@/lib/types";
 import { PeriodSelector } from "@/components/dashboard/period-selector";
 import { ActNowCard } from "@/components/dashboard/insights/act-now-card";
 import { ThisWeekItem } from "@/components/dashboard/insights/this-week-item";
 import { WorthKnowingItem } from "@/components/dashboard/insights/worth-knowing-item";
 import { InsightDetailSheet } from "@/components/dashboard/insights/insight-detail-sheet";
 import { SnoozeToast } from "@/components/dashboard/insights/snooze-toast";
+import { CATEGORY_META } from "@/components/dashboard/insights/insight-meta";
+import { cn } from "@/lib/utils";
 
 type ShowFilter = InsightState | "all";
+type CategoryFilter = "all" | InsightCategory;
+
+const CATEGORY_FILTERS: CategoryFilter[] = [
+  "all",
+  "Marketing",
+  "Performance",
+  "Workflow",
+  "Lead Gen",
+  "Tech Stack",
+];
 
 export default function InsightsPage() {
   const { insights, period } = dashboardData;
 
   // ----- State
   const [show, setShow] = useState<ShowFilter>("pending");
+  const [activeCategory, setActiveCategory] = useState<CategoryFilter>("all");
   const [snoozedIds, setSnoozedIds] = useState<Set<string>>(new Set());
   const [detail, setDetail] = useState<Insight | null>(null);
   const [toast, setToast] = useState<{
@@ -38,7 +51,29 @@ export default function InsightsPage() {
       .map<Insight>((i) =>
         snoozedIds.has(i.id) ? { ...i, state: "snoozed" } : i
       )
+      .filter((i) => (show === "all" ? true : i.state === show))
+      .filter((i) =>
+        activeCategory === "all" ? true : i.category === activeCategory
+      );
+  }, [insights, snoozedIds, show, activeCategory]);
+
+  // ----- Per-category counts (using current state filter, before category filter)
+  const categoryCounts = useMemo(() => {
+    const stateFiltered = insights
+      .map<Insight>((i) =>
+        snoozedIds.has(i.id) ? { ...i, state: "snoozed" } : i
+      )
       .filter((i) => (show === "all" ? true : i.state === show));
+    const counts: Record<CategoryFilter, number> = {
+      all: stateFiltered.length,
+      Marketing: 0,
+      Performance: 0,
+      Workflow: 0,
+      "Lead Gen": 0,
+      "Tech Stack": 0,
+    };
+    for (const i of stateFiltered) counts[i.category] += 1;
+    return counts;
   }, [insights, snoozedIds, show]);
 
   // ----- Bucket into zones (only meaningful when show === "pending")
@@ -121,6 +156,43 @@ export default function InsightsPage() {
         </div>
       </header>
 
+      {/* Category filter row */}
+      <div className="flex flex-wrap gap-1.5">
+        {CATEGORY_FILTERS.map((cat) => {
+          const active = activeCategory === cat;
+          const count = categoryCounts[cat];
+          const label = cat === "all" ? "All" : CATEGORY_META[cat].label;
+          const disabled = cat !== "all" && count === 0;
+          return (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setActiveCategory(cat)}
+              disabled={disabled}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium transition-colors border",
+                active
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-card text-foreground border-border hover:border-foreground/30",
+                disabled && "opacity-40 cursor-not-allowed"
+              )}
+            >
+              {label}
+              <span
+                className={cn(
+                  "font-mono tabular-nums text-[10px]",
+                  active
+                    ? "text-primary-foreground/80"
+                    : "text-muted-foreground"
+                )}
+              >
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Empty state */}
       {visible.length === 0 && (
         <EmptyState filter={show} />
@@ -136,7 +208,6 @@ export default function InsightsPage() {
               <ActNowCard
                 insight={critical}
                 onPrimary={() => handlePrimary(critical)}
-                onSnooze={() => handleSnooze(critical.id)}
                 onOpenDetail={() => setDetail(critical)}
               />
             </section>
@@ -152,7 +223,6 @@ export default function InsightsPage() {
                     key={i.id}
                     insight={i}
                     onPrimary={() => handlePrimary(i)}
-                    onSnooze={() => handleSnooze(i.id)}
                     onOpenDetail={() => setDetail(i)}
                   />
                 ))}
@@ -174,7 +244,6 @@ export default function InsightsPage() {
                     key={i.id}
                     insight={i}
                     onPrimary={() => handlePrimary(i)}
-                    onSnooze={() => handleSnooze(i.id)}
                     onOpenDetail={() => setDetail(i)}
                   />
                 ))}
@@ -192,7 +261,6 @@ export default function InsightsPage() {
               key={i.id}
               insight={i}
               onPrimary={() => handlePrimary(i)}
-              onSnooze={() => handleSnooze(i.id)}
               onOpenDetail={() => setDetail(i)}
             />
           ))}

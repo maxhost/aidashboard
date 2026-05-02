@@ -7,7 +7,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   ResponsiveContainer,
@@ -100,6 +100,9 @@ export function AgentDetailSheet({
         <SheetHeader className="pr-8">
           <div className="flex items-start gap-3">
             <Avatar className="h-14 w-14 shrink-0">
+              {agent.avatarUrl && (
+                <AvatarImage src={agent.avatarUrl} alt={agent.name} />
+              )}
               <AvatarFallback
                 className={cn(
                   "text-white text-base font-semibold",
