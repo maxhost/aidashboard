@@ -99,64 +99,66 @@
 }
 
 :root {
-  /* Surfaces */
-  --background: #fafaf7;
-  --foreground: #0a0a0a;
-  --card: #ffffff;
-  --card-foreground: #0a0a0a;
-  --popover: #ffffff;
-  --popover-foreground: #0a0a0a;
+  /* Pulsor Brand System v1.0 — cream / soft-black / warm-gray / mint / stone */
 
-  /* Brand / accent (purple) */
-  --primary: #7c3aed;
-  --primary-foreground: #ffffff;
-  --accent: #f3f0ff;
-  --accent-foreground: #6d28d9;
-  --accent-subtle: #f3f0ff;
+  /* Surfaces */
+  --background: #f7f4ee;       /* cream */
+  --foreground: #0f0f10;       /* soft black */
+  --card: #ffffff;
+  --card-foreground: #0f0f10;
+  --popover: #ffffff;
+  --popover-foreground: #0f0f10;
+
+  /* Accent — mint (UI only, never the logo) */
+  --primary: #00d9a3;
+  --primary-foreground: #0f0f10;
+  --accent: #e5e0d6;           /* stone */
+  --accent-foreground: #0f0f10;
+  --accent-subtle: #eef0e7;
 
   /* Secondary surface */
-  --secondary: #f5f3ff;
-  --secondary-foreground: #6d28d9;
+  --secondary: #f7f4ee;
+  --secondary-foreground: #0f0f10;
 
   /* Muted */
-  --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
+  --muted: #ede9e0;
+  --muted-foreground: #6b6862; /* warm gray */
 
   /* Status */
-  --destructive: #dc2626;
+  --destructive: #c44536;
   --destructive-foreground: #ffffff;
-  --destructive-subtle: #fee2e2;
-  --warning: #f59e0b;
+  --destructive-subtle: #f6dcd6;
+  --warning: #b8860b;
   --warning-foreground: #ffffff;
-  --warning-subtle: #fef3c7;
-  --success: #10b981;
+  --warning-subtle: #f3e7c8;
+  --success: #2e7d5b;
   --success-foreground: #ffffff;
-  --success-subtle: #d1fae5;
+  --success-subtle: #d6ebe0;
 
   /* Borders / inputs / focus */
-  --border: #e5e7eb;
-  --input: #e5e7eb;
-  --ring: #7c3aed;
+  --border: #e5e0d6;           /* stone */
+  --input: #e5e0d6;
+  --ring: #00d9a3;
 
-  /* Chart palette */
-  --chart-1: #7c3aed;
-  --chart-2: #10b981;
-  --chart-3: #f59e0b;
-  --chart-4: #dc2626;
-  --chart-5: #6b7280;
+  /* Chart palette — neutral-led with mint accent */
+  --chart-1: #00d9a3;
+  --chart-2: #0f0f10;
+  --chart-3: #6b6862;
+  --chart-4: #c44536;
+  --chart-5: #b8860b;
 
-  /* Radius */
-  --radius: 2rem;
+  /* Radius — softened to 12px per brand card spec */
+  --radius: 0.75rem;
 
-  /* Sidebar (light) */
-  --sidebar: #ffffff;
-  --sidebar-foreground: #0a0a0a;
-  --sidebar-primary: #7c3aed;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f3f0ff;
-  --sidebar-accent-foreground: #6d28d9;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: #7c3aed;
+  /* Sidebar */
+  --sidebar: #f7f4ee;
+  --sidebar-foreground: #0f0f10;
+  --sidebar-primary: #0f0f10;
+  --sidebar-primary-foreground: #f7f4ee;
+  --sidebar-accent: #e5e0d6;
+  --sidebar-accent-foreground: #0f0f10;
+  --sidebar-border: #e5e0d6;
+  --sidebar-ring: #00d9a3;
 }
 
 @layer base {

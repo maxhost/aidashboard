@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   ChevronDown,
   ChevronRight,
-  Bell,
   Search,
   LogOut,
   UserCircle,
@@ -98,15 +97,6 @@ export function TopBar({
         >
           <Search className="h-[18px] w-[18px]" strokeWidth={1.75} />
         </button>
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative h-9 w-9 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors"
-        >
-          <Bell className="h-[18px] w-[18px]" strokeWidth={1.75} />
-          <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-destructive" />
-        </button>
-
         {/* User pill + dropdown */}
         <div className="relative" ref={menuRef}>
           <button

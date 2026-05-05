@@ -1,10 +1,10 @@
 import { cn } from "@/lib/utils";
 
 /**
- * PulsorMark — the brand symbol.
- * A bold "P" whose vertical stem extends downward and tapers into a
- * map-pin point. Reads as a letter monogram first; the location/address
- * metaphor surfaces on second look. Square purple background, white shape.
+ * PulsorMark — brand symbol per Brand System (final).
+ * A rectangular frame containing a horizontal pulse line broken by a dot
+ * (the decision moment). Single color, inherits via currentColor so it
+ * adapts to any surface (cream, white, dark, mint).
  */
 export function PulsorMark({
   size = 32,
@@ -17,45 +17,72 @@ export function PulsorMark({
     <svg
       width={size}
       height={size}
-      viewBox="0 0 64 64"
+      viewBox="0 0 80 80"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={cn("shrink-0 shadow-sm rounded-[25%]", className)}
+      className={cn("shrink-0", className)}
       role="img"
       aria-label="Pulsor"
     >
-      <rect width="64" height="64" rx="16" fill="#7C3AED" />
-      <path
-        fill="white"
-        fillRule="evenodd"
-        d="M22 9 H36 C43 9 50 15 50 23 C50 31 43 37 36 37 H30 V49 L26 57 L22 49 Z M30 17 V29 H35 C38 29 41 26 41 23 C41 20 38 17 35 17 Z"
+      {/* Frame */}
+      <rect
+        x="14"
+        y="26"
+        width="52"
+        height="28"
+        rx="1.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        fill="none"
+      />
+      {/* Pulse line — left segment */}
+      <line
+        x1="20"
+        y1="40"
+        x2="42"
+        y2="40"
+        stroke="currentColor"
+        strokeWidth="3.5"
+        strokeLinecap="butt"
+      />
+      {/* Dot — the decision */}
+      <circle cx="46" cy="40" r="2.6" fill="currentColor" />
+      {/* Pulse line — right segment */}
+      <line
+        x1="49"
+        y1="40"
+        x2="60"
+        y2="40"
+        stroke="currentColor"
+        strokeWidth="3.5"
+        strokeLinecap="butt"
       />
     </svg>
   );
 }
 
 /**
- * PulsorWordmark — text-only brand. Inherits color via currentColor.
+ * PulsorWordmark — Inter Medium, lowercase, tight letter-spacing per spec.
  */
 export function PulsorWordmark({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "font-semibold tracking-tight text-foreground",
+        "font-medium tracking-tight text-foreground lowercase",
         className
       )}
+      style={{ letterSpacing: "-0.03em" }}
     >
-      Pulsor
+      pulsor
     </span>
   );
 }
 
 /**
- * PulsorLockup — mark + wordmark side by side. The default brand block
- * used in sidebars, login pages, wizards, etc.
+ * PulsorLockup — mark + wordmark side by side.
  */
 export function PulsorLockup({
-  size = 32,
+  size = 28,
   className,
   textClassName,
 }: {
@@ -64,9 +91,14 @@ export function PulsorLockup({
   textClassName?: string;
 }) {
   return (
-    <div className={cn("inline-flex items-center gap-2.5", className)}>
+    <div
+      className={cn(
+        "inline-flex items-center gap-2.5 text-foreground",
+        className
+      )}
+    >
       <PulsorMark size={size} />
-      <PulsorWordmark className={cn("text-[15px]", textClassName)} />
+      <PulsorWordmark className={cn("text-[16px]", textClassName)} />
     </div>
   );
 }

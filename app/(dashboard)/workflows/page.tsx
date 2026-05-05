@@ -1,14 +1,17 @@
+"use client";
+
+import { useState } from "react";
 import { dashboardData } from "@/lib/mock-data";
-import { KpiCard } from "@/components/dashboard/kpi-card";
-import { CompletionRateChart } from "@/components/dashboard/completion-rate-chart";
-import { WorkflowStatusMix } from "@/components/dashboard/workflow-status-mix";
 import { WorkflowCard } from "@/components/dashboard/workflow-card";
 import { PeriodSelector } from "@/components/dashboard/period-selector";
 import {
   formatHours,
   totalTimeSavedHours,
 } from "@/lib/workflows/manual-time";
-import type { KPI, Workflow, WorkflowCategory } from "@/lib/types";
+import type { Workflow, WorkflowCategory } from "@/lib/types";
+import { cn } from "@/lib/utils";
+
+type CategoryFilter = "all" | WorkflowCategory;
 
 function formatCompactCurrency(n: number) {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
@@ -33,68 +36,19 @@ const CATEGORY_DESC: Record<WorkflowCategory, string> = {
 };
 
 export default function WorkflowsPage() {
-  const { workflows, period, completionRateTrend } = dashboardData;
+  const { workflows, period } = dashboardData;
+  const [activeCategory, setActiveCategory] = useState<CategoryFilter>("all");
 
-  // Aggregate KPIs
-  const totalTriggered = workflows.reduce(
-    (acc, w) => acc + w.metrics.triggered,
-    0
-  );
-  const totalCompleted = workflows.reduce(
-    (acc, w) => acc + w.metrics.completed,
-    0
-  );
-  const avgCompletion =
-    totalTriggered > 0 ? (totalCompleted / totalTriggered) * 100 : 0;
-  const totalRevenue = workflows.reduce(
-    (acc, w) => acc + w.metrics.revenueAttributed,
-    0
-  );
-  const activeWorkflows = workflows.filter((w) => w.metrics.triggered > 0);
-  const avgRoi =
-    activeWorkflows.length > 0
-      ? activeWorkflows.reduce((acc, w) => acc + w.metrics.roi, 0) /
-        activeWorkflows.length
-      : 0;
-
-  const kpis: KPI[] = [
-    {
-      id: "wf-triggered",
-      label: "Total Triggered",
-      value: totalTriggered.toLocaleString(),
-      hint: `${workflows.length} workflows`,
-      iconKey: "workflows",
-      tone: "primary",
-      delta: { value: 6.2, period: "vs last week" },
-    },
-    {
-      id: "wf-completion",
-      label: "Avg Completion",
-      value: `${avgCompletion.toFixed(1)}%`,
-      hint: `${totalCompleted} of ${totalTriggered}`,
-      iconKey: "completion",
-      tone: "success",
-      delta: { value: -8.4, period: "vs last week" },
-    },
-    {
-      id: "wf-revenue",
-      label: "Attributed Revenue",
-      value: formatCompactCurrency(totalRevenue),
-      hint: "30-day rolling",
-      iconKey: "revenue",
-      tone: "warning",
-      delta: { value: 12.1, period: "vs last month" },
-    },
-    {
-      id: "wf-roi",
-      label: "Avg ROI",
-      value: `${avgRoi.toFixed(1)}x`,
-      hint: `${activeWorkflows.length} active workflows`,
-      iconKey: "roi",
-      tone: "danger",
-      delta: { value: 3.8, period: "vs last month" },
-    },
-  ];
+  // Per-category counts (always derived from full set so chips don't disappear)
+  const counts: Record<CategoryFilter, number> = {
+    all: workflows.length,
+    "Follow-up": 0,
+    "Lead Nurture": 0,
+    Listing: 0,
+    "Re-engagement": 0,
+    Sphere: 0,
+  };
+  for (const w of workflows) counts[w.category] += 1;
 
   // Group by category, with broken-first inside each group, then by ROI
   const grouped = CATEGORY_ORDER.map((cat) => {
@@ -106,7 +60,11 @@ export default function WorkflowsPage() {
         return b.metrics.roi - a.metrics.roi;
       });
     return { category: cat, items };
-  }).filter((g) => g.items.length > 0);
+  })
+    .filter((g) => g.items.length > 0)
+    .filter((g) => activeCategory === "all" || g.category === activeCategory);
+
+  const filterChips: CategoryFilter[] = ["all", ...CATEGORY_ORDER];
 
   return (
     <div className="px-4 sm:px-6 py-8 lg:px-8 lg:py-10 max-w-[1440px] mx-auto space-y-8">
@@ -123,23 +81,42 @@ export default function WorkflowsPage() {
         <PeriodSelector label={period.label} />
       </header>
 
-      {/* KPI band */}
-      <section aria-label="Workflow metrics">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          {kpis.map((kpi) => (
-            <KpiCard key={kpi.id} kpi={kpi} />
-          ))}
-        </div>
-      </section>
-
-      {/* Charts row */}
-      <section
-        aria-label="Workflow trends"
-        className="grid grid-cols-1 xl:grid-cols-[1fr_400px] gap-6"
-      >
-        <CompletionRateChart data={completionRateTrend} />
-        <WorkflowStatusMix workflows={workflows} />
-      </section>
+      {/* Category filter chips */}
+      <div className="flex flex-wrap gap-1.5">
+        {filterChips.map((cat) => {
+          const active = activeCategory === cat;
+          const label = cat === "all" ? "All" : cat;
+          const count = counts[cat];
+          const disabled = cat !== "all" && count === 0;
+          return (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setActiveCategory(cat)}
+              disabled={disabled}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium transition-colors border",
+                active
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-card text-foreground border-border hover:border-foreground/30",
+                disabled && "opacity-40 cursor-not-allowed"
+              )}
+            >
+              {label}
+              <span
+                className={cn(
+                  "font-mono tabular-nums text-[10px]",
+                  active
+                    ? "text-primary-foreground/80"
+                    : "text-muted-foreground"
+                )}
+              >
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
       {/* Grouped by category */}
       <section aria-label="Workflows by category" className="space-y-10">
