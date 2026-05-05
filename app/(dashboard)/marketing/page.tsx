@@ -275,7 +275,7 @@ function MiniChart({
                 border: "1px solid #e5e7eb",
                 fontSize: 11,
               }}
-              formatter={(v: number) => [format(v), title]}
+              formatter={(v) => [format(Number(v)), title] as [string, string]}
               cursor={{ fill: "rgba(124, 58, 237, 0.06)" }}
             />
             <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={28}>
