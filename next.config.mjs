@@ -1,4 +1,13 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  async rewrites() {
+    return [
+      // Serve the public landing page at "/" — the actual file lives at
+      // /public/landing/index.html. Keeping it as a static file means JS/CSS
+      // execute normally (no React conversion).
+      { source: "/", destination: "/landing/index.html" },
+    ];
+  },
+};
 
 export default nextConfig;

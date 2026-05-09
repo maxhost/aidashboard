@@ -5,7 +5,7 @@ import { createMiddlewareClient } from "@/lib/supabase/middleware";
 const PUBLIC_PATHS = [
   "/login",
   "/setup",
-  "/tools", // public market directory (read-only)
+  "/landing",        // static HTML landing — served at "/" via rewrite
   "/icon.svg",
   "/favicon.ico",
 ];

@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pulsor — The intelligent layer for real estate</title>
+<meta name="description" content="An AI system that learns how your team operates and continuously improves performance across sales, leads, and execution. Invite-only access.">
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect x='14' y='26' width='52' height='28' rx='1.5' stroke='%230F0F10' stroke-width='3' fill='none'/%3E%3Cline x1='20' y1='40' x2='42' y2='40' stroke='%230F0F10' stroke-width='8'/%3E%3Ccircle cx='46' cy='40' r='5' fill='%230F0F10'/%3E%3Cline x1='49' y1='40' x2='60' y2='40' stroke='%230F0F10' stroke-width='8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://rsms.me/">
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+<style>
+  :root {
+    --bg: #F7F4EE;
+    --surface: #FFFFFF;
+    --stone: #E5E0D6;
+    --stone-2: #D8D2C5;
+    --text: #0F0F10;
+    --text-muted: #5C5953;
+    --text-faint: #8E8A82;
+    --accent: #00D9A3;
+    --success: #2E7D5B;
+    --error: #C44536;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 17px;
+    line-height: 1.6;
+    letter-spacing: -0.011em;
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  ::selection { background: var(--text); color: var(--bg); }
+
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; }
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 40px;
+    width: 100%;
+  }
+
+  /* ───────── NAV ───────── */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(247, 244, 238, 0.78);
+    backdrop-filter: saturate(180%) blur(16px);
+    -webkit-backdrop-filter: saturate(180%) blur(16px);
+    border-bottom: 0.5px solid transparent;
+    transition: border-color 200ms ease, background 200ms ease;
+  }
+  .nav.scrolled {
+    border-bottom-color: var(--stone);
+    background: rgba(247, 244, 238, 0.94);
+  }
+
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 76px;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .brand-word {
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pulse-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 0 rgba(0, 217, 163, 0.55);
+    animation: pulse 2.4s infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(0, 217, 163, 0.55); }
+    70% { box-shadow: 0 0 0 10px rgba(0, 217, 163, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 217, 163, 0); }
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 22px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.008em;
+    border-radius: 999px;
+    border: 0.5px solid transparent;
+    cursor: pointer;
+    transition: all 160ms cubic-bezier(0.2, 0, 0.2, 1);
+    white-space: nowrap;
+    text-align: center;
+  }
+  .btn-primary { background: var(--text); color: var(--bg); }
+  .btn-primary:hover { background: #232325; transform: translateY(-1px); }
+  .btn-text {
+    height: 44px;
+    padding: 0 16px;
+    background: transparent;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 999px;
+  }
+  .btn-text:hover { background: rgba(15, 15, 16, 0.05); }
+  .btn-arrow { display: inline-block; transition: transform 200ms ease; }
+  .btn:hover .btn-arrow { transform: translateX(3px); }
+
+  /* ───────── HERO ───────── */
+  .hero {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 56px 0 32px;
+    min-height: 0;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 0.9fr 1.4fr;
+    gap: 48px;
+    align-items: center;
+    width: 100%;
+    flex: 1;
+  }
+
+  h1.hero-title {
+    font-size: clamp(40px, 4.6vw, 60px);
+    font-weight: 500;
+    letter-spacing: -0.038em;
+    line-height: 1.05;
+    margin-bottom: 28px;
+    max-width: 13ch;
+  }
+  .hero-title .grad {
+    background: linear-gradient(180deg, var(--text) 0%, var(--text) 55%, #4A4844 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero-title .accent-word {
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.045em;
+  }
+
+  .hero-sub {
+    font-size: 19px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    max-width: 540px;
+    margin-bottom: 36px;
+    letter-spacing: -0.014em;
+  }
+
+  /* ───────── EMAIL FORM (in-hero) ───────── */
+  .access-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 540px;
+    background: var(--surface);
+    border: 0.5px solid var(--stone);
+    border-radius: 999px;
+    padding: 6px 6px 6px 6px;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+  }
+  .access-form:focus-within {
+    border-color: var(--text);
+    box-shadow: 0 0 0 4px rgba(15, 15, 16, 0.05);
+  }
+  .access-form input[type="email"] {
+    flex: 1;
+    height: 48px;
+    padding: 0 16px;
+    font-family: inherit;
+    font-size: 16px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    min-width: 0;
+  }
+  .access-form input[type="email"]:focus { outline: none; }
+  .access-form input[type="email"]::placeholder { color: var(--text-faint); }
+  .access-form .btn {
+    height: 48px;
+    padding: 0 22px;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .form-meta {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--text-faint);
+    letter-spacing: -0.005em;
+    max-width: 540px;
+  }
+
+  .form-success {
+    display: none;
+    margin-top: 12px;
+    max-width: 540px;
+    padding: 14px 18px;
+    background: rgba(0, 217, 163, 0.08);
+    border: 0.5px solid rgba(0, 217, 163, 0.3);
+    border-radius: 12px;
+  }
+  .form-success.show { display: block; }
+  .form-success-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--success);
+    margin-bottom: 2px;
+  }
+  .form-success-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+  /* ───────── LIVING SYSTEM CANVAS ───────── */
+  .system {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-width: 960px;
+    margin-left: auto;
+  }
+  .system-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+    touch-action: pan-y;
+  }
+
+  /* ───────── LOGOS (bottom of hero) ───────── */
+  .logos {
+    padding-top: 36px;
+    margin-top: auto;
+  }
+  .logos-label {
+    font-family: 'SF Mono', ui-monospace, Menlo, monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-faint);
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .logos-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 32px;
+    align-items: center;
+  }
+  .logo-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    color: var(--text);
+    opacity: 0.45;
+    transition: opacity 200ms ease;
+  }
+  .logo-item:hover { opacity: 0.85; }
+  .logo-item svg { height: 100%; width: auto; max-width: 100%; display: block; }
+
+  /* ───────── FOOTER ───────── */
+  footer {
+    padding: 20px 0 24px;
+    border-top: 0.5px solid var(--stone);
+  }
+  .foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--text-faint);
+  }
+  .foot-links { display: flex; gap: 24px; }
+  .foot-links a:hover { color: var(--text); }
+
+  /* ───────── RESPONSIVE ───────── */
+  @media (max-width: 1024px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+    .system { max-width: 440px; margin: 0 auto; order: -1; }
+    .logos-row { grid-template-columns: repeat(4, 1fr); gap: 20px 28px; }
+    .container { padding: 0 28px; }
+    .hero { padding: 32px 0 24px; }
+  }
+  @media (max-width: 640px) {
+    body { font-size: 16px; }
+    .container { padding: 0 20px; }
+    .nav-inner { height: 64px; }
+    .nav-actions .btn-text { display: none; }
+    .hero { padding: 24px 0 20px; }
+    .hero-sub { font-size: 17px; margin-bottom: 28px; }
+    .access-form { flex-direction: column; padding: 12px; border-radius: 18px; gap: 10px; }
+    .access-form input[type="email"] { width: 100%; height: 44px; padding: 0 12px; }
+    .access-form .btn { width: 100%; }
+    .system { max-width: 360px; }
+    .logos { padding-top: 24px; }
+    .logos-row { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .logos-label { margin-bottom: 14px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <div class="container nav-inner">
+      <a href="#" class="brand" aria-label="Pulsor">
+        <svg width="40" height="40" viewBox="0 0 80 80" fill="none">
+          <rect x="14" y="26" width="52" height="28" rx="1.5" stroke="#0F0F10" stroke-width="3" fill="none"/>
+          <line x1="20" y1="40" x2="42" y2="40" stroke="#0F0F10" stroke-width="8"/>
+          <circle cx="46" cy="40" r="5" fill="#0F0F10"/>
+          <line x1="49" y1="40" x2="60" y2="40" stroke="#0F0F10" stroke-width="8"/>
+        </svg>
+        <span class="brand-word">pulsor</span>
+      </a>
+      <div class="nav-actions">
+        <a href="https://app.pulsor.co" class="btn btn-text">Log in</a>
+        <a href="#access" class="btn btn-primary">Request access <span class="btn-arrow">→</span></a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <h1 class="hero-title">
+          <span class="grad">The intelligent layer for<br><span class="accent-word">real estate.</span></span>
+        </h1>
+
+        <p class="hero-sub">
+          An AI system that learns how your team operates and continuously improves performance across sales, leads, and execution.
+        </p>
+
+        <form class="access-form" id="access-form" novalidate>
+          <input type="email" name="email" id="access" placeholder="you@company.com" required autocomplete="email" aria-label="Work email">
+          <button type="submit" class="btn btn-primary">Request access <span class="btn-arrow">→</span></button>
+        </form>
+
+        <div class="form-meta">
+          Invite-only · Reviewed manually · Already a customer? <a href="https://app.pulsor.co" style="color: var(--text); text-decoration: underline; text-decoration-color: var(--stone-2); text-underline-offset: 3px;">Log in</a>
+        </div>
+
+        <div class="form-success" id="form-success" role="status" aria-live="polite">
+          <div class="form-success-title">Request received</div>
+          <div class="form-success-text">If your team fits the current cohort, you'll hear from us within a few days.</div>
+        </div>
+      </div>
+
+      <!-- LIVING SYSTEM -->
+      <div class="system" aria-hidden="true">
+        <canvas class="system-canvas" id="sys-canvas"></canvas>
+      </div>
+    </div>
+
+    <!-- LOGOS -->
+    <div class="container logos">
+      <div class="logos-label">Connected with your stack</div>
+      <div class="logos-row">
+        <!-- Follow Up Boss -->
+        <div class="logo-item" title="Follow Up Boss">
+          <svg viewBox="0 0 220 40" xmlns="http://www.w3.org/2000/svg" aria-label="Follow Up Boss">
+            <text x="0" y="29" font-family="Inter, system-ui, sans-serif" font-weight="800" font-size="26" letter-spacing="-0.8" fill="currentColor">Follow Up Boss</text>
+          </svg>
+        </div>
+        <!-- BoldTrail -->
+        <div class="logo-item" title="BoldTrail">
+          <svg viewBox="0 0 160 40" xmlns="http://www.w3.org/2000/svg" aria-label="BoldTrail">
+            <text x="0" y="29" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="28" letter-spacing="-1.0" fill="currentColor">Bold</text>
+            <text x="73" y="29" font-family="Inter, system-ui, sans-serif" font-weight="300" font-size="28" letter-spacing="-0.5" fill="currentColor">Trail</text>
+          </svg>
+        </div>
+        <!-- HubSpot -->
+        <div class="logo-item" title="HubSpot">
+          <svg viewBox="0 0 150 40" xmlns="http://www.w3.org/2000/svg" aria-label="HubSpot">
+            <g stroke="currentColor" stroke-width="2.4" fill="none">
+              <circle cx="14" cy="20" r="9"/>
+              <line x1="14" y1="11" x2="14" y2="6.5"/>
+              <line x1="14" y1="29" x2="14" y2="33.5"/>
+              <line x1="5" y1="20" x2="0.5" y2="20"/>
+              <line x1="23" y1="20" x2="27.5" y2="20"/>
+            </g>
+            <circle cx="14" cy="20" r="3.4" fill="currentColor"/>
+            <text x="34" y="29" font-family="Inter, system-ui, sans-serif" font-weight="700" font-size="24" letter-spacing="-0.4" fill="currentColor">HubSpot</text>
+          </svg>
+        </div>
+        <!-- Zillow -->
+        <div class="logo-item" title="Zillow">
+          <svg viewBox="0 0 130 40" xmlns="http://www.w3.org/2000/svg" aria-label="Zillow">
+            <path d="M4 30 L20 6 L36 30 L36 35 L24 35 L24 22 L16 22 L16 35 L4 35 Z" fill="currentColor"/>
+            <text x="44" y="31" font-family="Inter, system-ui, sans-serif" font-weight="700" font-size="26" letter-spacing="-0.7" fill="currentColor">Zillow</text>
+          </svg>
+        </div>
+        <!-- Dotloop -->
+        <div class="logo-item" title="Dotloop">
+          <svg viewBox="0 0 150 40" xmlns="http://www.w3.org/2000/svg" aria-label="dotloop">
+            <circle cx="11" cy="22" r="7.5" fill="currentColor"/>
+            <text x="24" y="30" font-family="Inter, system-ui, sans-serif" font-weight="600" font-size="26" letter-spacing="-0.5" fill="currentColor">dotloop</text>
+          </svg>
+        </div>
+        <!-- Lofty -->
+        <div class="logo-item" title="Lofty">
+          <svg viewBox="0 0 110 40" xmlns="http://www.w3.org/2000/svg" aria-label="Lofty">
+            <text x="0" y="30" font-family="Inter, system-ui, sans-serif" font-weight="700" font-size="28" letter-spacing="-0.9" fill="currentColor">Lofty</text>
+            <circle cx="84" cy="11" r="3.2" fill="currentColor"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container foot">
+      <div>© 2026 Pulsor Systems, Inc.</div>
+    </div>
+  </footer>
+
+<script>
+(function() {
+  // Sticky nav
+  const nav = document.getElementById('nav');
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 4);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ─────────────────────────────────────────────────────────────
+     FORM → EMAIL
+     Submissions are sent to guido@grays.vc via Web3Forms.
+     Setup (one-time, takes 30 seconds — no account needed):
+       1. Go to https://web3forms.com
+       2. Enter "guido@grays.vc" under "Create Your Access Key"
+       3. Confirm via the email Web3Forms sends you
+       4. Paste the key below in WEB3FORMS_KEY
+     Until the key is set, the form will fall back to localStorage so
+     no submissions are lost during setup.
+  ───────────────────────────────────────────────────────────── */
+  const WEB3FORMS_KEY = '3e88cf1c-2245-4a70-8f8b-41ae373a0d91';
+
+  const form = document.getElementById('access-form');
+  const success = document.getElementById('form-success');
+  if (form) {
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const submitLabel = submitBtn ? submitBtn.innerHTML : '';
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = form.querySelector('input[type="email"]');
+      const v = (input.value || '').trim();
+      if (!v || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+        input.focus();
+        form.style.borderColor = '#C44536';
+        setTimeout(() => form.style.borderColor = '', 1600);
+        return;
+      }
+
+      // Always keep a local backup in case the network fails
+      try {
+        const stored = JSON.parse(localStorage.getItem('pulsor_access') || '[]');
+        stored.push({ email: v, at: new Date().toISOString() });
+        localStorage.setItem('pulsor_access', JSON.stringify(stored));
+      } catch (_) {}
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.7';
+        submitBtn.innerHTML = 'Sending…';
+      }
+
+      const payload = {
+        access_key: WEB3FORMS_KEY,
+        subject: 'Pulsor — New access request',
+        from_name: 'Pulsor Landing',
+        email: v,
+        message:
+          'New access request received on the Pulsor landing page.\n\n' +
+          'Email: ' + v + '\n' +
+          'Submitted: ' + new Date().toISOString() + '\n' +
+          'Page: ' + location.href + '\n' +
+          'Referrer: ' + (document.referrer || '—') + '\n' +
+          'User agent: ' + navigator.userAgent,
+      };
+
+      let sent = false;
+      if (WEB3FORMS_KEY && WEB3FORMS_KEY !== 'YOUR_WEB3FORMS_ACCESS_KEY') {
+        try {
+          const res = await fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json().catch(() => ({}));
+          sent = res.ok && data && data.success !== false;
+        } catch (_) { sent = false; }
+      }
+
+      // Show success regardless — the localStorage backup catches anything
+      // the network missed, and a failed network call shouldn't reveal that
+      // to the user (looks unprofessional).
+      form.style.display = 'none';
+      success.classList.add('show');
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '';
+        submitBtn.innerHTML = submitLabel;
+      }
+    });
+  }
+
+  /* ─── Commercial Nervous System ─────────────────────────────────
+     A continuously evolving operational graph that reveals behavior:
+
+       · nodes        → agents, leads, listings (with persistent identity)
+       · pathways     → connections that strengthen with reinforced activity
+                        (high-efficiency paths emerge and persist; weak ones
+                        decay and disappear)
+       · signals      → small pulses that travel along strong pathways
+                        (decisions flowing through the system)
+       · deal events  → ripples that propagate through neighbours and
+                        reinforce any pathways they cross
+
+     A slow phase cycle drives behavioural states:
+       0.00–0.25  COMPACT     — system at rest, intelligence accumulating
+       0.25–0.50  EXPANSION   — activity detected, clusters bloom, signals fire
+       0.50–0.75  LEARNING    — pathways stabilize, weak links fade
+       0.75–1.00  TENSION     — fragmentation, dark zones, some clusters isolate
+
+     The system never stabilizes — it reveals operational behavior over time.
+  ─────────────────────────────────────────────────────────────── */
+  const canvas = document.getElementById('sys-canvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  function resize() {
+    const r = canvas.getBoundingClientRect();
+    canvas.width = r.width * dpr;
+    canvas.height = r.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  new ResizeObserver(resize).observe(canvas);
+
+  // Pointer tracking — the field reacts subtly to the cursor.
+  let mouseX = -9999, mouseY = -9999;
+  let mouseActive = false;
+  let mouseStrength = 0;
+  canvas.addEventListener('pointermove', (e) => {
+    const r = canvas.getBoundingClientRect();
+    mouseX = e.clientX - r.left;
+    mouseY = e.clientY - r.top;
+    mouseActive = true;
+  });
+  canvas.addEventListener('pointerleave', () => {
+    mouseActive = false;
+  });
+  canvas.addEventListener('pointerdown', () => {
+    mouseStrength = 1.0; // a click "ripples" the field harder
+  });
+
+  const TWO_PI = Math.PI * 2;
+  const N = 120;
+  const N_AGENTS = 16;
+  const ZONES = 3;
+  const MAX_DIST_FACTOR = 0.30;
+  const PHASE_PERIOD = 32000; // ms — full behavioural cycle
+
+  // Operational labels — each is anchored to a specific agent particle
+  // pinned at a stable, well-distributed position. The label moves with
+  // its particle, so the word is always literally connected to a node.
+  const LABEL_ANCHORS = [
+    { idx: 0, text: 'Leads',       hx: -0.42, hy: -0.30, side: 'left'  },
+    { idx: 1, text: 'Team',        hx:  0.42, hy: -0.32, side: 'right' },
+    { idx: 2, text: 'Conversion',  hx: -0.08, hy:  0.04, side: 'right' },
+    { idx: 3, text: 'Signal',      hx:  0.40, hy:  0.30, side: 'right' },
+    { idx: 4, text: 'Performance', hx: -0.42, hy:  0.32, side: 'left'  },
+  ];
+
+  // Phase cycle: 0..1
+  //   0.00–0.25 COMPACT   (resting, accumulating)
+  //   0.25–0.50 EXPANSION (activity blooms)
+  //   0.50–0.75 LEARNING  (paths stabilize, weak links fade)
+  //   0.75–1.00 TENSION   (fragmentation, dark zones)
+  function phase(t) { return ((t % PHASE_PERIOD) / PHASE_PERIOD); }
+  function smoothstep(a, b, x) {
+    const tt = Math.max(0, Math.min(1, (x - a) / (b - a)));
+    return tt * tt * (3 - 2 * tt);
+  }
+  // Returns [compact, expansion, learning, tension] weights, summing roughly to 1.
+  function phaseWeights(t) {
+    const p = phase(t);
+    // Smooth bumps centered at each phase peak (0.125, 0.375, 0.625, 0.875)
+    function bump(center) {
+      let d = Math.abs(p - center);
+      if (d > 0.5) d = 1 - d;
+      return Math.max(0, 1 - d * 5.2);
+    }
+    const c = bump(0.125);
+    const e = bump(0.375);
+    const l = bump(0.625);
+    const ts = bump(0.875);
+    const sum = c + e + l + ts || 1;
+    return [c / sum, e / sum, l / sum, ts / sum];
+  }
+
+  // Particles — agents have stable identity; leads drift more.
+  const particles = [];
+  for (let i = 0; i < N; i++) {
+    const isAgent = i < N_AGENTS;
+    // Distribute home positions across the canvas (not on a circle) using a
+    // jittered grid in [-0.85, 0.85]. This avoids the radial halo look.
+    const cols = 12;
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const homeX = ((col + 0.5) / cols - 0.5) * 1.6 + (Math.random() - 0.5) * 0.16;
+    const homeY = ((row + 0.5) / Math.ceil(N / cols) - 0.5) * 1.5 + (Math.random() - 0.5) * 0.16;
+    particles.push({
+      i,
+      x: 0, y: 0,
+      vx: 0, vy: 0,
+      r: isAgent ? 1.9 + Math.random() * 0.7 : 0.9 + Math.random() * 1.0,
+      isAgent,
+      seed: Math.random() * TWO_PI,
+      homeX, homeY,
+      // Affinity weights to each zone — define how each particle responds to the field
+      affinity: Array.from({ length: ZONES }, () => 0.2 + Math.random() * 0.8),
+      noiseAx: 0.025 + Math.random() * 0.04,
+      noiseAy: 0.025 + Math.random() * 0.04,
+      noiseFx: 0.0005 + Math.random() * 0.0007,
+      noiseFy: 0.0005 + Math.random() * 0.0007,
+      // Used for dimming during tension (per-particle "stuck" probability)
+      isolation: Math.random(),
+    });
+  }
+
+  // Pin the first 5 agents to fixed, well-spread positions so the operational
+  // labels above always have stable anchor points to attach to.
+  for (const a of LABEL_ANCHORS) {
+    const p = particles[a.idx];
+    p.homeX = a.hx;
+    p.homeY = a.hy;
+    p.r = 2.6;
+    // Reduce zone affinity so these "label" agents stay close to home and
+    // don't get pulled toward distant zones.
+    p.affinity = p.affinity.map(v => v * 0.35);
+  }
+
+  // Zones — each drifts on a slow Lissajous curve, breathes its own strength.
+  const zones = [];
+  for (let k = 0; k < ZONES; k++) {
+    zones.push({
+      ax: 0.28 + Math.random() * 0.18,
+      ay: 0.24 + Math.random() * 0.18,
+      fx: 0.00018 + Math.random() * 0.00018,
+      fy: 0.00021 + Math.random() * 0.00021,
+      px: Math.random() * TWO_PI,
+      py: Math.random() * TWO_PI,
+      strengthPhase: Math.random() * TWO_PI,
+      strengthFreq: 0.00016 + Math.random() * 0.00022,
+    });
+  }
+  function zoneState(z, t) {
+    const x = Math.sin(t * z.fx + z.px) * z.ax;
+    const y = Math.sin(t * z.fy + z.py) * z.ay;
+    const s = 0.5 + 0.5 * Math.sin(t * z.strengthFreq + z.strengthPhase);
+    return [x, y, s];
+  }
+
+  // Connection memory — keyed by "i*N+j" (i<j). Stores a weight 0..1 that
+  // increases when reinforced (deal pulses pass through, signals travel along)
+  // and decays each frame. High weights become "high efficiency paths".
+  const linkWeight = new Map();
+  function linkKey(i, j) { return i < j ? (i * N + j) : (j * N + i); }
+  function getWeight(i, j) { return linkWeight.get(linkKey(i, j)) || 0; }
+  function bumpWeight(i, j, amt) {
+    const k = linkKey(i, j);
+    const w = (linkWeight.get(k) || 0) + amt;
+    linkWeight.set(k, Math.min(1, w));
+  }
+
+  // Deals — bursts of activity. Origin is always an agent.
+  const deals = [];
+  let dealAccum = 0;
+  let nextDealAt = 700;
+  function spawnDeal(t) {
+    const idx = Math.floor(Math.random() * N_AGENTS);
+    deals.push({ idx, age: 0, ttl: 1500 + Math.random() * 800, originX: particles[idx].x, originY: particles[idx].y });
+  }
+
+  // Signals — small mint dots that travel along strong pathways.
+  // Each signal moves agent → agent following the heaviest available link.
+  const signals = [];
+  let signalAccum = 0;
+  let nextSignalAt = 1200;
+  function spawnSignal() {
+    // Pick a random agent that has at least one strong outgoing link
+    const candidates = [];
+    for (let i = 0; i < N_AGENTS; i++) {
+      let bestJ = -1, bestW = 0.18;
+      for (let j = 0; j < N; j++) {
+        if (j === i) continue;
+        const w = getWeight(i, j);
+        if (w > bestW) { bestW = w; bestJ = j; }
+      }
+      if (bestJ >= 0) candidates.push([i, bestJ]);
+    }
+    if (!candidates.length) return;
+    const [from, to] = candidates[Math.floor(Math.random() * candidates.length)];
+    signals.push({ from, to, progress: 0, speed: 0.0014 + Math.random() * 0.0008 });
+  }
+
+  let last = performance.now();
+  // Initialize positions at home
+  for (const p of particles) {
+    p.x = p.homeX * 220 + 280;
+    p.y = p.homeY * 220 + 280;
+  }
+
+  function frame(t) {
+    const dt = Math.min(t - last, 50);
+    last = t;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    const cx = w / 2, cy = h / 2;
+    const scale = Math.min(w, h) * 0.42;
+
+    // Phase weights drive everything
+    const [pCompact, pExpansion, pLearning, pTension] = phaseWeights(t);
+
+    // Clear (no fade — keeps it crisp)
+    ctx.clearRect(0, 0, w, h);
+
+    // Background ambient — gentle mint glow at the most active zone, ONLY when expanding
+    const zStates = zones.map(z => zoneState(z, t));
+    let domZ = 0;
+    for (let k = 1; k < ZONES; k++) if (zStates[k][2] > zStates[domZ][2]) domZ = k;
+    if (pExpansion + pLearning > 0.3) {
+      const dz = zStates[domZ];
+      const dgx = dz[0] * scale + cx;
+      const dgy = dz[1] * scale + cy;
+      const grad = ctx.createRadialGradient(dgx, dgy, scale * 0.05, dgx, dgy, scale * 0.85);
+      grad.addColorStop(0, `rgba(0, 217, 163, ${0.06 + dz[2] * 0.08 * (pExpansion + pLearning)})`);
+      grad.addColorStop(1, 'rgba(0, 217, 163, 0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    // Schedule deals — much more frequent during expansion, rare during compact
+    dealAccum += dt;
+    const dealRate = 0.4 * pCompact + 1.5 * pExpansion + 0.9 * pLearning + 1.1 * pTension;
+    nextDealAt = 1200 / Math.max(0.3, dealRate);
+    if (dealAccum > nextDealAt) {
+      dealAccum = 0;
+      spawnDeal(t);
+    }
+    for (let i = deals.length - 1; i >= 0; i--) {
+      deals[i].age += dt;
+      if (deals[i].age > deals[i].ttl) deals.splice(i, 1);
+    }
+
+    // Schedule signals — most frequent during learning (pathways used)
+    signalAccum += dt;
+    const sigRate = 0.3 * pCompact + 0.8 * pExpansion + 1.6 * pLearning + 0.5 * pTension;
+    nextSignalAt = 900 / Math.max(0.3, sigRate);
+    if (signalAccum > nextSignalAt) {
+      signalAccum = 0;
+      spawnSignal();
+    }
+    // Advance signals
+    for (let i = signals.length - 1; i >= 0; i--) {
+      const s = signals[i];
+      s.progress += s.speed * dt;
+      if (s.progress >= 1) signals.splice(i, 1);
+    }
+
+    // Field size is locked: never collapses, only opens slightly. The
+    // structure stays at its minimum size or expands subtly during activity.
+    const compaction = 0;
+    const spread = 1 + pExpansion * 0.05;
+    const fragment = pTension * 0.4;
+
+    for (const p of particles) {
+      // Base target: weighted average of home + zone influences
+      let tx = p.homeX * spread;
+      let ty = p.homeY * spread;
+      let totW = 1;
+      for (let k = 0; k < ZONES; k++) {
+        const [zx, zy, zs] = zStates[k];
+        const w2 = zs * p.affinity[k] * 0.6;
+        tx = (tx * totW + zx * w2) / (totW + w2);
+        ty = (ty * totW + zy * w2) / (totW + w2);
+        totW += w2;
+      }
+
+      // Compaction — pull toward origin
+      tx *= (1 - compaction);
+      ty *= (1 - compaction);
+
+      // Fragmentation — particles with high "isolation" drift outward
+      if (fragment > 0.15 && p.isolation > 0.7) {
+        const m = (p.isolation - 0.7) / 0.3 * fragment * 0.5;
+        tx += p.homeX * m;
+        ty += p.homeY * m;
+      }
+
+      // Personal noise — slight scaling so the system feels more active during expansion,
+      // but never so much that the field visibly inflates.
+      const noiseScale = 0.85 + pExpansion * 0.25 + pLearning * 0.15;
+      tx += Math.cos(t * p.noiseFx + p.seed) * p.noiseAx * noiseScale;
+      ty += Math.sin(t * p.noiseFy + p.seed * 1.7) * p.noiseAy * noiseScale;
+
+      const px = tx * scale + cx;
+      const py = ty * scale + cy;
+      p.vx += (px - p.x) * 0.022;
+      p.vy += (py - p.y) * 0.022;
+      // Damping — looser during expansion (more momentum)
+      const damp = 0.92 - pExpansion * 0.04;
+      p.vx *= damp;
+      p.vy *= damp;
+
+      // Deal kick — particles near a propagating ring get pushed
+      for (const d of deals) {
+        const ageN = d.age / d.ttl;
+        if (ageN > 0.5) continue;
+        const dx = p.x - d.originX, dy = p.y - d.originY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const ringR = ageN * scale * 0.5;
+        const ringW = scale * 0.07;
+        if (Math.abs(dist - ringR) < ringW) {
+          const push = (1 - Math.abs(dist - ringR) / ringW) * (1 - ageN) * 0.35;
+          p.vx += (dx / (dist + 0.1)) * push;
+          p.vy += (dy / (dist + 0.1)) * push;
+        }
+      }
+
+      // Pointer force — soft repulsion so the field "parts" around the cursor
+      if (mouseActive) {
+        const mr = scale * 0.24;
+        const mdx = p.x - mouseX, mdy = p.y - mouseY;
+        const md2 = mdx * mdx + mdy * mdy;
+        if (md2 < mr * mr) {
+          const md = Math.sqrt(md2) + 0.5;
+          const falloff = 1 - md / mr;
+          const push = falloff * falloff * (0.55 + mouseStrength * 1.2);
+          p.vx += (mdx / md) * push;
+          p.vy += (mdy / md) * push;
+        }
+      }
+
+      p.x += p.vx;
+      p.y += p.vy;
+    }
+    // Click ripple decays back to zero each frame
+    mouseStrength *= 0.92;
+    if (mouseStrength < 0.02) mouseStrength = 0;
+
+    // Field re-centering — gentle correction that keeps the field's center
+    // of mass anchored on the iso, regardless of how the zones drift.
+    let cmx = 0, cmy = 0;
+    for (const p of particles) { cmx += p.x; cmy += p.y; }
+    cmx /= N; cmy /= N;
+    const offX = (cx - cmx) * 0.02;
+    const offY = (cy - cmy) * 0.02;
+    if (Math.abs(offX) > 0.01 || Math.abs(offY) > 0.01) {
+      for (const p of particles) {
+        p.x += offX;
+        p.y += offY;
+      }
+    }
+
+    // Connection processing
+    const maxDist = scale * MAX_DIST_FACTOR;
+    const maxDist2 = maxDist * maxDist;
+
+    // Decay all link weights. Faster decay during compact/tension phase.
+    const decay = 0.992 - pCompact * 0.004 - pTension * 0.003;
+    for (const [k, v] of linkWeight) {
+      const nv = v * decay;
+      if (nv < 0.01) linkWeight.delete(k);
+      else linkWeight.set(k, nv);
+    }
+
+    // Reinforce links that intersect deal rings
+    for (const d of deals) {
+      const ageN = d.age / d.ttl;
+      if (ageN > 0.7) continue;
+      const ringR = ageN * scale * 0.5;
+      // Check links between particles whose midpoint is near the ring
+      // (lightweight: sample ~20 random particles per deal)
+      for (let s = 0; s < 16; s++) {
+        const i = Math.floor(Math.random() * N);
+        const a = particles[i];
+        for (let j = 0; j < N; j++) {
+          if (j === i) continue;
+          const b = particles[j];
+          const dx = b.x - a.x, dy = b.y - a.y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < maxDist2) {
+            const mx = (a.x + b.x) * 0.5 - d.originX;
+            const my = (a.y + b.y) * 0.5 - d.originY;
+            const distFromOrigin = Math.sqrt(mx * mx + my * my);
+            if (Math.abs(distFromOrigin - ringR) < scale * 0.10) {
+              bumpWeight(i, j, 0.06);
+            }
+          }
+        }
+      }
+    }
+
+    // Draw connections — base proximity + weight bonus.
+    // Heavy links (high efficiency paths) are mint and thicker.
+    ctx.lineWidth = 0.6;
+    for (let i = 0; i < N; i++) {
+      const a = particles[i];
+      for (let j = i + 1; j < N; j++) {
+        const b = particles[j];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < maxDist2) {
+          const dist = Math.sqrt(d2);
+          const proximity = 1 - dist / maxDist;
+          const weight = getWeight(i, j);
+          // Tension darkens default links; learning emphasizes weighted ones.
+          const dim = 1 - pTension * 0.35;
+
+          if (weight > 0.18) {
+            // High-efficiency path — mint, scales with weight & learning phase
+            const learnBoost = 1 + pLearning * 0.6;
+            const a1 = Math.min(0.85, weight * 0.9 * learnBoost) * dim;
+            ctx.strokeStyle = `rgba(0, 217, 163, ${a1})`;
+            ctx.lineWidth = 0.6 + weight * 1.6;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+            ctx.lineWidth = 0.6;
+          } else {
+            // Regular link — proximity-based
+            const alpha = proximity * 0.45 * dim;
+            if (alpha > 0.025) {
+              ctx.strokeStyle = `rgba(15, 15, 16, ${alpha})`;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+            }
+          }
+        }
+      }
+    }
+
+    // Draw signals — bright dots traveling along their pathway
+    for (const s of signals) {
+      const a = particles[s.from], b = particles[s.to];
+      const e = s.progress;
+      const x = a.x + (b.x - a.x) * e;
+      const y = a.y + (b.y - a.y) * e;
+      // Trail
+      const trailN = 6;
+      for (let k = 0; k < trailN; k++) {
+        const tk = Math.max(0, e - k * 0.04);
+        const tx = a.x + (b.x - a.x) * tk;
+        const ty = a.y + (b.y - a.y) * tk;
+        ctx.beginPath();
+        ctx.arc(tx, ty, 1.4 - k * 0.15, 0, TWO_PI);
+        ctx.fillStyle = `rgba(0, 217, 163, ${(1 - k / trailN) * 0.7})`;
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.arc(x, y, 2.2, 0, TWO_PI);
+      ctx.fillStyle = '#00D9A3';
+      ctx.shadowColor = 'rgba(0, 217, 163, 0.7)';
+      ctx.shadowBlur = 10;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      // Reinforce path while signal travels
+      bumpWeight(s.from, s.to, 0.012);
+    }
+
+    // Draw deal rings
+    for (const d of deals) {
+      const ageN = d.age / d.ttl;
+      const ringR = ageN * scale * 0.5;
+      const ringAlpha = (1 - ageN) * 0.55;
+      ctx.beginPath();
+      ctx.arc(d.originX, d.originY, ringR, 0, TWO_PI);
+      ctx.strokeStyle = `rgba(0, 217, 163, ${ringAlpha})`;
+      ctx.lineWidth = 1.2 * (1 - ageN * 0.6);
+      ctx.stroke();
+      ctx.lineWidth = 0.6;
+    }
+
+    // Tension dark-zone overlay — appears during tension phase, in the most
+    // ISOLATED area (lowest particle density). Cheap proxy: the zone with
+    // lowest current strength becomes a dark patch.
+    if (pTension > 0.25) {
+      let weakZ = 0;
+      for (let k = 1; k < ZONES; k++) if (zStates[k][2] < zStates[weakZ][2]) weakZ = k;
+      const wz = zStates[weakZ];
+      const wzx = wz[0] * scale + cx;
+      const wzy = wz[1] * scale + cy;
+      const dark = ctx.createRadialGradient(wzx, wzy, scale * 0.05, wzx, wzy, scale * 0.6);
+      dark.addColorStop(0, `rgba(15, 15, 16, ${pTension * 0.18})`);
+      dark.addColorStop(1, 'rgba(15, 15, 16, 0)');
+      ctx.fillStyle = dark;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    // Draw particles
+    for (const p of particles) {
+      // Active deal origin — bright mint pulse
+      let dealAge = -1;
+      for (const d of deals) {
+        if (d.idx === p.i) { dealAge = d.age / d.ttl; break; }
+      }
+      if (dealAge >= 0) {
+        const pulseScale = 1 + (1 - dealAge) * 1.5;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r * pulseScale, 0, TWO_PI);
+        ctx.fillStyle = '#00D9A3';
+        ctx.shadowColor = 'rgba(0, 217, 163, 0.7)';
+        ctx.shadowBlur = 18 * (1 - dealAge);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        continue;
+      }
+
+      // Agents touched by recent signals glow mint briefly
+      let signalGlow = 0;
+      for (const s of signals) {
+        if (s.from === p.i && s.progress < 0.15) signalGlow = Math.max(signalGlow, 1 - s.progress / 0.15);
+        if (s.to === p.i && s.progress > 0.85) signalGlow = Math.max(signalGlow, (s.progress - 0.85) / 0.15);
+      }
+
+      // Draw
+      ctx.beginPath();
+      const r = p.r * (1 + signalGlow * 0.6);
+      ctx.arc(p.x, p.y, r, 0, TWO_PI);
+      if (signalGlow > 0.1) {
+        ctx.fillStyle = '#00D9A3';
+        ctx.shadowColor = 'rgba(0, 217, 163, 0.55)';
+        ctx.shadowBlur = 10;
+      } else {
+        // During tension, isolated particles dim (dark zone effect)
+        const isolated = pTension > 0.4 && p.isolation > 0.7;
+        ctx.fillStyle = isolated ? 'rgba(15, 15, 16, 0.35)' : '#0F0F10';
+        ctx.shadowBlur = 0;
+      }
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    // ── Operational labels ──────────────────────────────────────
+    // Each label sits right next to its anchor agent, with a tiny
+    // mint connector line so the word reads as attached to the node.
+    ctx.font = '500 12px Inter, system-ui, -apple-system, sans-serif';
+    ctx.textBaseline = 'middle';
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '0.2px';
+    for (const a of LABEL_ANCHORS) {
+      const p = particles[a.idx];
+      const ax = p.x;
+      const ay = p.y;
+      const isLeft = a.side === 'left';
+      const gap = 14;
+      const tx = isLeft ? ax - gap : ax + gap;
+      const ty = ay;
+
+      const tw = ctx.measureText(a.text).width;
+      const padX = 5, padY = 3, lineH = 16;
+      const padLeft = isLeft ? tx - tw - padX : tx - padX;
+      const padTop = ty - lineH / 2 - padY + 1;
+      const padW = tw + padX * 2;
+      const padH = lineH + padY * 2;
+
+      // Tiny mint connector: line from particle edge to text edge
+      ctx.strokeStyle = 'rgba(0, 217, 163, 0.65)';
+      ctx.lineWidth = 0.9;
+      ctx.beginPath();
+      ctx.moveTo(ax + (isLeft ? -p.r - 1 : p.r + 1), ay);
+      ctx.lineTo(isLeft ? padLeft + padW : padLeft, ay);
+      ctx.stroke();
+
+      // Cream pad behind text for legibility against the dense field
+      ctx.fillStyle = 'rgba(247, 244, 238, 0.82)';
+      ctx.fillRect(padLeft, padTop, padW, padH);
+
+      // Text
+      ctx.textAlign = isLeft ? 'right' : 'left';
+      ctx.fillStyle = 'rgba(15, 15, 16, 0.85)';
+      ctx.fillText(a.text, tx, ty);
+    }
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+    ctx.textAlign = 'start';
+    ctx.lineWidth = 0.6;
+
+    // Subtle pointer indicator — a soft mint halo so the user sees the field
+    // is responding to them.
+    if (mouseActive) {
+      const r1 = scale * 0.24;
+      const halo = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, r1);
+      halo.addColorStop(0, `rgba(0, 217, 163, ${0.10 + mouseStrength * 0.18})`);
+      halo.addColorStop(1, 'rgba(0, 217, 163, 0)');
+      ctx.fillStyle = halo;
+      ctx.fillRect(mouseX - r1, mouseY - r1, r1 * 2, r1 * 2);
+      ctx.beginPath();
+      ctx.arc(mouseX, mouseY, 2.2, 0, TWO_PI);
+      ctx.fillStyle = `rgba(0, 217, 163, ${0.7 + mouseStrength * 0.3})`;
+      ctx.fill();
+    }
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
