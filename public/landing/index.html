@@ -471,16 +471,10 @@
 
   /* ─────────────────────────────────────────────────────────────
      FORM → EMAIL
-     Submissions are sent to guido@grays.vc via Web3Forms.
-     Setup (one-time, takes 30 seconds — no account needed):
-       1. Go to https://web3forms.com
-       2. Enter "guido@grays.vc" under "Create Your Access Key"
-       3. Confirm via the email Web3Forms sends you
-       4. Paste the key below in WEB3FORMS_KEY
-     Until the key is set, the form will fall back to localStorage so
-     no submissions are lost during setup.
+     POSTs to /api/access-request which uses Resend (server-side) to
+     forward to guido@grays.vc. RESEND_API_KEY env var must be set on
+     Vercel. localStorage backup keeps copies of every submission.
   ───────────────────────────────────────────────────────────── */
-  const WEB3FORMS_KEY = '3e88cf1c-2245-4a70-8f8b-41ae373a0d91';
 
   const form = document.getElementById('access-form');
   const success = document.getElementById('form-success');
@@ -512,32 +506,16 @@
         submitBtn.innerHTML = 'Sending…';
       }
 
-      const payload = {
-        access_key: WEB3FORMS_KEY,
-        subject: 'Pulsor — New access request',
-        from_name: 'Pulsor Landing',
-        email: v,
-        message:
-          'New access request received on the Pulsor landing page.\n\n' +
-          'Email: ' + v + '\n' +
-          'Submitted: ' + new Date().toISOString() + '\n' +
-          'Page: ' + location.href + '\n' +
-          'Referrer: ' + (document.referrer || '—') + '\n' +
-          'User agent: ' + navigator.userAgent,
-      };
-
+      // Forward to our own /api/access-request endpoint (Resend on the server).
       let sent = false;
-      if (WEB3FORMS_KEY && WEB3FORMS_KEY !== 'YOUR_WEB3FORMS_ACCESS_KEY') {
-        try {
-          const res = await fetch('https://api.web3forms.com/submit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-            body: JSON.stringify(payload),
-          });
-          const data = await res.json().catch(() => ({}));
-          sent = res.ok && data && data.success !== false;
-        } catch (_) { sent = false; }
-      }
+      try {
+        const res = await fetch('/api/access-request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: v }),
+        });
+        sent = res.ok;
+      } catch (_) { sent = false; }
 
       // Show success regardless — the localStorage backup catches anything
       // the network missed, and a failed network call shouldn't reveal that
