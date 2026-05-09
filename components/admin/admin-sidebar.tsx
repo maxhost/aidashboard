@@ -7,6 +7,7 @@ import {
   Building2,
   Home,
   LogOut,
+  ScrollText,
   Sparkles,
   UserCircle,
   Users,
@@ -34,6 +35,10 @@ const NAV_LIBRARY: NavItem[] = [
   { href: "/admin/workflows", label: "Workflows", icon: Workflow },
   { href: "/admin/insights", label: "Insights", icon: Sparkles },
   { href: "/admin/tools", label: "Tools", icon: Boxes },
+];
+
+const NAV_SECURITY: NavItem[] = [
+  { href: "/admin/audit", label: "Audit log", icon: ScrollText },
 ];
 
 export function AdminSidebar({
@@ -94,6 +99,11 @@ export function AdminSidebar({
           Library
         </p>
         {NAV_LIBRARY.map(renderItem)}
+
+        <p className="px-3 pt-5 pb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+          Security
+        </p>
+        {NAV_SECURITY.map(renderItem)}
       </nav>
 
       <div className="px-4 pb-6 border-t border-border/60 pt-4">

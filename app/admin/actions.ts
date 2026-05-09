@@ -14,6 +14,7 @@ import {
 } from "@/lib/data/users";
 import { upsertAgentData } from "@/lib/data/agent-data";
 import { upsertTeamData } from "@/lib/data/team-data";
+import { logAction } from "@/lib/data/audit";
 import {
   upsertCompanyStrategy,
   upsertCompanyMarketing,
@@ -35,6 +36,12 @@ export async function createCompanyAction(formData: FormData) {
   const icp_type = String(formData.get("icp_type") ?? "team_leader") as IcpType;
   if (!name) throw new Error("Name required");
   const company = await createCompany({ name, icp_type });
+  await logAction({
+    action: "company.create",
+    entity_type: "company",
+    entity_id: company.id,
+    payload: { name, icp_type },
+  });
   revalidatePath("/admin/companies");
   redirect(`/admin/companies/${company.id}`);
 }
@@ -43,12 +50,23 @@ export async function updateCompanyAction(id: string, formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const icp_type = String(formData.get("icp_type") ?? "team_leader") as IcpType;
   await updateCompany(id, { name, icp_type });
+  await logAction({
+    action: "company.update",
+    entity_type: "company",
+    entity_id: id,
+    payload: { name, icp_type },
+  });
   revalidatePath(`/admin/companies/${id}`);
   revalidatePath("/admin/companies");
 }
 
 export async function deleteCompanyAction(id: string) {
   await deleteCompany(id);
+  await logAction({
+    action: "company.delete",
+    entity_type: "company",
+    entity_id: id,
+  });
   revalidatePath("/admin/companies");
   redirect("/admin/companies");
 }
@@ -68,6 +86,13 @@ export async function createUserAction(formData: FormData) {
   if (!email || !password || !full_name) {
     throw new Error("Email, password, and full name are required");
   }
+  // Stronger password floor than Supabase's default 6.
+  if (password.length < 10) {
+    throw new Error("Password must be at least 10 characters");
+  }
+  if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+    throw new Error("Password must include at least one uppercase letter and one digit");
+  }
 
   const user = await createUser({
     email,
@@ -76,6 +101,12 @@ export async function createUserAction(formData: FormData) {
     role,
     company_id,
     icp_type,
+  });
+  await logAction({
+    action: "user.create",
+    entity_type: "user",
+    entity_id: user.id,
+    payload: { email, role, company_id, icp_type, full_name },
   });
   if (company_id) revalidatePath(`/admin/companies/${company_id}`);
   revalidatePath("/admin/solo-agents");
@@ -91,11 +122,22 @@ export async function updateUserAction(id: string, formData: FormData) {
   const icpRaw = String(formData.get("icp_type") ?? "");
   const icp_type = icpRaw === "" ? null : (icpRaw as IcpType);
   await updateUser(id, { full_name, role, company_id, icp_type });
+  await logAction({
+    action: "user.update",
+    entity_type: "user",
+    entity_id: id,
+    payload: { full_name, role, company_id, icp_type },
+  });
   revalidatePath(`/admin/users/${id}`);
 }
 
 export async function deleteUserAction(id: string, redirectTo?: string) {
   await deleteUser(id);
+  await logAction({
+    action: "user.delete",
+    entity_type: "user",
+    entity_id: id,
+  });
   revalidatePath("/admin");
   if (redirectTo) redirect(redirectTo);
 }
@@ -134,6 +176,12 @@ export async function upsertAgentDataAction(
     last_week_wins: (formData.get("last_week_wins") as string) || null,
     critical_leads,
   });
+  await logAction({
+    action: "agent_data.upsert",
+    entity_type: "agent_data",
+    entity_id: `${userId}:${weekIso}`,
+    payload: { user_id: userId, week_iso: weekIso },
+  });
   revalidatePath(`/admin/users/${userId}`);
 }
 
@@ -169,6 +217,11 @@ export async function upsertTeamDataAction(
     top_performer_id: orNull(formData.get("top_performer_id")),
     bottom_performer_id: orNull(formData.get("bottom_performer_id")),
     insights,
+  });
+  await logAction({
+    action: "team_data.upsert",
+    entity_type: "team_data",
+    entity_id: `${companyId}:${week_iso}`,
   });
   revalidatePath(`/admin/companies/${companyId}`);
 }
@@ -226,6 +279,11 @@ export async function upsertCompanyStrategyAction(
       0
     ),
   });
+  await logAction({
+    action: "company_strategy.upsert",
+    entity_type: "company_strategy",
+    entity_id: companyId,
+  });
   revalidatePath(`/admin/companies/${companyId}/strategy`);
   revalidatePath("/strategy");
 }
@@ -254,6 +312,11 @@ export async function upsertCompanyMarketingAction(
     cost_per_lead_delta: orNull(formData.get("cost_per_lead_delta")),
     channels: parseJsonArray<MarketingChannel>(formData.get("channels")),
     insights: parseJsonArray<ActionCardData>(formData.get("insights")),
+  });
+  await logAction({
+    action: "company_marketing.upsert",
+    entity_type: "company_marketing",
+    entity_id: companyId,
   });
   revalidatePath(`/admin/companies/${companyId}/marketing`);
   revalidatePath("/marketing");
