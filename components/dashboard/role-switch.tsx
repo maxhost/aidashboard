@@ -37,7 +37,7 @@ export function RoleSwitch() {
     <div
       role="tablist"
       aria-label="Switch role view"
-      className="inline-flex items-center rounded-full border border-border bg-card p-0.5"
+      className="inline-flex items-center rounded-full bg-card ring-1 ring-foreground/10 p-0.5"
     >
       {ROLES.map((r) => {
         const active = role === r.key;

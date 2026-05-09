@@ -6,11 +6,8 @@ import {
   LayoutDashboard,
   TrendingUp,
   Megaphone,
-  Workflow,
-  Sparkles,
-  Boxes,
-  Gauge,
   Compass,
+  Gauge,
   LifeBuoy,
   LogOut,
   X,
@@ -26,12 +23,6 @@ const NAV_WORKSPACE = [
   { href: "/sales", label: "Sales", icon: TrendingUp },
   { href: "/marketing", label: "Marketing", icon: Megaphone },
   { href: "/strategy", label: "Strategy", icon: Compass },
-] as const;
-
-const NAV_ADMIN = [
-  { href: "/workflows", label: "Workflows", icon: Workflow },
-  { href: "/insights", label: "Insights", icon: Sparkles },
-  { href: "/tools", label: "Tools", icon: Boxes },
 ] as const;
 
 const NAV_SECONDARY = [
@@ -84,11 +75,6 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
           Workspace
         </p>
         {NAV_WORKSPACE.map(renderItem)}
-
-        <p className="px-3 pt-5 pb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-          Admin
-        </p>
-        {NAV_ADMIN.map(renderItem)}
       </nav>
       <div className="px-4 pb-6 space-y-1 border-t border-border/60 pt-4">
         <UserPill onNavigate={onNavigate} />

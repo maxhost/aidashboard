@@ -11,6 +11,7 @@ import {
   upsertAgentDataAction,
 } from "@/app/admin/actions";
 import { SubmitButton } from "@/components/admin/submit-button";
+import { CriticalLeadsEditor } from "@/components/admin/critical-leads-editor";
 
 export default async function UserDetailPage({
   params,
@@ -248,23 +249,12 @@ export default async function UserDetailPage({
             />
           </Field>
 
-          <Field label="Critical leads (JSON)" htmlFor="critical_leads">
-            <textarea
-              id="critical_leads"
-              name="critical_leads"
-              rows={6}
-              spellCheck={false}
-              defaultValue={JSON.stringify(
-                agentData?.critical_leads ?? [],
-                null,
-                2
-              )}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-xs font-mono"
-            />
-            <p className="text-[11px] text-muted-foreground">
-              Array of <code>{`{ id, name, value_usd, days_no_contact, agent_assigned_id?, status }`}</code>
-            </p>
-          </Field>
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground">
+              Critical leads
+            </label>
+            <CriticalLeadsEditor initial={agentData?.critical_leads ?? []} />
+          </div>
 
           <SubmitButton>Save week</SubmitButton>
         </form>

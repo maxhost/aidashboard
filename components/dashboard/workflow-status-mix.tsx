@@ -31,7 +31,7 @@ function ChartTooltip({ active, payload }: ChartTooltipProps) {
   if (!active || !payload?.length || !payload[0].payload) return null;
   const item = payload[0].payload;
   return (
-    <div className="rounded-lg border border-border bg-card shadow-md px-3 py-2">
+    <div className="rounded-lg bg-card ring-1 ring-foreground/10 shadow-md px-3 py-2">
       <div className="text-xs font-semibold text-foreground">{item.label}</div>
       <div className="mt-0.5 font-mono text-sm font-bold tabular-nums text-foreground">
         {item.value} {item.value === 1 ? "workflow" : "workflows"}

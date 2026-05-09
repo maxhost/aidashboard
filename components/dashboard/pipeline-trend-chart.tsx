@@ -33,7 +33,7 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   const value = payload[0].value ?? 0;
   return (
-    <div className="rounded-lg border border-border bg-card shadow-md px-3 py-2">
+    <div className="rounded-lg bg-card ring-1 ring-foreground/10 shadow-md px-3 py-2">
       <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
         Week of {label}
       </div>
