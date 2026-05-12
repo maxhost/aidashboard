@@ -145,11 +145,9 @@
 
   /* ───────── HERO ───────── */
   .hero {
-    flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 56px 0 32px;
-    min-height: 0;
+    padding: 56px 0 80px;
   }
 
   .hero-grid {
@@ -272,8 +270,7 @@
 
   /* ───────── LOGOS (bottom of hero) ───────── */
   .logos {
-    padding: 56px 0 72px;
-    margin-top: auto;
+    padding: 72px 0 0;
   }
   .logos-label {
     font-family: 'SF Mono', ui-monospace, Menlo, monospace;
@@ -409,7 +406,7 @@
 
   /* ───────── RESPONSIVE ───────── */
   @media (max-width: 1024px) {
-    .hero { flex: 0 0 auto; padding: 32px 0 24px; }
+    .hero { padding: 32px 0 64px; }
     .hero-grid { grid-template-columns: 1fr; gap: 40px; }
     .hero-copy { max-width: 640px; margin: 0 auto; text-align: center; }
     .hero-title { margin-left: auto; margin-right: auto; }
@@ -417,7 +414,7 @@
     .access-form { margin: 0 auto; }
     .form-meta { text-align: center; }
     .system { max-width: 440px; margin: 0 auto; order: -1; }
-    .logos { padding: 40px 0 48px; }
+    .logos { padding: 48px 0 0; }
     .logos-row { grid-template-columns: repeat(4, 1fr); gap: 20px 28px; }
     .container { padding: 0 28px; }
     .values { padding: 96px 0 80px; }
@@ -432,7 +429,7 @@
     .nav-actions .btn-text { display: none; }
     .nav-actions .btn-primary { height: 40px; padding: 0 16px; font-size: 14px; }
     .brand-word { font-size: 24px; }
-    .hero { padding: 24px 0 16px; }
+    .hero { padding: 24px 0 48px; }
     .hero-title { font-size: 36px; margin-bottom: 20px; }
     .hero-sub { font-size: 16px; margin-bottom: 24px; line-height: 1.5; }
     .access-form { flex-direction: column; padding: 10px; border-radius: 16px; gap: 8px; }
@@ -441,7 +438,7 @@
     .form-meta { font-size: 12px; }
     /* Hide decorative canvas on phones — it ate the whole viewport */
     .system { display: none; }
-    .logos { padding: 28px 0 36px; }
+    .logos { padding: 32px 0 0; }
     .logos-row { grid-template-columns: repeat(2, 1fr); gap: 18px; }
     .logos-label { margin-bottom: 14px; font-size: 10px; }
     .values { padding: 56px 0 48px; }
@@ -617,7 +614,7 @@
       </div>
 
       <p class="values-tagline">
-        Built one operation at a time. <em>Yours next.</em>
+        The new operating system for <em>top producers.</em>
       </p>
     </div>
   </section>
