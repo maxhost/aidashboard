@@ -361,7 +361,7 @@ function AgentSales({ data }: { data: AgentSalesData }) {
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl lg:text-3xl font-medium text-foreground tracking-tight">
-            Today's focus
+            Today&apos;s focus
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Your highest-priority actions for today.

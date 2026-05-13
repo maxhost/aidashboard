@@ -349,7 +349,7 @@ function AgentHome({ data }: { data: AgentHomeData }) {
             Good morning, {data.firstName}.
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Here's what needs your attention today.
+            Here&apos;s what needs your attention today.
           </p>
         </div>
         <PeriodSelector />

@@ -310,7 +310,7 @@ function AgentMarketing({ data }: { data: AgentMarketingData }) {
             Lead opportunities
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            What's working for you and where to respond first.
+            What&apos;s working for you and where to respond first.
           </p>
         </div>
         <PeriodSelector />
