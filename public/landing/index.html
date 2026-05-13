@@ -9,9 +9,6 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect x='14' y='26' width='52' height='28' rx='1.5' stroke='%230F0F10' stroke-width='3' fill='none'/%3E%3Cline x1='20' y1='40' x2='42' y2='40' stroke='%230F0F10' stroke-width='8'/%3E%3Ccircle cx='46' cy='40' r='5' fill='%230F0F10'/%3E%3Cline x1='49' y1='40' x2='60' y2='40' stroke='%230F0F10' stroke-width='8'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://rsms.me/">
 <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #F7F4EE;
@@ -335,20 +332,16 @@
   }
   .mission-eyebrow { margin-bottom: 28px; }
   .mission-heading {
-    font-family: 'Instrument Serif', Georgia, serif;
-    font-size: clamp(40px, 4.4vw, 60px);
-    font-weight: 400;
-    letter-spacing: -0.015em;
-    line-height: 1.05;
+    font-family: inherit;
+    font-size: clamp(36px, 4vw, 52px);
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1.1;
     color: var(--text);
     margin: 0;
   }
   .mission-heading .accent {
-    font-style: italic;
-    background: linear-gradient(180deg, var(--accent) 0%, #00B888 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-weight: 700;
   }
   .mission-body {
     display: flex;
@@ -689,7 +682,7 @@
     </div>
   </section>
 
-  <!-- MISSION — two columns, serif heading -->
+  <!-- MISSION — two columns: heading left, body right -->
   <section class="mission">
     <div class="container mission-grid">
       <div>
