@@ -6,6 +6,7 @@ const PUBLIC_PATHS = [
   "/login",
   "/setup",
   "/landing",        // static HTML landing — served at "/" via rewrite
+  "/closing",        // public closing-progress view shared with clients
   "/icon.svg",
   "/favicon.ico",
 ];
