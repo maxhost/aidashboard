@@ -12,9 +12,9 @@ const URGENCY_BAR: Record<TaskUrgency, string> = {
 };
 
 const URGENCY_LABEL: Record<TaskUrgency, string> = {
-  urgent: "Urgente",
-  today: "Hoy",
-  "this-week": "Esta semana",
+  urgent: "Urgent",
+  today: "Today",
+  "this-week": "This week",
 };
 
 const URGENCY_TEXT: Record<TaskUrgency, string> = {
@@ -59,16 +59,17 @@ export function DailyTasksClient({
     <div className="px-4 sm:px-6 py-6 lg:px-8 lg:py-8 max-w-[900px] mx-auto space-y-6">
       <header>
         <h1 className="text-2xl lg:text-3xl font-medium text-foreground tracking-tight">
-          Buen día {firstName} ☀️
+          Good morning, {firstName} &#9728;&#65039;
         </h1>
         <p className="text-sm text-muted-foreground mt-1.5">
-          Tenés <span className="text-foreground font-medium">{pendingCount}</span>{" "}
-          {pendingCount === 1 ? "cosa pendiente" : "cosas pendientes"} hoy
+          You have{" "}
+          <span className="text-foreground font-medium">{pendingCount}</span>{" "}
+          {pendingCount === 1 ? "thing" : "things"} to do today
           {pendingUrgent > 0 && (
             <>
               ,{" "}
               <span className="text-destructive font-medium">
-                {pendingUrgent} {pendingUrgent === 1 ? "urgente" : "urgentes"}
+                {pendingUrgent} urgent
               </span>
             </>
           )}
@@ -99,7 +100,7 @@ export function DailyTasksClient({
                 {/* Done checkbox */}
                 <button
                   type="button"
-                  aria-label={done ? "Marcar como pendiente" : "Marcar hecho"}
+                  aria-label={done ? "Mark as pending" : "Mark as done"}
                   onClick={() => toggleDone(t.id)}
                   className={cn(
                     "mt-0.5 h-5 w-5 inline-flex items-center justify-center rounded-md border shrink-0 transition-colors",
@@ -167,14 +168,14 @@ export function DailyTasksClient({
           type="button"
           className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
         >
-          Ver todas las tareas
+          View all tasks
         </button>
         <button
           type="button"
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border text-xs font-medium text-foreground hover:bg-muted/60 transition-colors"
         >
           <Plus className="h-3.5 w-3.5" strokeWidth={2} />
-          Agregar tarea manual
+          Add a task
         </button>
       </div>
     </div>
