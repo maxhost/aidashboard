@@ -7,8 +7,10 @@ import {
   MessageCircle,
   Send,
   CalendarPlus,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SectionTitle } from "@/components/dashboard/section-title";
 import type {
   BriefAttentionItem,
   BriefAttentionTone,
@@ -31,6 +33,18 @@ const ATTENTION_DOT: Record<BriefAttentionTone, string> = {
   neutral: "bg-success",
 };
 
+const ATTENTION_TAG_LABEL: Record<BriefAttentionTone, string> = {
+  critical: "Delayed",
+  warning: "Watch",
+  neutral: "On track",
+};
+
+const ATTENTION_TAG_TEXT: Record<BriefAttentionTone, string> = {
+  critical: "text-destructive",
+  warning: "text-warning",
+  neutral: "text-success",
+};
+
 export function MorningBriefClient({
   firstName,
   brief,
@@ -50,23 +64,43 @@ export function MorningBriefClient({
   }
 
   return (
-    <div className="px-4 sm:px-6 py-8 sm:py-12 lg:px-8 max-w-[720px] mx-auto space-y-10">
+    <div className="px-4 sm:px-6 py-6 lg:px-8 lg:py-8 max-w-[900px] mx-auto space-y-6">
+      {/* Hero */}
       <header>
-        <h1 className="text-3xl sm:text-4xl font-medium text-foreground tracking-tight leading-tight">
+        <h1 className="text-2xl lg:text-3xl font-medium text-foreground tracking-tight">
           Good morning, {firstName} &#9728;&#65039;
         </h1>
+        <p className="text-sm text-muted-foreground mt-1.5">
+          Here&apos;s your brief for today.
+        </p>
       </header>
 
-      <BriefSection title="Today needs your attention">
-        <ul className="space-y-3">
+      {/* Section 1: Today needs your attention */}
+      <section aria-label="Today needs your attention" className="space-y-2">
+        <SectionTitle
+          title="Today needs your attention"
+          tooltip="What's moving, stuck, or warming up across your active clients."
+        />
+        <ul className="rounded-xl border border-border bg-card divide-y divide-border/60 overflow-hidden">
           {brief.attention.map((item) => (
             <AttentionRow key={item.id} item={item} />
           ))}
         </ul>
-      </BriefSection>
+      </section>
 
-      <BriefSection title="Suggested priorities">
-        <ul className="space-y-3">
+      {/* Section 2: Suggested priorities */}
+      <section aria-label="Suggested priorities" className="space-y-2">
+        <SectionTitle
+          title="Suggested priorities"
+          tooltip="What I'd pick up first today."
+          right={
+            <span className="font-mono text-xs tabular-nums text-muted-foreground shrink-0">
+              {brief.priorities.length - doneIds.size}{" "}
+              of {brief.priorities.length}
+            </span>
+          }
+        />
+        <ul className="rounded-xl border border-border bg-card divide-y divide-border/60 overflow-hidden">
           {brief.priorities.map((p) => (
             <PriorityRow
               key={p.id}
@@ -76,48 +110,53 @@ export function MorningBriefClient({
             />
           ))}
         </ul>
-      </BriefSection>
+      </section>
 
-      <BriefSection title="Things already handled">
-        <ul className="space-y-3">
+      {/* Section 3: Already handled */}
+      <section aria-label="Things already handled" className="space-y-2">
+        <SectionTitle
+          title="Things already handled"
+          tooltip="Pulsor took care of these for you overnight."
+          right={
+            <Sparkles
+              className="h-3.5 w-3.5 text-success"
+              strokeWidth={2}
+              fill="currentColor"
+            />
+          }
+        />
+        <ul className="rounded-xl border border-border bg-card divide-y divide-border/60 overflow-hidden">
           {brief.handled.map((h) => (
             <HandledRow key={h.id} item={h} />
           ))}
         </ul>
-      </BriefSection>
+      </section>
     </div>
-  );
-}
-
-function BriefSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section>
-      <h2 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground mb-4">
-        {title}
-      </h2>
-      {children}
-    </section>
   );
 }
 
 function AttentionRow({ item }: { item: BriefAttentionItem }) {
   const tone = item.tone ?? "warning";
   return (
-    <li className="flex items-start gap-3">
+    <li className="flex items-center gap-3 px-4 py-3.5">
       <span
         aria-hidden
         className={cn(
-          "mt-2 h-1.5 w-1.5 rounded-full shrink-0",
+          "h-2 w-2 rounded-full shrink-0",
           ATTENTION_DOT[tone]
         )}
       />
-      <p className="text-base text-foreground leading-snug">{item.headline}</p>
+      <p className="text-sm text-foreground flex-1 min-w-0 truncate">
+        {item.headline}
+      </p>
+      <span
+        className={cn(
+          "font-mono text-[10px] font-semibold uppercase tracking-[0.08em] shrink-0",
+          ATTENTION_TAG_TEXT[tone]
+        )}
+      >
+        {ATTENTION_TAG_LABEL[tone]}
+      </span>
     </li>
   );
 }
@@ -135,7 +174,7 @@ function PriorityRow({
   return (
     <li
       className={cn(
-        "flex items-start gap-3 transition-opacity",
+        "flex items-start gap-3 px-4 py-3.5 transition-opacity",
         done && "opacity-55"
       )}
     >
@@ -144,25 +183,25 @@ function PriorityRow({
         aria-label={done ? "Mark as pending" : "Mark as done"}
         onClick={onToggle}
         className={cn(
-          "mt-1 h-4 w-4 rounded-md border inline-flex items-center justify-center shrink-0 transition-colors",
+          "mt-0.5 h-5 w-5 rounded-md border inline-flex items-center justify-center shrink-0 transition-colors",
           done
             ? "bg-success border-success text-background"
             : "border-border text-muted-foreground/50 hover:border-foreground hover:text-foreground"
         )}
       >
-        {done && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
+        {done && <Check className="h-3 w-3" strokeWidth={2.5} />}
       </button>
       <div className="flex-1 min-w-0">
         <p
           className={cn(
-            "text-base text-foreground leading-snug",
+            "text-sm text-foreground",
             done && "line-through"
           )}
         >
           {priority.headline}
         </p>
         {priority.context && (
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             {priority.context}
           </p>
         )}
@@ -172,7 +211,7 @@ function PriorityRow({
         onClick={onToggle}
         className={cn(
           "shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-          "border border-border text-foreground hover:bg-muted/60"
+          "bg-foreground text-background hover:bg-foreground/90"
         )}
       >
         <ActionIcon className="h-3.5 w-3.5" strokeWidth={2} />
@@ -184,16 +223,19 @@ function PriorityRow({
 
 function HandledRow({ item }: { item: BriefHandled }) {
   return (
-    <li className="flex items-start gap-3">
+    <li className="flex items-center gap-3 px-4 py-3.5">
       <span
         aria-hidden
-        className="mt-0.5 h-4 w-4 rounded-full bg-success/15 text-success inline-flex items-center justify-center shrink-0"
+        className="h-5 w-5 rounded-full bg-success text-background inline-flex items-center justify-center shrink-0"
       >
-        <Check className="h-2.5 w-2.5" strokeWidth={3} />
+        <Check className="h-3 w-3" strokeWidth={3} />
       </span>
-      <p className="text-base text-muted-foreground leading-snug">
+      <p className="text-sm text-muted-foreground flex-1 min-w-0 truncate">
         {item.headline}
       </p>
+      <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-success shrink-0">
+        Done
+      </span>
     </li>
   );
 }
