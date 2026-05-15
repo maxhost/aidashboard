@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Home, Building2, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { Home, Building2, TrendingUp, ExternalLink } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -82,6 +83,11 @@ export function OperationsClient({
                       onOpen={() => setSelected(c)}
                     />
                   ))}
+                  {cards.length === 0 && (
+                    <li className="text-[11px] text-muted-foreground/60 px-1 py-2 italic">
+                      No clients here right now
+                    </li>
+                  )}
                 </ul>
               </li>
             );
@@ -109,42 +115,60 @@ function KanbanCard({
   onOpen: () => void;
 }) {
   const TypeIcon = TYPE_ICON[client.type];
+  const linkedToTransactions = client.stage === "under-contract";
+
+  const cardClasses = cn(
+    "group block w-full text-left rounded-lg border border-border bg-card p-3",
+    "hover:border-foreground/30 hover:shadow-sm transition-all"
+  );
+
+  const inner = (
+    <>
+      <div className="flex items-start justify-between gap-2">
+        <span className="text-sm font-medium text-foreground truncate">
+          {client.name}
+        </span>
+        <span
+          aria-label={TEMP_LABEL[client.temperature]}
+          title={TEMP_LABEL[client.temperature]}
+          className={cn(
+            "h-2 w-2 rounded-full shrink-0 mt-1.5",
+            TEMP_DOT[client.temperature]
+          )}
+        />
+      </div>
+      <div className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+        <TypeIcon className="h-3 w-3" strokeWidth={1.75} />
+        <span>{CLIENT_TYPE_LABEL[client.type]}</span>
+      </div>
+      <div className="mt-2 flex items-baseline justify-between gap-2">
+        <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+          {client.daysInStage}d in stage
+        </span>
+        <span className="text-[11px] text-muted-foreground/80 truncate">
+          {client.lastInteraction}
+        </span>
+      </div>
+      {linkedToTransactions && (
+        <div className="mt-2 pt-2 border-t border-border/60 flex items-center gap-1 text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+          <span>View in Transactions</span>
+          <ExternalLink className="h-3 w-3" strokeWidth={2} />
+        </div>
+      )}
+    </>
+  );
+
   return (
     <li>
-      <button
-        type="button"
-        onClick={onOpen}
-        className={cn(
-          "w-full text-left rounded-lg border border-border bg-card p-3",
-          "hover:border-foreground/30 hover:shadow-sm transition-all"
-        )}
-      >
-        <div className="flex items-start justify-between gap-2">
-          <span className="text-sm font-medium text-foreground truncate">
-            {client.name}
-          </span>
-          <span
-            aria-label={TEMP_LABEL[client.temperature]}
-            title={TEMP_LABEL[client.temperature]}
-            className={cn(
-              "h-2 w-2 rounded-full shrink-0 mt-1.5",
-              TEMP_DOT[client.temperature]
-            )}
-          />
-        </div>
-        <div className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <TypeIcon className="h-3 w-3" strokeWidth={1.75} />
-          <span>{CLIENT_TYPE_LABEL[client.type]}</span>
-        </div>
-        <div className="mt-2 flex items-baseline justify-between gap-2">
-          <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
-            {client.daysInStage}d in stage
-          </span>
-          <span className="text-[11px] text-muted-foreground/80 truncate">
-            {client.lastInteraction}
-          </span>
-        </div>
-      </button>
+      {linkedToTransactions ? (
+        <Link href="/transactions" className={cardClasses}>
+          {inner}
+        </Link>
+      ) : (
+        <button type="button" onClick={onOpen} className={cardClasses}>
+          {inner}
+        </button>
+      )}
     </li>
   );
 }

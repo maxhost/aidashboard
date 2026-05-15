@@ -37,7 +37,7 @@ const NAV_WORKSPACE_DEFAULT: NavItem[] = [
 ];
 
 const NAV_WORKSPACE_ASSISTANT: NavItem[] = [
-  { href: "/daily-tasks", label: "Daily Tasks", icon: CheckSquare },
+  { href: "/morning-brief", label: "Morning Brief", icon: CheckSquare },
   { href: "/operations", label: "Operations", icon: Kanban },
   { href: "/transactions", label: "Transactions", icon: FileText },
 ];

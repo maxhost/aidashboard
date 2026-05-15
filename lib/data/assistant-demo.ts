@@ -4,86 +4,94 @@
  * only — there is no DB-backed path yet.
  */
 
-export type TaskUrgency = "urgent" | "today" | "this-week";
-
-export type TaskAction = "call" | "message" | "send" | "done";
-
-export type DailyTask = {
-  id: string;
-  client: string;
-  action: string;
-  context?: string;
-  urgency: TaskUrgency;
-  primaryAction: { kind: TaskAction; label: string };
-};
-
 export const ASSISTANT_FIRST_NAME = "Maria";
 
-export const DAILY_TASKS: DailyTask[] = [
-  {
-    id: "t-1",
-    client: "Garcia",
-    action: "Call about the pool options",
-    context: "You promised to send options today",
-    urgency: "urgent",
-    primaryAction: { kind: "call", label: "Call" },
-  },
-  {
-    id: "t-2",
-    client: "Ramirez",
-    action: "Confirm inspection before 6 PM",
-    context: "Deadline today",
-    urgency: "urgent",
-    primaryAction: { kind: "call", label: "Call" },
-  },
-  {
-    id: "t-3",
-    client: "Perez",
-    action: "Send Coral Gables comps",
-    context: "Requested yesterday afternoon",
-    urgency: "today",
-    primaryAction: { kind: "send", label: "Send" },
-  },
-  {
-    id: "t-4",
-    client: "Lopez",
-    action: "Schedule second showing at the Brickell house",
-    context: "Available this Saturday",
-    urgency: "today",
-    primaryAction: { kind: "message", label: "Message" },
-  },
-  {
-    id: "t-5",
-    client: "Castro",
-    action: "Send signed contract to title company",
-    context: "Offer accepted yesterday",
-    urgency: "today",
-    primaryAction: { kind: "send", label: "Send" },
-  },
-  {
-    id: "t-6",
-    client: "Sanchez",
-    action: "Confirm appraisal date",
-    context: "Lender is waiting on a reply",
-    urgency: "today",
-    primaryAction: { kind: "message", label: "Message" },
-  },
-  {
-    id: "t-7",
-    client: "Garcia",
-    action: "Prep final walkthrough",
-    context: "Closing in 8 days",
-    urgency: "this-week",
-    primaryAction: { kind: "done", label: "Mark done" },
-  },
-  {
-    id: "t-8",
-    client: "Perez",
-    action: "Ask for referrals after closing",
-    urgency: "this-week",
-    primaryAction: { kind: "done", label: "Mark done" },
-  },
-];
+// ─── Morning Brief ─────────────────────────────────────────────
+// Three calm sections instead of a task list. The Assistant is reporting
+// what's happening today, not handing the agent a to-do list.
+
+export type BriefAttentionTone = "warning" | "neutral" | "critical";
+
+export type BriefAttentionItem = {
+  id: string;
+  headline: string;
+  tone?: BriefAttentionTone;
+};
+
+export type BriefPriorityAction = "call" | "send" | "message" | "schedule";
+
+export type BriefPriority = {
+  id: string;
+  headline: string;
+  context?: string;
+  action: { kind: BriefPriorityAction; label: string };
+};
+
+export type BriefHandled = {
+  id: string;
+  headline: string;
+};
+
+export type MorningBrief = {
+  attention: BriefAttentionItem[];
+  priorities: BriefPriority[];
+  handled: BriefHandled[];
+};
+
+export const MORNING_BRIEF: MorningBrief = {
+  attention: [
+    {
+      id: "a-1",
+      headline: "Garcia waiting on pool options",
+      tone: "warning",
+    },
+    {
+      id: "a-2",
+      headline: "Inspection at 3 PM confirmed",
+      tone: "neutral",
+    },
+    {
+      id: "a-3",
+      headline: "Perez lender delayed 2 days",
+      tone: "critical",
+    },
+    {
+      id: "a-4",
+      headline: "Castro active again on IDX",
+      tone: "warning",
+    },
+  ],
+  priorities: [
+    {
+      id: "p-1",
+      headline: "Send Coral Gables comps to Perez",
+      context: "Asked yesterday afternoon",
+      action: { kind: "send", label: "Send" },
+    },
+    {
+      id: "p-2",
+      headline: "Confirm appraisal date with Sanchez",
+      context: "Lender is waiting on a reply",
+      action: { kind: "message", label: "Message" },
+    },
+    {
+      id: "p-3",
+      headline: "Schedule second showing at Brickell for Lopez",
+      context: "Available this Saturday",
+      action: { kind: "schedule", label: "Schedule" },
+    },
+  ],
+  handled: [
+    {
+      id: "h-1",
+      headline: "Title updated Sanchez file",
+    },
+    {
+      id: "h-2",
+      headline: "Appraisal received for Lopez",
+    },
+  ],
+};
 
 // ─── Transactions ──────────────────────────────────────────────
 
@@ -227,9 +235,7 @@ export type PipelineStage =
   | "in-conversation"
   | "showing"
   | "in-offer"
-  | "under-contract"
-  | "closing"
-  | "closed";
+  | "under-contract";
 
 export type ClientType = "buyer" | "seller" | "investor";
 
@@ -254,8 +260,6 @@ export const PIPELINE_STAGE_LABEL: Record<PipelineStage, string> = {
   showing: "Showing",
   "in-offer": "In offer",
   "under-contract": "Under contract",
-  closing: "Closing",
-  closed: "Closed",
 };
 
 export const PIPELINE_STAGE_ORDER: PipelineStage[] = [
@@ -264,8 +268,6 @@ export const PIPELINE_STAGE_ORDER: PipelineStage[] = [
   "showing",
   "in-offer",
   "under-contract",
-  "closing",
-  "closed",
 ];
 
 export const CLIENT_TYPE_LABEL: Record<ClientType, string> = {
@@ -434,11 +436,11 @@ export const PIPELINE_CLIENTS: PipelineClient[] = [
     budget: "$945K",
     area: "Sunset Dr",
   },
-  // Closing (2)
+  // Under contract — closing-stage clients (4)
   {
     id: "c-15",
     name: "Garcia",
-    stage: "closing",
+    stage: "under-contract",
     daysInStage: 24,
     type: "buyer",
     temperature: "hot",
@@ -450,34 +452,12 @@ export const PIPELINE_CLIENTS: PipelineClient[] = [
   {
     id: "c-16",
     name: "Sanchez",
-    stage: "closing",
+    stage: "under-contract",
     daysInStage: 38,
     type: "buyer",
     temperature: "hot",
     lastInteraction: "Today",
     budget: "$1.6M",
     area: "Ocean Blvd",
-  },
-  // Closed (3)
-  {
-    id: "c-17",
-    name: "Mitchell",
-    stage: "closed",
-    daysInStage: 4,
-    type: "buyer",
-    temperature: "warm",
-    lastInteraction: "Last week",
-    budget: "$920K",
-    area: "Coconut Grove",
-  },
-  {
-    id: "c-18",
-    name: "Reyes",
-    stage: "closed",
-    daysInStage: 9,
-    type: "seller",
-    temperature: "warm",
-    lastInteraction: "2 weeks ago",
-    area: "Pinecrest",
   },
 ];
