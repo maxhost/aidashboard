@@ -47,8 +47,8 @@ export default function ClosingProgressPage({
             <span className="text-foreground">{tx.address}</span> &#127969;
           </h1>
           <p className="text-sm text-muted-foreground mt-3">
-            Here's where things stand with your closing. We'll keep this page
-            up to date — no need to check in.
+            Here&apos;s where things stand with your closing. We&apos;ll keep
+            this page up to date — no need to check in.
           </p>
         </header>
 
@@ -92,7 +92,7 @@ export default function ClosingProgressPage({
             Questions?
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            I'm here for anything you need — call, text, or email.
+            I&apos;m here for anything you need — call, text, or email.
           </p>
           <div className="mt-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-foreground text-background inline-flex items-center justify-center text-sm font-semibold shrink-0">
