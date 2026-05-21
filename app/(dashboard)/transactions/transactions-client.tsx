@@ -1,12 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { Check, ChevronDown, AlertTriangle, XCircle, CircleCheck } from "lucide-react";
+import Link from "next/link";
+import {
+  AlertTriangle,
+  XCircle,
+  CircleCheck,
+  ChevronRight,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SectionTitle } from "@/components/dashboard/section-title";
 import {
   RESPONSIBLE_LABEL,
-  type TimelineMilestone,
+  TRANSACTION_PHASE_LABEL,
+  TRANSACTION_PHASE_ORDER,
   type Transaction,
+  type TransactionPhase,
   type TransactionStatus,
 } from "@/lib/data/assistant-demo";
 
@@ -40,39 +48,46 @@ const STATUS_ICON: Record<TransactionStatus, typeof CircleCheck> = {
   delayed: XCircle,
 };
 
+const PHASE_TOOLTIP: Record<TransactionPhase, string> = {
+  closing:
+    "Closing within the next week — final walkthroughs, signed disclosures, last documents.",
+  pending: "Under contract — due diligence, appraisal, financing.",
+  listing: "Seller-side, pre-contract — prep, MLS, showings.",
+};
+
 export function TransactionsClient({
-  transactions,
+  grouped,
 }: {
-  transactions: Transaction[];
+  grouped: Record<TransactionPhase, Transaction[]>;
 }) {
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
-
-  function toggle(id: string) {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  const atRiskCount = transactions.filter(
+  const all = TRANSACTION_PHASE_ORDER.flatMap((p) => grouped[p]);
+  const atRiskCount = all.filter(
     (t) => t.status === "at-risk" || t.status === "delayed"
   ).length;
+  const closingCount = grouped.closing.length;
+
+  const subtitleBits: string[] = [
+    `${all.length} active deal${all.length === 1 ? "" : "s"}`,
+  ];
+  if (closingCount > 0) {
+    subtitleBits.push(
+      `${closingCount} closing this week`
+    );
+  }
 
   return (
-    <div className="px-4 sm:px-6 py-6 lg:px-8 lg:py-8 max-w-[1000px] mx-auto space-y-6">
+    <div className="px-4 sm:px-6 py-6 lg:px-8 lg:py-8 max-w-[1000px] mx-auto space-y-7">
       <header>
         <h1 className="text-2xl lg:text-3xl font-medium text-foreground tracking-tight">
           Transactions
         </h1>
         <p className="text-sm text-muted-foreground mt-1.5">
-          {transactions.length} active closings
+          {subtitleBits.join(" · ")}
           {atRiskCount > 0 && (
             <>
-              ,{" "}
+              {" · "}
               <span className="text-warning font-medium">
-                {atRiskCount} need attention
+                {atRiskCount} need{atRiskCount === 1 ? "s" : ""} attention
               </span>
             </>
           )}
@@ -80,157 +95,95 @@ export function TransactionsClient({
         </p>
       </header>
 
-      <ul className="rounded-xl border border-border bg-card divide-y divide-border/60 overflow-hidden">
-        {transactions.map((t) => {
-          const isOpen = expanded.has(t.id);
-          const StatusIcon = STATUS_ICON[t.status];
-          return (
-            <li key={t.id}>
-              <button
-                type="button"
-                onClick={() => toggle(t.id)}
-                className="w-full text-left px-4 sm:px-5 py-4 hover:bg-muted/40 transition-colors"
-                aria-expanded={isOpen}
-              >
-                <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
-                  {/* Address + client */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2 flex-wrap">
-                      <span className="text-sm font-medium text-foreground truncate">
-                        {t.address}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        · {t.client}
-                      </span>
-                    </div>
-                    <div className="mt-2.5 flex items-center gap-3">
-                      <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
-                        <div
-                          className={cn(
-                            "h-full transition-all",
-                            STATUS_BAR[t.status]
-                          )}
-                          style={{ width: `${t.progressPct}%` }}
-                        />
-                      </div>
-                      <span className="font-mono text-xs tabular-nums text-muted-foreground shrink-0 w-10 text-right">
-                        {t.progressPct}%
-                      </span>
-                    </div>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      Next:{" "}
-                      <span className="text-foreground">{t.nextStep}</span>
-                      <span className="mx-1.5 text-foreground/30">·</span>
-                      <span>{t.dueLabel}</span>
-                      <span className="mx-1.5 text-foreground/30">·</span>
-                      <span className="text-foreground/70">
-                        {RESPONSIBLE_LABEL[t.responsible]}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Status badge + chevron */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium",
-                        STATUS_BG[t.status],
-                        STATUS_TEXT[t.status]
-                      )}
-                    >
-                      <StatusIcon className="h-3 w-3" strokeWidth={2.25} />
-                      {STATUS_LABEL[t.status]}
-                    </span>
-                    <ChevronDown
-                      className={cn(
-                        "h-4 w-4 text-muted-foreground transition-transform shrink-0",
-                        isOpen && "rotate-180"
-                      )}
-                      strokeWidth={1.75}
-                    />
-                  </div>
-                </div>
-              </button>
-
-              {isOpen && (
-                <div className="px-4 sm:px-5 pb-5 -mt-1">
-                  <div className="rounded-lg bg-muted/30 border border-border/60 p-4">
-                    <div className="flex items-baseline justify-between mb-3">
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                        Timeline
-                      </span>
-                      <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
-                        Closing · {t.closingDate}
-                      </span>
-                    </div>
-                    <ol className="space-y-2">
-                      {t.timeline.map((m) => (
-                        <TimelineRow key={m.id} milestone={m} />
-                      ))}
-                    </ol>
-                  </div>
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+      {TRANSACTION_PHASE_ORDER.map((phase) => {
+        const items = grouped[phase];
+        if (items.length === 0) return null;
+        return (
+          <section
+            key={phase}
+            aria-label={TRANSACTION_PHASE_LABEL[phase]}
+            className="space-y-2.5"
+          >
+            <SectionTitle
+              title={TRANSACTION_PHASE_LABEL[phase]}
+              tooltip={PHASE_TOOLTIP[phase]}
+              right={
+                <span className="font-mono text-xs tabular-nums text-muted-foreground shrink-0">
+                  {items.length}
+                </span>
+              }
+            />
+            <ul className="rounded-xl border border-border bg-card divide-y divide-border/60 overflow-hidden">
+              {items.map((t) => (
+                <TransactionRow key={t.id} transaction={t} />
+              ))}
+            </ul>
+          </section>
+        );
+      })}
     </div>
   );
 }
 
-function TimelineRow({ milestone }: { milestone: TimelineMilestone }) {
+function TransactionRow({ transaction: t }: { transaction: Transaction }) {
+  const StatusIcon = STATUS_ICON[t.status];
   return (
-    <li className="flex items-center gap-3">
-      <TimelineDot state={milestone.state} />
-      <span
-        className={cn(
-          "text-sm flex-1",
-          milestone.state === "future"
-            ? "text-muted-foreground"
-            : "text-foreground"
-        )}
+    <li>
+      <Link
+        href={`/transactions/${t.id}`}
+        className="block px-4 sm:px-5 py-4 hover:bg-muted/40 transition-colors group"
       >
-        {milestone.label}
-      </span>
-      {milestone.date && (
-        <span className="font-mono text-xs tabular-nums text-muted-foreground shrink-0">
-          {milestone.date}
-        </span>
-      )}
-    </li>
-  );
-}
+        <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <span className="text-sm font-medium text-foreground truncate">
+                {t.address}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                · {t.client}
+              </span>
+            </div>
+            <div className="mt-2.5 flex items-center gap-3">
+              <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={cn("h-full transition-all", STATUS_BAR[t.status])}
+                  style={{ width: `${t.progressPct}%` }}
+                />
+              </div>
+              <span className="font-mono text-xs tabular-nums text-muted-foreground shrink-0 w-10 text-right">
+                {t.progressPct}%
+              </span>
+            </div>
+            <div className="mt-2 text-xs text-muted-foreground">
+              Next:{" "}
+              <span className="text-foreground">{t.nextStep}</span>
+              <span className="mx-1.5 text-foreground/30">·</span>
+              <span>{t.dueLabel}</span>
+              <span className="mx-1.5 text-foreground/30">·</span>
+              <span className="text-foreground/70">
+                {RESPONSIBLE_LABEL[t.responsible]}
+              </span>
+            </div>
+          </div>
 
-function TimelineDot({
-  state,
-}: {
-  state: TimelineMilestone["state"];
-}) {
-  if (state === "done") {
-    return (
-      <span
-        aria-label="Done"
-        className="h-4 w-4 rounded-full bg-success text-background inline-flex items-center justify-center shrink-0"
-      >
-        <Check className="h-2.5 w-2.5" strokeWidth={3} />
-      </span>
-    );
-  }
-  if (state === "current") {
-    return (
-      <span
-        aria-label="In progress"
-        className="h-4 w-4 rounded-full bg-foreground inline-flex items-center justify-center shrink-0 ring-4 ring-foreground/10"
-      >
-        <span className="h-1 w-1 rounded-full bg-background" />
-      </span>
-    );
-  }
-  return (
-    <span
-      aria-label="Pending"
-      className="h-4 w-4 rounded-full border-2 border-muted-foreground/30 bg-background shrink-0 inline-block"
-    />
+          <div className="flex items-center gap-2 shrink-0">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium",
+                STATUS_BG[t.status],
+                STATUS_TEXT[t.status]
+              )}
+            >
+              <StatusIcon className="h-3 w-3" strokeWidth={2.25} />
+              {STATUS_LABEL[t.status]}
+            </span>
+            <ChevronRight
+              className="h-4 w-4 text-muted-foreground/60 group-hover:text-foreground transition-colors shrink-0"
+              strokeWidth={1.75}
+            />
+          </div>
+        </div>
+      </Link>
+    </li>
   );
 }

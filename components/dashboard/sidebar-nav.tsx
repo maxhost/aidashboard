@@ -37,7 +37,7 @@ const NAV_WORKSPACE_DEFAULT: NavItem[] = [
 ];
 
 const NAV_WORKSPACE_ASSISTANT: NavItem[] = [
-  { href: "/morning-brief", label: "Morning Brief", icon: CheckSquare },
+  { href: "/home", label: "Home", icon: LayoutDashboard },
   { href: "/operations", label: "Operations", icon: Kanban },
   { href: "/transactions", label: "Transactions", icon: FileText },
 ];
@@ -210,9 +210,17 @@ function Brand() {
   );
 }
 
-export function SidebarNav() {
+export function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
   return (
-    <aside className="hidden lg:flex h-screen w-60 shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-border sticky top-0">
+    <aside
+      className={cn(
+        "hidden lg:flex h-screen shrink-0 flex-col bg-sidebar text-sidebar-foreground sticky top-0 transition-[width,border] duration-200 ease-out",
+        collapsed
+          ? "w-0 overflow-hidden border-r-0"
+          : "w-60 border-r border-border"
+      )}
+      aria-hidden={collapsed || undefined}
+    >
       <Brand />
       <NavList />
     </aside>
