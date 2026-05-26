@@ -4,16 +4,21 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export const ROLE_KEY = "pulsor:role";
-export type Role = "team-leader" | "agent" | "assistant";
+export type Role = "team-leader" | "agent" | "assistant" | "back-office";
+
 const ROLES: { key: Role; label: string }[] = [
   { key: "team-leader", label: "Team Leader" },
   { key: "agent", label: "Agent" },
   { key: "assistant", label: "Assistant" },
+  { key: "back-office", label: "Back Office" },
 ];
 
 export function isRole(value: unknown): value is Role {
   return (
-    value === "team-leader" || value === "agent" || value === "assistant"
+    value === "team-leader" ||
+    value === "agent" ||
+    value === "assistant" ||
+    value === "back-office"
   );
 }
 

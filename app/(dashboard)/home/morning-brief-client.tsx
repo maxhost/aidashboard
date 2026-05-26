@@ -1,16 +1,30 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { celebrate } from "@/lib/celebrate";
 import {
   Check,
   Phone,
   MessageCircle,
   Send,
   CalendarPlus,
-  ChevronDown,
+  Key,
+  FileText,
+  Home as HomeIcon,
+  Banknote,
+  ClipboardCheck,
+  Handshake,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SectionTitle } from "@/components/dashboard/section-title";
+import {
+  BackOfficeAddRow,
+  BackOfficeRowActions,
+} from "@/components/dashboard/back-office-controls";
+import { useIsBackOffice } from "@/components/dashboard/use-role";
+import { useRemoveWithReason } from "@/components/dashboard/use-remove-with-reason";
+import { useSnoozeWithReason } from "@/components/dashboard/use-snooze-with-reason";
 import {
   Sheet,
   SheetContent,
@@ -19,14 +33,13 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import {
-  ATTENTION_CATEGORY_LABEL,
   GREETING_LABEL,
   buildBriefSubtitle,
   getGreetingPeriod,
   prioritizeAttention,
+  type BriefAttentionCategory,
   type BriefAttentionItem,
   type BriefAttentionTone,
-  type BriefHandled,
   type BriefPriority,
   type BriefPriorityAction,
   type GreetingPeriod,
@@ -40,10 +53,20 @@ const ACTION_ICON: Record<BriefPriorityAction, typeof Phone> = {
   schedule: CalendarPlus,
 };
 
-const TONE_DOT: Record<BriefAttentionTone, string> = {
-  critical: "bg-destructive",
-  warning: "bg-warning",
-  neutral: "bg-success",
+const ATTENTION_CATEGORY_ICON: Record<BriefAttentionCategory, typeof Phone> = {
+  closing: Key,
+  negotiation: Handshake,
+  "follow-up": MessageCircle,
+  contract: FileText,
+  showing: HomeIcon,
+  lender: Banknote,
+  inspection: ClipboardCheck,
+};
+
+const TONE_ROW_BORDER: Record<BriefAttentionTone, string> = {
+  critical: "border-l-2 border-l-destructive",
+  warning: "border-l-2 border-l-warning",
+  neutral: "",
 };
 
 const GREETING_EMOJI: Record<GreetingPeriod, string> = {
@@ -76,32 +99,91 @@ export function MorningBriefClient({
   const subtitle = useMemo(() => buildBriefSubtitle(brief), [brief]);
   const active = useMemo(() => prioritizeAttention(brief.attention), [brief]);
 
+  const isBackOffice = useIsBackOffice();
+  const priorityRemoval = useRemoveWithReason<BriefPriority>({
+    itemType: "priority",
+    getDisplayName: (p) => p.headline,
+  });
+  const attentionRemoval = useRemoveWithReason<BriefAttentionItem>({
+    itemType: "attention",
+    getDisplayName: (a) => a.headline,
+  });
   const [doneIds, setDoneIds] = useState<Set<string>>(new Set());
+  const [snoozedIds, setSnoozedIds] = useState<Set<string>>(new Set());
   const [attentionDoneIds, setAttentionDoneIds] = useState<Set<string>>(
     new Set()
   );
+  const [attentionSnoozedIds, setAttentionSnoozedIds] = useState<Set<string>>(
+    new Set()
+  );
+  const prioritySnoozeReason = useSnoozeWithReason<BriefPriority>({
+    itemType: "priority",
+    getDisplayName: (p) => p.headline,
+    onSnooze: (p) => {
+      snoozePriority(p.id);
+      setSelectedId((current) => (current === p.id ? null : current));
+    },
+  });
+  const attentionSnoozeReason = useSnoozeWithReason<BriefAttentionItem>({
+    itemType: "attention",
+    getDisplayName: (a) => a.headline,
+    onSnooze: (a) => snoozeAttention(a.id),
+  });
+  const lastCelebratedRef = useRef(0);
+  const totalDone = doneIds.size + attentionDoneIds.size;
+
+  useEffect(() => {
+    // Trigger a small celebration every 3rd completion (3, 6, 9, ...).
+    // Reset the milestone if the user un-checks something so a re-cross
+    // still feels rewarding.
+    if (totalDone === 0) {
+      lastCelebratedRef.current = 0;
+      return;
+    }
+    if (totalDone > lastCelebratedRef.current && totalDone % 3 === 0) {
+      const intensity = totalDone >= 9 ? 3 : totalDone >= 6 ? 2 : 1;
+      celebrate(intensity);
+      lastCelebratedRef.current = totalDone;
+    } else if (totalDone < lastCelebratedRef.current) {
+      lastCelebratedRef.current = totalDone;
+    }
+  }, [totalDone]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [priorityTab, setPriorityTab] = useState<PriorityTab>("todo");
   const [attentionTab, setAttentionTab] = useState<PriorityTab>("todo");
   const selectedPriority =
     brief.priorities.find((p) => p.id === selectedId) ?? null;
+  const livePriorities = useMemo(
+    () => brief.priorities.filter((p) => !priorityRemoval.isRemoved(p.id)),
+    [brief.priorities, priorityRemoval]
+  );
   const todoPriorities = useMemo(
-    () => brief.priorities.filter((p) => !doneIds.has(p.id)),
-    [brief.priorities, doneIds]
+    () =>
+      livePriorities.filter(
+        (p) => !doneIds.has(p.id) && !snoozedIds.has(p.id)
+      ),
+    [livePriorities, doneIds, snoozedIds]
   );
   const donePriorities = useMemo(
-    () => brief.priorities.filter((p) => doneIds.has(p.id)),
-    [brief.priorities, doneIds]
+    () => livePriorities.filter((p) => doneIds.has(p.id)),
+    [livePriorities, doneIds]
   );
   const visiblePriorities =
     priorityTab === "todo" ? todoPriorities : donePriorities;
+  const liveAttention = useMemo(
+    () => active.filter((a) => !attentionRemoval.isRemoved(a.id)),
+    [active, attentionRemoval]
+  );
   const todoAttention = useMemo(
-    () => active.filter((a) => !attentionDoneIds.has(a.id)),
-    [active, attentionDoneIds]
+    () =>
+      liveAttention.filter(
+        (a) => !attentionDoneIds.has(a.id) && !attentionSnoozedIds.has(a.id)
+      ),
+    [liveAttention, attentionDoneIds, attentionSnoozedIds]
   );
   const doneAttention = useMemo(
-    () => active.filter((a) => attentionDoneIds.has(a.id)),
-    [active, attentionDoneIds]
+    () => liveAttention.filter((a) => attentionDoneIds.has(a.id)),
+    [liveAttention, attentionDoneIds]
   );
 
   function toggleAttentionDone(id: string) {
@@ -111,6 +193,20 @@ export function MorningBriefClient({
       else next.add(id);
       return next;
     });
+    setAttentionSnoozedIds((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }
+
+  function snoozeAttention(id: string) {
+    setAttentionSnoozedIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
   }
 
   function toggleDone(id: string) {
@@ -118,6 +214,21 @@ export function MorningBriefClient({
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
+      return next;
+    });
+    // If marking done, also drop any snooze on the same item.
+    setSnoozedIds((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }
+
+  function snoozePriority(id: string) {
+    setSnoozedIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
       return next;
     });
   }
@@ -147,6 +258,8 @@ export function MorningBriefClient({
         todoItems={todoAttention}
         doneItems={doneAttention}
         onToggleDone={toggleAttentionDone}
+        onSnoozeRequest={attentionSnoozeReason.request}
+        onRequestRemove={attentionRemoval.requestRemove}
       />
 
       {/* Suggested priorities — action + context + optional risk */}
@@ -169,9 +282,16 @@ export function MorningBriefClient({
                 priority={p}
                 done={doneIds.has(p.id)}
                 onToggle={() => toggleDone(p.id)}
+                onSnooze={() => prioritySnoozeReason.request(p)}
                 onOpen={() => setSelectedId(p.id)}
+                onRequestRemove={() => priorityRemoval.requestRemove(p)}
               />
             ))}
+            {isBackOffice && priorityTab === "todo" && (
+              <li>
+                <BackOfficeAddRow label="Add priority" />
+              </li>
+            )}
           </ul>
         ) : (
           <p className="text-sm text-muted-foreground px-1 py-6">
@@ -182,23 +302,28 @@ export function MorningBriefClient({
         )}
       </section>
 
-      {/* Already handled — compact, secondary */}
-      <HandledBlock items={brief.handled} />
-
       <Sheet
         open={!!selectedId}
         onOpenChange={(open) => !open && setSelectedId(null)}
       >
-        <SheetContent className="w-full sm:max-w-md">
+        <SheetContent className="w-full sm:max-w-md p-0 gap-0">
           {selectedPriority && (
             <PriorityDetail
+              key={selectedPriority.id}
               priority={selectedPriority}
               done={doneIds.has(selectedPriority.id)}
               onToggle={() => toggleDone(selectedPriority.id)}
+              onSnooze={() => prioritySnoozeReason.request(selectedPriority)}
+              onClose={() => setSelectedId(null)}
             />
           )}
         </SheetContent>
       </Sheet>
+
+      {priorityRemoval.dialog}
+      {attentionRemoval.dialog}
+      {prioritySnoozeReason.dialog}
+      {attentionSnoozeReason.dialog}
     </div>
   );
 }
@@ -270,20 +395,25 @@ function PriorityOverview({
   todoItems,
   doneItems,
   onToggleDone,
+  onSnoozeRequest,
+  onRequestRemove,
 }: {
   tab: PriorityTab;
   onChange: (next: PriorityTab) => void;
   todoItems: BriefAttentionItem[];
   doneItems: BriefAttentionItem[];
   onToggleDone: (id: string) => void;
+  onSnoozeRequest: (item: BriefAttentionItem) => void;
+  onRequestRemove: (item: BriefAttentionItem) => void;
 }) {
+  const isBackOffice = useIsBackOffice();
   const visibleTodo = todoItems.slice(0, PRIORITY_OVERVIEW_LIMIT);
   const visible = tab === "todo" ? visibleTodo : doneItems;
   return (
     <section aria-label="Priority overview" className="space-y-3">
       <SectionTitle
         title="Priority overview"
-        tooltip="What's blocking, at risk, or actionable today — ordered by urgency. Click a row to mark it handled."
+        tooltip="The signals most likely to create operational problems today — sorted by urgency."
       />
       <PriorityTabs
         tab={tab}
@@ -299,8 +429,16 @@ function PriorityOverview({
               item={item}
               done={tab === "done"}
               onToggle={() => onToggleDone(item.id)}
+              onSnooze={() => onSnoozeRequest(item)}
+              isBackOffice={isBackOffice}
+              onRequestRemove={() => onRequestRemove(item)}
             />
           ))}
+          {isBackOffice && tab === "todo" && (
+            <li>
+              <BackOfficeAddRow label="Add attention item" />
+            </li>
+          )}
         </ul>
       ) : (
         <p className="text-sm text-muted-foreground px-1 py-4">
@@ -317,41 +455,84 @@ function AttentionRow({
   item,
   done,
   onToggle,
+  onSnooze,
+  isBackOffice,
+  onRequestRemove,
 }: {
   item: BriefAttentionItem;
   done: boolean;
   onToggle: () => void;
+  onSnooze: () => void;
+  isBackOffice: boolean;
+  onRequestRemove: () => void;
 }) {
+  const CategoryIcon = ATTENTION_CATEGORY_ICON[item.category];
   return (
-    <li>
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-label={done ? "Mark as pending" : "Mark as handled"}
-        className={cn(
-          "w-full flex items-center gap-3.5 px-4 py-4 sm:px-5 text-left hover:bg-muted/30 transition-colors",
-          done && "opacity-60"
-        )}
-      >
-        <span
-          aria-hidden
-          className={cn(
-            "h-2.5 w-2.5 rounded-full shrink-0",
-            TONE_DOT[item.tone]
-          )}
-        />
-        <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/85 shrink-0 w-[96px]">
-          {ATTENTION_CATEGORY_LABEL[item.category]}
-        </span>
+    <li
+      className={cn(
+        "group flex items-start gap-3.5 px-4 py-4 sm:px-5",
+        TONE_ROW_BORDER[item.tone],
+        done && "opacity-60"
+      )}
+    >
+      <CategoryIcon
+        aria-hidden
+        className="h-5 w-5 mt-0.5 shrink-0 text-foreground/70"
+        strokeWidth={2}
+      />
+      <div className="flex-1 min-w-0">
         <p
           className={cn(
-            "text-[15px] leading-snug text-foreground flex-1 min-w-0 truncate",
-            done && "line-through decoration-muted-foreground/40"
+            "text-[15px] leading-snug font-medium text-foreground truncate",
+            done && "line-through font-normal decoration-muted-foreground/40"
           )}
         >
           {item.headline}
         </p>
-      </button>
+        {item.tone === "critical" && item.risk && !done && (
+          <p className="mt-0.5 text-xs text-destructive truncate">
+            {item.risk}
+          </p>
+        )}
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
+        <button
+          type="button"
+          onClick={onToggle}
+          className={cn(
+            "group/done inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
+            done
+              ? "text-success hover:bg-success-subtle/70"
+              : "text-foreground/80 hover:text-foreground hover:bg-muted/80"
+          )}
+        >
+          <Check
+            className={cn(
+              "h-3 w-3 transition-opacity",
+              done
+                ? "opacity-100"
+                : "opacity-0 -ml-3.5 group-hover/done:opacity-100 group-hover/done:ml-0"
+            )}
+            strokeWidth={2.5}
+          />
+          Done
+        </button>
+        {!done && (
+          <button
+            type="button"
+            onClick={onSnooze}
+            className="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-medium text-muted-foreground/65 hover:text-foreground/80 hover:bg-muted/50 transition-colors"
+          >
+            Not now
+          </button>
+        )}
+      </div>
+      {isBackOffice && (
+        <BackOfficeRowActions
+          label={item.headline}
+          onDelete={onRequestRemove}
+        />
+      )}
     </li>
   );
 }
@@ -360,45 +541,42 @@ function PriorityRow({
   priority,
   done,
   onToggle,
+  onSnooze,
   onOpen,
+  onRequestRemove,
 }: {
   priority: BriefPriority;
   done: boolean;
   onToggle: () => void;
+  onSnooze: () => void;
   onOpen: () => void;
+  onRequestRemove: () => void;
 }) {
   const ActionIcon = ACTION_ICON[priority.action.kind];
   const isCritical = priority.riskLevel === "critical";
+  const isBackOffice = useIsBackOffice();
   return (
     <li
       className={cn(
-        "flex items-center gap-3 px-4 py-3.5 transition-opacity",
+        "group flex items-start gap-3.5 px-4 py-4 sm:px-5 sm:py-[18px] transition-opacity",
         done && "opacity-55"
       )}
     >
-      <button
-        type="button"
-        aria-label={done ? "Mark as pending" : "Mark as done"}
-        onClick={onToggle}
-        className={cn(
-          "h-5 w-5 rounded-md border inline-flex items-center justify-center shrink-0 transition-colors",
-          done
-            ? "bg-success border-success text-background"
-            : "border-border text-muted-foreground/50 hover:border-foreground hover:text-foreground"
-        )}
-      >
-        {done && <Check className="h-3 w-3" strokeWidth={2.5} />}
-      </button>
+      <ActionIcon
+        aria-hidden
+        className="h-5 w-5 mt-0.5 shrink-0 text-foreground/70"
+        strokeWidth={2}
+      />
       <button
         type="button"
         onClick={onOpen}
-        className="group flex-1 min-w-0 text-left"
+        className="flex-1 min-w-0 text-left"
         aria-label={`Open details for ${priority.headline}`}
       >
         <span
           className={cn(
-            "block text-[15px] leading-snug text-foreground truncate decoration-muted-foreground/30 underline-offset-2 group-hover:underline",
-            done && "line-through"
+            "block text-[15px] leading-snug text-foreground truncate",
+            done && "line-through decoration-muted-foreground/40"
           )}
         >
           {priority.headline}
@@ -409,14 +587,37 @@ function PriorityRow({
           </span>
         )}
       </button>
-      <button
-        type="button"
-        onClick={onToggle}
-        className="shrink-0 inline-flex items-center justify-center gap-1.5 min-w-[96px] px-3 py-1.5 rounded-md text-xs font-medium bg-success-subtle text-success hover:bg-success-subtle/70 transition-colors"
-      >
-        <ActionIcon className="h-3.5 w-3.5" strokeWidth={2} />
-        {priority.action.label}
-      </button>
+      <div className="flex items-center gap-0.5 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
+        <button
+          type="button"
+          onClick={onToggle}
+          className={cn(
+            "inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors",
+            done
+              ? "text-success hover:bg-success-subtle/60"
+              : "text-muted-foreground/85 hover:text-foreground hover:bg-muted/50"
+          )}
+        >
+          {done && <Check className="h-3 w-3" strokeWidth={2.5} />}
+          {done ? "Done" : "Done"}
+        </button>
+        {!done && (
+          <button
+            type="button"
+            onClick={onSnooze}
+            className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium text-muted-foreground/70 hover:text-foreground hover:bg-muted/50 transition-colors"
+          >
+            Not now
+          </button>
+        )}
+      </div>
+      {isBackOffice && (
+        <BackOfficeRowActions
+          label={priority.headline}
+          onDelete={onRequestRemove}
+          className="shrink-0"
+        />
+      )}
     </li>
   );
 }
@@ -425,75 +626,133 @@ function PriorityDetail({
   priority,
   done,
   onToggle,
+  onSnooze,
+  onClose,
 }: {
   priority: BriefPriority;
   done: boolean;
   onToggle: () => void;
+  onSnooze: () => void;
+  onClose: () => void;
 }) {
   const ActionIcon = ACTION_ICON[priority.action.kind];
   const isCritical = priority.riskLevel === "critical";
+
+  function handleDone() {
+    onToggle();
+    onClose();
+  }
+
   return (
     <>
-      <SheetHeader className="text-left">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+      <SheetHeader className="text-left px-5 pt-5 sm:px-6 sm:pt-6 gap-2">
+        <div className="flex items-center gap-1.5">
+          <ActionIcon
+            className="h-3.5 w-3.5 text-muted-foreground/85 shrink-0"
+            strokeWidth={2}
+          />
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/85">
             {priority.action.label}
           </span>
           {isCritical && (
-            <span className="inline-flex items-center gap-1 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-destructive">
-              <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
-              At risk
-            </span>
+            <>
+              <span aria-hidden className="text-muted-foreground/30">
+                ·
+              </span>
+              <span className="inline-flex items-center gap-1 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-destructive">
+                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-destructive" />
+                At risk
+              </span>
+            </>
           )}
         </div>
-        <SheetTitle className="text-lg leading-snug">
+        <SheetTitle className="text-[19px] leading-snug font-medium text-foreground">
           {priority.headline}
         </SheetTitle>
         <SheetDescription className="sr-only">
-          Suggested priority details
+          Priority detail
         </SheetDescription>
       </SheetHeader>
 
-      <div className="mt-6 space-y-5">
+      <div className="flex-1 overflow-y-auto px-5 sm:px-6 pb-6 space-y-6">
         {priority.context && (
-          <DetailField label="Why now">
+          <DetailField label="Why this matters">
             <p className="text-sm text-foreground/85 leading-relaxed">
               {priority.context}
             </p>
           </DetailField>
         )}
+
         {priority.risk && (
           <DetailField label="Risk if untouched today">
             <p
               className={cn(
                 "text-sm leading-relaxed",
-                isCritical
-                  ? "text-destructive"
-                  : "text-foreground/70"
+                isCritical ? "text-destructive" : "text-foreground/70"
               )}
             >
               {priority.risk}
             </p>
           </DetailField>
         )}
+
+        {priority.pulsorSuggestions && priority.pulsorSuggestions.length > 0 && (
+          <DetailField label="Pulsor suggestions">
+            <ul className="space-y-2">
+              {priority.pulsorSuggestions.map((s, i) => (
+                <li
+                  key={i}
+                  className="flex items-start gap-2.5 text-sm text-foreground/85 leading-snug"
+                >
+                  <Sparkles
+                    aria-hidden
+                    className="h-3.5 w-3.5 mt-0.5 shrink-0 text-success"
+                    strokeWidth={2}
+                    fill="currentColor"
+                  />
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ul>
+          </DetailField>
+        )}
+
+        {priority.snapshot && priority.snapshot.length > 0 && (
+          <DetailField label="Context snapshot">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5 rounded-lg border border-border/70 bg-muted/20 px-3.5 py-3">
+              {priority.snapshot.map((s) => (
+                <li key={s.label} className="min-w-0">
+                  <div className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground/70">
+                    {s.label}
+                  </div>
+                  <div className="text-sm text-foreground truncate">
+                    {s.value}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </DetailField>
+        )}
       </div>
 
-      <div className="mt-8 flex gap-2">
-        <button
-          type="button"
-          onClick={onToggle}
-          className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium bg-success-subtle text-success hover:bg-success-subtle/70 transition-colors"
-        >
-          <ActionIcon className="h-4 w-4" strokeWidth={2} />
-          {priority.action.label}
-        </button>
-        <button
-          type="button"
-          onClick={onToggle}
-          className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-md text-sm font-medium border border-border text-muted-foreground hover:border-foreground hover:text-foreground transition-colors"
-        >
-          {done ? "Mark as pending" : "Mark done"}
-        </button>
+      <div className="border-t border-border bg-muted/20 px-5 py-3 sm:px-6">
+        <div className="flex items-center justify-end gap-1.5">
+          <button
+            type="button"
+            onClick={onSnooze}
+            className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground/80 hover:text-foreground hover:bg-muted/60 transition-colors"
+          >
+            Not now
+          </button>
+          <button
+            type="button"
+            onClick={handleDone}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-foreground hover:bg-muted/70 transition-colors"
+          >
+            <Check className="h-3.5 w-3.5" strokeWidth={2.25} />
+            {done ? "Mark as pending" : "Done"}
+          </button>
+        </div>
       </div>
     </>
   );
@@ -516,50 +775,3 @@ function DetailField({
   );
 }
 
-function HandledBlock({ items }: { items: BriefHandled[] }) {
-  const [open, setOpen] = useState(false);
-  if (items.length === 0) return null;
-  return (
-    <section aria-label="Already handled" className="pt-2 border-t border-border/50">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="group flex w-full items-center gap-2 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-        aria-expanded={open}
-      >
-        <ChevronDown
-          className={cn(
-            "h-3.5 w-3.5 transition-transform",
-            open ? "rotate-0" : "-rotate-90"
-          )}
-          strokeWidth={2}
-        />
-        <span>Already handled</span>
-        <span className="font-mono tabular-nums text-muted-foreground/60">
-          ({items.length})
-        </span>
-      </button>
-      {open && (
-        <ul className="mt-1.5 space-y-1">
-          {items.map((h) => (
-            <li
-              key={h.id}
-              className="flex items-center gap-2.5 px-3 py-1.5 text-xs text-muted-foreground"
-            >
-              <Check
-                className="h-3 w-3 text-success/80 shrink-0"
-                strokeWidth={2.5}
-              />
-              <span className="flex-1 min-w-0 truncate">{h.headline}</span>
-              {h.whenLabel && (
-                <span className="font-mono text-[10px] text-muted-foreground/60 shrink-0">
-                  {h.whenLabel}
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-  );
-}

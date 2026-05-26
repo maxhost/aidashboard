@@ -41,8 +41,12 @@ const NAV_WORKSPACE_ASSISTANT: NavItem[] = [
   { href: "/transactions", label: "Transactions", icon: FileText },
 ];
 
-const NAV_SECONDARY = [
+const NAV_SECONDARY_DEFAULT = [
   { href: "/usage", label: "Usage", icon: Gauge, disabled: false },
+  { href: "/help", label: "Help", icon: LifeBuoy, disabled: true },
+] as const;
+
+const NAV_SECONDARY_ASSISTANT = [
   { href: "/help", label: "Help", icon: LifeBuoy, disabled: true },
 ] as const;
 
@@ -68,8 +72,13 @@ function useRole(): Role {
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const role = useRole();
-  const workspace =
-    role === "assistant" ? NAV_WORKSPACE_ASSISTANT : NAV_WORKSPACE_DEFAULT;
+  const isAssistantArea = role === "assistant" || role === "back-office";
+  const workspace = isAssistantArea
+    ? NAV_WORKSPACE_ASSISTANT
+    : NAV_WORKSPACE_DEFAULT;
+  const secondary = isAssistantArea
+    ? NAV_SECONDARY_ASSISTANT
+    : NAV_SECONDARY_DEFAULT;
   const renderItem = ({
     href,
     label,
@@ -116,7 +125,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
       <div className="px-4 pb-6 space-y-1 border-t border-border/60 pt-4">
         <UserPill onNavigate={onNavigate} />
-        {NAV_SECONDARY.map(({ href, label, icon: Icon, disabled }) => {
+        {secondary.map(({ href, label, icon: Icon, disabled }) => {
           const active =
             !disabled && (pathname === href || pathname?.startsWith(href + "/"));
           if (disabled) {

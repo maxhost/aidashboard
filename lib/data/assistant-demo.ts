@@ -27,6 +27,8 @@ export type BriefAttentionItem = {
   category: BriefAttentionCategory;
   headline: string;
   tone: BriefAttentionTone;
+  /** Short impact/risk line — typically shown only for critical items. */
+  risk?: string;
   /** ISO timestamp; when present the item is treated as resolved and filtered out. */
   resolvedAt?: string;
 };
@@ -40,6 +42,11 @@ export type BriefPriorityAction = "call" | "send" | "message" | "schedule";
  */
 export type BriefPriorityRiskLevel = "critical" | "minor";
 
+export type PrioritySnapshotItem = {
+  label: string;
+  value: string;
+};
+
 export type BriefPriority = {
   id: string;
   headline: string;
@@ -49,6 +56,10 @@ export type BriefPriority = {
   risk?: string;
   riskLevel?: BriefPriorityRiskLevel;
   action: { kind: BriefPriorityAction; label: string };
+  /** Calm, practical operational tips Pulsor surfaces in the detail drawer. */
+  pulsorSuggestions?: string[];
+  /** Compact key-value chips with quick operational context. */
+  snapshot?: PrioritySnapshotItem[];
 };
 
 export type BriefHandled = {
@@ -73,12 +84,14 @@ export const MORNING_BRIEF: MorningBrief = {
       category: "lender",
       headline: "Perez lender silent — payoff letter overdue 2 days",
       tone: "critical",
+      risk: "Closing slips if not received by Wednesday",
     },
     {
       id: "a-2",
       category: "closing",
       headline: "Sanchez closing Friday — title clearance still pending",
       tone: "critical",
+      risk: "Title needs to clear in 48h to keep closing on schedule",
     },
     {
       id: "a-3",
@@ -132,6 +145,17 @@ export const MORNING_BRIEF: MorningBrief = {
       context: "Buyer asked yesterday afternoon",
       risk: "May delay offer decision",
       action: { kind: "send", label: "Send" },
+      pulsorSuggestions: [
+        "Send before 2 PM — Perez usually browses in the afternoon",
+        "Include 2 pool-adjacent comps alongside the requested set",
+        "Lead with the closing timeline in the cover note",
+      ],
+      snapshot: [
+        { label: "Lead source", value: "Referral" },
+        { label: "Last contact", value: "Yesterday 4 PM" },
+        { label: "Buyer status", value: "Active" },
+        { label: "Market", value: "Coral Gables" },
+      ],
     },
     {
       id: "p-2",
@@ -140,6 +164,17 @@ export const MORNING_BRIEF: MorningBrief = {
       risk: "Could push closing one week",
       riskLevel: "critical",
       action: { kind: "message", label: "Message" },
+      pulsorSuggestions: [
+        "Anchor the message to the closing date — keeps it short",
+        "Offer 2 specific time windows so Sanchez can pick fast",
+        "Copy the lender so the appraiser sees the same thread",
+      ],
+      snapshot: [
+        { label: "Closing", value: "Jun 12 (24 days)" },
+        { label: "Lender", value: "First Atlantic" },
+        { label: "Last contact", value: "Monday" },
+        { label: "Channel", value: "Email + SMS" },
+      ],
     },
     {
       id: "p-3",
@@ -148,6 +183,17 @@ export const MORNING_BRIEF: MorningBrief = {
       risk: "Closing slips if not received by Wednesday",
       riskLevel: "critical",
       action: { kind: "call", label: "Call" },
+      pulsorSuggestions: [
+        "Call before noon — Pinnacle Title escalates same-day requests",
+        "Ask for confirmation of the payoff figure, not just the letter",
+        "Loop the lender on the call summary in writing",
+      ],
+      snapshot: [
+        { label: "Title office", value: "Pinnacle Title" },
+        { label: "Deadline", value: "Wednesday" },
+        { label: "Open since", value: "Friday" },
+        { label: "Closing", value: "Jun 12" },
+      ],
     },
     {
       id: "p-4",
@@ -156,30 +202,80 @@ export const MORNING_BRIEF: MorningBrief = {
       risk: "Buyer may walk if it lapses",
       riskLevel: "critical",
       action: { kind: "send", label: "Send" },
+      pulsorSuggestions: [
+        "Send via DocuSign — selling agent prefers it over email",
+        "Highlight financing terms first, price second",
+        "Schedule a 30-min check-in for tomorrow morning",
+      ],
+      snapshot: [
+        { label: "Deadline", value: "Tonight 9 PM" },
+        { label: "Selling agent", value: "Maria Sandoval" },
+        { label: "Last touch", value: "Yesterday 6 PM" },
+        { label: "Buyer status", value: "On the fence" },
+      ],
     },
     {
       id: "p-5",
       headline: "Schedule second showing at Brickell for Lopez",
       context: "Available this Saturday afternoon",
       action: { kind: "schedule", label: "Schedule" },
+      pulsorSuggestions: [
+        "Block 90 minutes — Lopez asked detailed questions last time",
+        "Suggest 2 PM, when natural light hits the unit best",
+      ],
+      snapshot: [
+        { label: "Property", value: "1830 Brickell, #2204" },
+        { label: "Visits", value: "1 prior" },
+        { label: "Saturday", value: "Available" },
+        { label: "Temperature", value: "Warm" },
+      ],
     },
     {
       id: "p-6",
       headline: "Message Castro about the new Sunset Dr listing",
       context: "Re-opened the IDX search overnight",
       action: { kind: "message", label: "Message" },
+      pulsorSuggestions: [
+        "Lead with the bedrooms + lot size — matches their last search",
+        "Mention price reduction explicitly if there is one",
+      ],
+      snapshot: [
+        { label: "Listing", value: "2208 Sunset Dr" },
+        { label: "Activity", value: "3 views overnight" },
+        { label: "Buyer status", value: "Under contract elsewhere" },
+        { label: "Market", value: "Sunset Dr" },
+      ],
     },
     {
       id: "p-7",
       headline: "Send disclosures to Garcia's pool inspector",
       context: "Inspection scheduled for Thursday morning",
       action: { kind: "send", label: "Send" },
+      pulsorSuggestions: [
+        "Bundle the pool addendum with the rest — saves a follow-up",
+        "Send by Wednesday EOD so the inspector has time to review",
+      ],
+      snapshot: [
+        { label: "Inspector", value: "ProShield Inspections" },
+        { label: "Inspection", value: "Thursday 9 AM" },
+        { label: "Property", value: "315 NE 95th St" },
+      ],
     },
     {
       id: "p-8",
       headline: "Call Wallace to confirm 3rd showing on Saturday",
       context: "Hot buyer, two prior visits — ready to move",
       action: { kind: "call", label: "Call" },
+      pulsorSuggestions: [
+        "Confirm timing + parking — last visit ran long",
+        "Bring a printed comp set in case they ask",
+      ],
+      snapshot: [
+        { label: "Buyer", value: "Jeremy Wallace" },
+        { label: "Visits", value: "2 prior" },
+        { label: "Temperature", value: "Hot" },
+        { label: "Budget", value: "$1.4M" },
+      ],
     },
     {
       id: "p-9",
@@ -187,18 +283,45 @@ export const MORNING_BRIEF: MorningBrief = {
       context: "Listing target is next Monday",
       risk: "Photographer books out 5 days ahead",
       action: { kind: "schedule", label: "Schedule" },
+      pulsorSuggestions: [
+        "Book the regular photographer — keeps the brand consistent",
+        "Aim for golden hour — Aldridge's house faces west",
+      ],
+      snapshot: [
+        { label: "Listing", value: "7345 SW 102nd St" },
+        { label: "Launch", value: "Next Monday" },
+        { label: "Photographer lead", value: "5 days" },
+      ],
     },
     {
       id: "p-10",
       headline: "Message Davis Capital with Q2 off-market deal flow",
       context: "Requested investment portfolio last week",
       action: { kind: "message", label: "Message" },
+      pulsorSuggestions: [
+        "Send 3 properties max — Davis filters aggressively",
+        "Lead with cap rate, not address",
+      ],
+      snapshot: [
+        { label: "Investor", value: "Davis Capital LLC" },
+        { label: "Budget", value: "$3.5M+" },
+        { label: "Market", value: "Miami Beach" },
+      ],
     },
     {
       id: "p-11",
       headline: "Send updated proof of funds to Lopez lender",
       context: "Lender re-verified income this morning",
       action: { kind: "send", label: "Send" },
+      pulsorSuggestions: [
+        "Use the lender's secure portal — email gets flagged",
+        "Confirm receipt the same day to keep underwriting moving",
+      ],
+      snapshot: [
+        { label: "Lender", value: "Sunshine Mortgage" },
+        { label: "Verified", value: "This morning" },
+        { label: "Closing", value: "Jun 20" },
+      ],
     },
     {
       id: "p-12",
@@ -206,6 +329,19 @@ export const MORNING_BRIEF: MorningBrief = {
       context: "Inbound today, pre-approved, motivated",
       risk: "Cold contact window closes after 24 h",
       action: { kind: "call", label: "Call" },
+      pulsorSuggestions: [
+        "Call before 2 PM for higher response probability",
+        "Mention financing timeline first",
+        "Buyer viewed the listing multiple times overnight",
+        "If no response, send financing-focused follow-up text",
+      ],
+      snapshot: [
+        { label: "Lead source", value: "Zillow" },
+        { label: "Last contact", value: "None" },
+        { label: "Buyer status", value: "Pre-approved" },
+        { label: "Market", value: "Brickell" },
+        { label: "Activity", value: "Overnight spike" },
+      ],
     },
   ],
   handled: [
@@ -395,7 +531,7 @@ export const TRANSACTION_DOCUMENT_LABEL: Record<
   other: "Other",
 };
 
-export type TransactionDocumentStatus = "received" | "pending" | "overdue";
+export type TransactionDocumentStatus = "received" | "pending";
 
 export type TransactionDocument = {
   id: string;
@@ -433,6 +569,93 @@ export type TransactionCriticalAction = {
   rationale?: string;
 };
 
+export type DealHealthLevel = "good" | "moderate" | "slow" | "n/a";
+export type DealHealthTimeline = "on-track" | "watching" | "at-risk";
+export type DealHealthRisk = "low" | "moderate" | "high";
+
+export const DEAL_HEALTH_LEVEL_LABEL: Record<DealHealthLevel, string> = {
+  good: "Fast",
+  moderate: "Moderate",
+  slow: "Slow",
+  "n/a": "N/A",
+};
+
+export const DEAL_HEALTH_TIMELINE_LABEL: Record<DealHealthTimeline, string> = {
+  "on-track": "On track",
+  watching: "Watching",
+  "at-risk": "At risk",
+};
+
+export const DEAL_HEALTH_RISK_LABEL: Record<DealHealthRisk, string> = {
+  low: "Low",
+  moderate: "Moderate",
+  high: "High",
+};
+
+export type DealHealth = {
+  clientResponsiveness: DealHealthLevel;
+  lenderResponsiveness: DealHealthLevel;
+  timelineConfidence: DealHealthTimeline;
+  riskLevel: DealHealthRisk;
+};
+
+export type OpsTaskStatus =
+  | "not-started"
+  | "in-progress"
+  | "awaiting"
+  | "completed"
+  | "overdue";
+
+export type OpsTaskOwner =
+  | "you"
+  | "tc"
+  | "lender"
+  | "title"
+  | "client"
+  | "system";
+
+export const OPS_TASK_STATUS_LABEL: Record<OpsTaskStatus, string> = {
+  "not-started": "Not Started",
+  "in-progress": "In Progress",
+  awaiting: "Awaiting",
+  completed: "Completed",
+  overdue: "Overdue",
+};
+
+export type Assignee = {
+  name: string;
+  initials: string;
+};
+
+/** Display names for owners — used to render the assignee chip on tasks. */
+export const OPS_TASK_OWNER_ASSIGNEE: Record<OpsTaskOwner, Assignee> = {
+  you: { name: "Maria T", initials: "MT" },
+  tc: { name: "Mia R", initials: "MR" },
+  lender: { name: "Lender", initials: "L" },
+  title: { name: "Title", initials: "T" },
+  client: { name: "Client", initials: "C" },
+  system: { name: "System", initials: "S" },
+};
+
+export type OpsTaskPriority = "high";
+
+export type OpsTask = {
+  id: string;
+  title: string;
+  status: OpsTaskStatus;
+  owner: OpsTaskOwner;
+  priority?: OpsTaskPriority;
+  dueLabel?: string;
+  /** Used for completed/awaiting context — "Completed May 16", "Awaiting Lopez". */
+  whenLabel?: string;
+  note?: string;
+};
+
+export type TransactionsBriefing = {
+  mostUrgent: string;
+  stats: string[];
+};
+
 export type Transaction = {
   id: string;
   address: string;
@@ -453,13 +676,15 @@ export type Transaction = {
   parties?: TransactionParty[];
   documents?: TransactionDocument[];
   activity?: TransactionActivity[];
+  health?: DealHealth;
+  opsTasks?: OpsTask[];
 };
 
 export const TRANSACTIONS: Transaction[] = [
   {
     id: "tx-1",
     address: "742 Coral Way",
-    client: "Ramirez",
+    client: "Carlos & Elena Ramirez",
     type: "buyer",
     phase: "pending",
     progressPct: 60,
@@ -504,7 +729,7 @@ export const TRANSACTIONS: Transaction[] = [
     documents: [
       { id: "d-1", kind: "contract", status: "received", whenLabel: "May 1" },
       { id: "d-2", kind: "inspection", status: "received", whenLabel: "May 8" },
-      { id: "d-3", kind: "appraisal", status: "overdue", whenLabel: "Due May 18" },
+      { id: "d-3", kind: "appraisal", status: "pending", whenLabel: "Due May 18" },
       { id: "d-4", kind: "title", status: "pending" },
     ],
     activity: [
@@ -531,7 +756,7 @@ export const TRANSACTIONS: Transaction[] = [
   {
     id: "tx-2",
     address: "1830 Brickell Ave, #2204",
-    client: "Lopez",
+    client: "Daniel & Sofia Lopez",
     type: "buyer",
     phase: "pending",
     progressPct: 40,
@@ -581,7 +806,7 @@ export const TRANSACTIONS: Transaction[] = [
     ],
     documents: [
       { id: "d-1", kind: "contract", status: "received", whenLabel: "Apr 28" },
-      { id: "d-2", kind: "disclosures", status: "overdue", whenLabel: "Sent May 5" },
+      { id: "d-2", kind: "disclosures", status: "pending", whenLabel: "Sent May 5" },
       { id: "d-3", kind: "inspection", status: "pending" },
     ],
     activity: [
@@ -608,7 +833,7 @@ export const TRANSACTIONS: Transaction[] = [
   {
     id: "tx-3",
     address: "315 NE 95th St",
-    client: "Garcia",
+    client: "Javier & Marta Garcia",
     type: "buyer",
     phase: "pending",
     progressPct: 75,
@@ -667,7 +892,7 @@ export const TRANSACTIONS: Transaction[] = [
   {
     id: "tx-4",
     address: "2208 Sunset Dr",
-    client: "Castro",
+    client: "Andrea Castro",
     type: "buyer",
     phase: "pending",
     progressPct: 80,
@@ -726,7 +951,7 @@ export const TRANSACTIONS: Transaction[] = [
   {
     id: "tx-5",
     address: "401 Ocean Blvd, #708",
-    client: "Sanchez",
+    client: "Pablo & Isabel Sanchez",
     type: "buyer",
     phase: "closing",
     progressPct: 95,
@@ -862,7 +1087,7 @@ export const TRANSACTIONS: Transaction[] = [
   {
     id: "tx-7",
     address: "3401 Day Ave",
-    client: "Whittaker",
+    client: "Margaret Whittaker",
     type: "seller",
     phase: "listing",
     progressPct: 65,
@@ -917,6 +1142,200 @@ export const TRANSACTIONS: Transaction[] = [
     ],
   },
 ];
+
+/**
+ * Operational layer keyed by transaction id. Kept separate from TRANSACTIONS
+ * so the realtor-facing demo data stays scannable; merge happens in
+ * `transactions/[id]/page.tsx` before passing to the detail client.
+ */
+export const TRANSACTION_OPS_DETAILS: Record<
+  string,
+  { health: DealHealth; opsTasks: OpsTask[] }
+> = {
+  "tx-1": {
+    health: {
+      clientResponsiveness: "good",
+      lenderResponsiveness: "slow",
+      timelineConfidence: "watching",
+      riskLevel: "moderate",
+    },
+    opsTasks: [
+      { id: "t-1", title: "Review all contract paperwork for accuracy", status: "completed", owner: "tc", whenLabel: "Completed May 1" },
+      { id: "t-2", title: "Deliver contract paperwork to lender", status: "completed", owner: "tc", whenLabel: "Completed May 2" },
+      { id: "t-3", title: "Deliver contract paperwork to title", status: "completed", owner: "tc", whenLabel: "Completed May 2" },
+      { id: "t-4", title: "Receive and deliver receipt of earnest money", status: "completed", owner: "tc", whenLabel: "Completed May 5" },
+      { id: "t-5", title: "Confirm inspection scheduled", status: "completed", owner: "tc", whenLabel: "Completed May 8" },
+      { id: "t-6", title: "Call First Atlantic about payoff letter", status: "overdue", owner: "you", priority: "high", dueLabel: "Due May 18" },
+      { id: "t-7", title: "Send appraisal status update to Ramirez", status: "in-progress", owner: "you", dueLabel: "Due today" },
+      { id: "t-8", title: "Submit re-disclosed loan estimate", status: "awaiting", owner: "tc", whenLabel: "Awaiting Lender" },
+      { id: "t-9", title: "Confirm closing date estimate with title", status: "not-started", owner: "tc", dueLabel: "Due May 22" },
+      { id: "t-10", title: "Schedule final walkthrough", status: "not-started", owner: "you", dueLabel: "Due Jun 9" },
+    ],
+  },
+  "tx-2": {
+    health: {
+      clientResponsiveness: "slow",
+      lenderResponsiveness: "moderate",
+      timelineConfidence: "at-risk",
+      riskLevel: "high",
+    },
+    opsTasks: [
+      { id: "t-1", title: "Review all contract paperwork for accuracy", status: "completed", owner: "tc", whenLabel: "Completed Apr 28" },
+      { id: "t-2", title: "Deliver contract paperwork to lender", status: "completed", owner: "tc", whenLabel: "Completed Apr 29" },
+      { id: "t-3", title: "Confirm financing pre-approval", status: "completed", owner: "tc", whenLabel: "Completed May 6" },
+      { id: "t-4", title: "Re-request signed disclosure packet", status: "overdue", owner: "you", priority: "high", dueLabel: "Due May 17" },
+      { id: "t-5", title: "Call Lopez before noon today", status: "in-progress", owner: "you", priority: "high", dueLabel: "Due today" },
+      { id: "t-6", title: "Schedule inspection", status: "awaiting", owner: "tc", whenLabel: "Awaiting Lopez disclosures" },
+      { id: "t-7", title: "Order title and open escrow", status: "in-progress", owner: "tc" },
+      { id: "t-8", title: "Confirm Saturday showing logistics", status: "not-started", owner: "you", dueLabel: "Due Friday" },
+      { id: "t-9", title: "File contract amendment with brokerage", status: "not-started", owner: "tc", dueLabel: "Due May 25" },
+      { id: "t-10", title: "Schedule final walkthrough", status: "not-started", owner: "you", dueLabel: "Due Jun 17" },
+    ],
+  },
+  "tx-3": {
+    health: {
+      clientResponsiveness: "moderate",
+      lenderResponsiveness: "good",
+      timelineConfidence: "on-track",
+      riskLevel: "low",
+    },
+    opsTasks: [
+      { id: "t-1", title: "Review all contract paperwork for accuracy", status: "completed", owner: "tc", whenLabel: "Completed Apr 20" },
+      { id: "t-2", title: "Deliver contract paperwork to lender", status: "completed", owner: "tc", whenLabel: "Completed Apr 21" },
+      { id: "t-3", title: "Confirm inspection scheduled and delivered", status: "completed", owner: "tc", whenLabel: "Completed Apr 28" },
+      { id: "t-4", title: "Order final title commitment", status: "completed", owner: "tc", whenLabel: "Completed May 12" },
+      { id: "t-5", title: "Confirm appraisal report delivered", status: "completed", owner: "tc", whenLabel: "Completed May 10" },
+      { id: "t-6", title: "Send pool-option comps to Garcia", status: "in-progress", owner: "you", priority: "high", dueLabel: "Due tomorrow" },
+      { id: "t-7", title: "Track loan commitment underwriting", status: "awaiting", owner: "tc", whenLabel: "Awaiting Atlantic Federal" },
+      { id: "t-8", title: "Confirm walkthrough date", status: "not-started", owner: "you", dueLabel: "Due May 30" },
+      { id: "t-9", title: "Order closing-day binder", status: "not-started", owner: "tc", dueLabel: "Due Jun 1" },
+      { id: "t-10", title: "Coordinate notary", status: "not-started", owner: "tc", dueLabel: "Due Jun 3" },
+    ],
+  },
+  "tx-4": {
+    health: {
+      clientResponsiveness: "good",
+      lenderResponsiveness: "good",
+      timelineConfidence: "on-track",
+      riskLevel: "low",
+    },
+    opsTasks: [
+      { id: "t-1", title: "Review all contract paperwork for accuracy", status: "completed", owner: "tc", whenLabel: "Completed Apr 18" },
+      { id: "t-2", title: "Deliver contract paperwork to lender", status: "completed", owner: "tc", whenLabel: "Completed Apr 19" },
+      { id: "t-3", title: "Deliver contract paperwork to title", status: "completed", owner: "tc", whenLabel: "Completed Apr 19" },
+      { id: "t-4", title: "Confirm inspection scheduled and delivered", status: "completed", owner: "tc", whenLabel: "Completed Apr 25" },
+      { id: "t-5", title: "Confirm appraisal report delivered", status: "completed", owner: "tc", whenLabel: "Completed May 6" },
+      { id: "t-6", title: "Confirm loan commitment", status: "completed", owner: "tc", whenLabel: "Completed May 14" },
+      { id: "t-7", title: "Track title clearance with Pinnacle", status: "in-progress", owner: "tc" },
+      { id: "t-8", title: "Schedule final walkthrough", status: "not-started", owner: "you", priority: "high", dueLabel: "Due May 26" },
+      { id: "t-9", title: "Order closing-day binder", status: "not-started", owner: "tc", dueLabel: "Due May 28" },
+      { id: "t-10", title: "Coordinate notary", status: "not-started", owner: "tc", dueLabel: "Due May 30" },
+    ],
+  },
+  "tx-5": {
+    health: {
+      clientResponsiveness: "good",
+      lenderResponsiveness: "good",
+      timelineConfidence: "on-track",
+      riskLevel: "low",
+    },
+    opsTasks: [
+      { id: "t-1", title: "Review all contract paperwork for accuracy", status: "completed", owner: "tc", whenLabel: "Completed Mar 30" },
+      { id: "t-2", title: "Deliver contract paperwork to lender", status: "completed", owner: "tc", whenLabel: "Completed Mar 31" },
+      { id: "t-3", title: "Deliver contract paperwork to title", status: "completed", owner: "tc", whenLabel: "Completed Mar 31" },
+      { id: "t-4", title: "Receive and deliver receipt of earnest money", status: "completed", owner: "tc", whenLabel: "Completed Apr 2" },
+      { id: "t-5", title: "Confirm appraisal and inspection complete", status: "completed", owner: "tc", whenLabel: "Completed Apr 20" },
+      { id: "t-6", title: "Confirm loan commitment funded", status: "completed", owner: "tc", whenLabel: "Completed May 4" },
+      { id: "t-7", title: "Title clearance complete", status: "completed", owner: "tc", whenLabel: "Completed May 12" },
+      { id: "t-8", title: "Sign closing disclosures", status: "completed", owner: "tc", whenLabel: "Completed May 19" },
+      { id: "t-9", title: "Confirm walkthrough time with Sanchez", status: "in-progress", owner: "you", priority: "high", dueLabel: "Due today, before 2 PM" },
+      { id: "t-10", title: "Send closing-day checklist", status: "not-started", owner: "you", dueLabel: "Due tomorrow" },
+    ],
+  },
+  "tx-6": {
+    health: {
+      clientResponsiveness: "moderate",
+      lenderResponsiveness: "n/a",
+      timelineConfidence: "watching",
+      riskLevel: "low",
+    },
+    opsTasks: [
+      { id: "t-1", title: "Sign listing agreement", status: "completed", owner: "tc", whenLabel: "Completed May 12" },
+      { id: "t-2", title: "Finalize pricing strategy", status: "completed", owner: "you", whenLabel: "Completed May 16" },
+      { id: "t-3", title: "Order pre-listing disclosures", status: "in-progress", owner: "tc" },
+      { id: "t-4", title: "Book pre-listing photographer", status: "overdue", owner: "you", priority: "high", dueLabel: "Due May 18" },
+      { id: "t-5", title: "Order MLS marketing package", status: "not-started", owner: "tc", dueLabel: "Due May 26" },
+      { id: "t-6", title: "Coordinate sign placement", status: "not-started", owner: "tc", dueLabel: "Due May 27" },
+      { id: "t-7", title: "Schedule pre-listing photo shoot", status: "awaiting", owner: "tc", whenLabel: "Awaiting photographer" },
+      { id: "t-8", title: "Schedule first showings", status: "not-started", owner: "tc", dueLabel: "Due May 30" },
+      { id: "t-9", title: "Schedule first open house", status: "not-started", owner: "you", dueLabel: "Due Jun 1" },
+      { id: "t-10", title: "Update CRM with new listing photos", status: "not-started", owner: "tc" },
+    ],
+  },
+  "tx-7": {
+    health: {
+      clientResponsiveness: "good",
+      lenderResponsiveness: "n/a",
+      timelineConfidence: "on-track",
+      riskLevel: "low",
+    },
+    opsTasks: [
+      { id: "t-1", title: "Sign listing agreement", status: "completed", owner: "tc", whenLabel: "Completed May 1" },
+      { id: "t-2", title: "Order pre-listing photos and video", status: "completed", owner: "tc", whenLabel: "Completed May 8" },
+      { id: "t-3", title: "Go live on MLS", status: "completed", owner: "tc", whenLabel: "Completed May 12" },
+      { id: "t-4", title: "Coordinate sign placement", status: "completed", owner: "tc", whenLabel: "Completed May 11" },
+      { id: "t-5", title: "Update MLS photo set", status: "completed", owner: "tc", whenLabel: "Completed May 12" },
+      { id: "t-6", title: "Confirm Saturday open house with Whittaker", status: "completed", owner: "tc", whenLabel: "Completed yesterday" },
+      { id: "t-7", title: "Send 9-day market update to Whittaker", status: "in-progress", owner: "you", priority: "high", dueLabel: "Due Friday" },
+      { id: "t-8", title: "Open house Saturday", status: "in-progress", owner: "you", dueLabel: "Saturday 1 PM" },
+      { id: "t-9", title: "Coordinate co-broker tour", status: "not-started", owner: "tc", dueLabel: "Due next Tuesday" },
+      { id: "t-10", title: "Send showings recap to Whittaker", status: "not-started", owner: "tc", dueLabel: "Due Sunday" },
+    ],
+  },
+};
+
+/**
+ * Lightweight briefing for the transactions list — a single "most urgent"
+ * line plus a few high-level stats. Deterministic on the input.
+ */
+export function buildTransactionsBriefing(
+  transactions: Transaction[]
+): TransactionsBriefing {
+  const closing = transactions.filter((t) => t.phase === "closing");
+  const delayed = transactions.filter((t) => t.status === "delayed");
+  const atRisk = transactions.filter((t) => t.status === "at-risk");
+  const attentionCount = delayed.length + atRisk.length;
+
+  let mostUrgent = "Nothing pressing — pace yourself.";
+  if (closing.length > 0 && closing[0].aiSummary?.nextAction) {
+    mostUrgent = closing[0].aiSummary.nextAction;
+  } else if (delayed.length > 0 && delayed[0].aiSummary?.nextAction) {
+    mostUrgent = delayed[0].aiSummary.nextAction;
+  } else if (atRisk.length > 0 && atRisk[0].aiSummary?.nextAction) {
+    mostUrgent = atRisk[0].aiSummary.nextAction;
+  }
+
+  const stats: string[] = [];
+  if (attentionCount > 0) {
+    stats.push(
+      `${attentionCount} deal${attentionCount === 1 ? "" : "s"} need${attentionCount === 1 ? "s" : ""} attention today`
+    );
+  }
+  if (closing.length > 0) {
+    stats.push(
+      `${closing.length} closing this week`
+    );
+  }
+  // Surface a notable concrete signal — first lender-blocked deal, if any.
+  const lenderBlocked = transactions.find(
+    (t) => t.status !== "on-track" && t.responsible === "lender"
+  );
+  if (lenderBlocked) {
+    const short = lenderBlocked.address.split(",")[0];
+    stats.push(`lender delayed on ${short}`);
+  }
+  return { mostUrgent, stats };
+}
 
 export const RESPONSIBLE_LABEL: Record<Responsible, string> = {
   you: "You",
@@ -1373,4 +1792,162 @@ export const PIPELINE_CLIENTS: PipelineClient[] = [
     budget: "$1.6M",
     area: "Ocean Blvd",
   },
+];
+
+// ─── Access & Logins ───────────────────────────────────────────
+// Operational platform credentials the realtor stores so the back-office
+// team can step in and execute work without paging them every time.
+
+export type AccessCategory =
+  | "mls-listings"
+  | "transactions"
+  | "comms"
+  | "showings"
+  | "lender"
+  | "brokerage";
+
+export const ACCESS_CATEGORY_LABEL: Record<AccessCategory, string> = {
+  "mls-listings": "MLS & listings",
+  transactions: "Transactions",
+  comms: "Client communications",
+  showings: "Showings & access",
+  lender: "Lender portals",
+  brokerage: "Brokerage tools",
+};
+
+export const ACCESS_CATEGORY_ORDER: AccessCategory[] = [
+  "mls-listings",
+  "transactions",
+  "comms",
+  "showings",
+  "lender",
+  "brokerage",
+];
+
+export type AccessStatus = "active" | "outdated" | "missing";
+
+export const ACCESS_STATUS_LABEL: Record<AccessStatus, string> = {
+  active: "Active",
+  outdated: "Outdated",
+  missing: "Missing",
+};
+
+export type AccessCredential = {
+  id: string;
+  platform: string;
+  category: AccessCategory;
+  username: string;
+  password: string;
+  notes?: string;
+  status: AccessStatus;
+  lastUpdatedLabel: string;
+};
+
+export const ACCESS_CREDENTIALS: AccessCredential[] = [
+  {
+    id: "ac-1",
+    platform: "MLS — Miami",
+    category: "mls-listings",
+    username: "maria.t@coastal.com",
+    password: "Pulsor-MLS-2026",
+    status: "active",
+    lastUpdatedLabel: "2 days ago",
+  },
+  {
+    id: "ac-2",
+    platform: "Dotloop",
+    category: "transactions",
+    username: "maria@coastal.com",
+    password: "DL-CoastalRE-91!",
+    status: "active",
+    lastUpdatedLabel: "Yesterday",
+  },
+  {
+    id: "ac-3",
+    platform: "SkySlope",
+    category: "transactions",
+    username: "maria.tomas",
+    password: "Sky-2025-Coastal",
+    status: "outdated",
+    lastUpdatedLabel: "6 months ago",
+    notes: "Brokerage renewed quarterly — confirm with Sofia.",
+  },
+  {
+    id: "ac-4",
+    platform: "Follow Up Boss",
+    category: "comms",
+    username: "maria@coastal.com",
+    password: "FUB-Coastal-2026!",
+    status: "active",
+    lastUpdatedLabel: "Last week",
+  },
+  {
+    id: "ac-5",
+    platform: "Gmail",
+    category: "comms",
+    username: "maria@coastal.com",
+    password: "App password issued",
+    status: "active",
+    lastUpdatedLabel: "Today",
+    notes: "Gmail 2FA app password — rotate monthly.",
+  },
+  {
+    id: "ac-6",
+    platform: "ShowingTime",
+    category: "showings",
+    username: "maria.tomas",
+    password: "Show-26-Coastal",
+    status: "active",
+    lastUpdatedLabel: "3 days ago",
+  },
+  {
+    id: "ac-7",
+    platform: "Supra eKey",
+    category: "showings",
+    username: "—",
+    password: "",
+    status: "missing",
+    lastUpdatedLabel: "Not yet provided",
+    notes: "Need PIN + assigned key from brokerage.",
+  },
+  {
+    id: "ac-8",
+    platform: "DocuSign",
+    category: "transactions",
+    username: "maria@coastal.com",
+    password: "DS-Coastal-2026",
+    status: "active",
+    lastUpdatedLabel: "Last week",
+  },
+  {
+    id: "ac-9",
+    platform: "Atlantic Federal lender portal",
+    category: "lender",
+    username: "maria.t@coastal.com",
+    password: "AF-Maria-2025",
+    status: "outdated",
+    lastUpdatedLabel: "4 months ago",
+    notes: "Lender resets passwords every 90 days.",
+  },
+  {
+    id: "ac-10",
+    platform: "Coastal Real Estate intranet",
+    category: "brokerage",
+    username: "maria.tomas",
+    password: "Coastal-Intra-2026",
+    status: "active",
+    lastUpdatedLabel: "Yesterday",
+  },
+];
+
+/**
+ * Categories that tend to be relevant when actively working a transaction —
+ * used to surface a compact "Linked accesses" block on the transaction
+ * detail page.
+ */
+export const ACCESS_TRANSACTION_CATEGORIES: AccessCategory[] = [
+  "mls-listings",
+  "transactions",
+  "showings",
+  "lender",
 ];

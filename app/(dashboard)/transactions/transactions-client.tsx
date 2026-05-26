@@ -6,11 +6,12 @@ import {
   XCircle,
   CircleCheck,
   ChevronRight,
+  Plus,
+  KeyRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SectionTitle } from "@/components/dashboard/section-title";
 import {
-  RESPONSIBLE_LABEL,
   TRANSACTION_PHASE_LABEL,
   TRANSACTION_PHASE_ORDER,
   type Transaction,
@@ -61,38 +62,35 @@ export function TransactionsClient({
   grouped: Record<TransactionPhase, Transaction[]>;
 }) {
   const all = TRANSACTION_PHASE_ORDER.flatMap((p) => grouped[p]);
-  const atRiskCount = all.filter(
-    (t) => t.status === "at-risk" || t.status === "delayed"
-  ).length;
-  const closingCount = grouped.closing.length;
-
-  const subtitleBits: string[] = [
-    `${all.length} active deal${all.length === 1 ? "" : "s"}`,
-  ];
-  if (closingCount > 0) {
-    subtitleBits.push(
-      `${closingCount} closing this week`
-    );
-  }
 
   return (
     <div className="px-4 sm:px-6 py-6 lg:px-8 lg:py-8 max-w-[1000px] mx-auto space-y-7">
-      <header>
-        <h1 className="text-2xl lg:text-3xl font-medium text-foreground tracking-tight">
-          Transactions
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1.5">
-          {subtitleBits.join(" · ")}
-          {atRiskCount > 0 && (
-            <>
-              {" · "}
-              <span className="text-warning font-medium">
-                {atRiskCount} need{atRiskCount === 1 ? "s" : ""} attention
-              </span>
-            </>
-          )}
-          .
-        </p>
+      <header className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl lg:text-3xl font-medium text-foreground tracking-tight">
+            Transactions
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1.5">
+            {all.length} active deal{all.length === 1 ? "" : "s"} across your
+            book.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link
+            href="/access"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-border text-foreground hover:bg-muted/60 transition-colors"
+          >
+            <KeyRound className="h-3.5 w-3.5" strokeWidth={2} />
+            Access & logins
+          </Link>
+          <Link
+            href="/transactions/new"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-foreground text-background hover:bg-foreground/90 transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" strokeWidth={2.25} />
+            New transaction
+          </Link>
+        </div>
       </header>
 
       {TRANSACTION_PHASE_ORDER.map((phase) => {
@@ -115,7 +113,7 @@ export function TransactionsClient({
             />
             <ul className="rounded-xl border border-border bg-card divide-y divide-border/60 overflow-hidden">
               {items.map((t) => (
-                <TransactionRow key={t.id} transaction={t} />
+                <TransactionRow key={t.id} transaction={t} phase={phase} />
               ))}
             </ul>
           </section>
@@ -125,8 +123,14 @@ export function TransactionsClient({
   );
 }
 
-function TransactionRow({ transaction: t }: { transaction: Transaction }) {
+function TransactionRow({
+  transaction: t,
+}: {
+  transaction: Transaction;
+  phase: TransactionPhase;
+}) {
   const StatusIcon = STATUS_ICON[t.status];
+  const isHealthy = t.status === "on-track";
   return (
     <li>
       <Link
@@ -136,10 +140,15 @@ function TransactionRow({ transaction: t }: { transaction: Transaction }) {
         <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-sm font-medium text-foreground truncate">
+              <span
+                className={cn(
+                  "text-base font-medium truncate",
+                  isHealthy ? "text-foreground/85" : "text-foreground"
+                )}
+              >
                 {t.address}
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-sm text-muted-foreground">
                 · {t.client}
               </span>
             </div>
@@ -152,16 +161,6 @@ function TransactionRow({ transaction: t }: { transaction: Transaction }) {
               </div>
               <span className="font-mono text-xs tabular-nums text-muted-foreground shrink-0 w-10 text-right">
                 {t.progressPct}%
-              </span>
-            </div>
-            <div className="mt-2 text-xs text-muted-foreground">
-              Next:{" "}
-              <span className="text-foreground">{t.nextStep}</span>
-              <span className="mx-1.5 text-foreground/30">·</span>
-              <span>{t.dueLabel}</span>
-              <span className="mx-1.5 text-foreground/30">·</span>
-              <span className="text-foreground/70">
-                {RESPONSIBLE_LABEL[t.responsible]}
               </span>
             </div>
           </div>
