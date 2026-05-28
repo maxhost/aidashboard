@@ -1,20 +1,60 @@
-// Client-side mock auth — placeholder until real auth (Clerk / Supabase / NextAuth) is wired in.
-// Stores a flag in localStorage to simulate a logged-in session.
+import {
+  signInOperator,
+  signInRealtor,
+  signOutRequest,
+  type User,
+} from "./api/auth";
+import {
+  clearSession,
+  getCachedUser,
+  getToken,
+  isDemoMode,
+  saveSession,
+  setDemoMode,
+} from "./session";
 
-export const AUTH_KEY = "aidashboard:auth";
-export const AUTH_VALUE = "demo";
+export type { User } from "./api/auth";
 
 export function isLoggedIn(): boolean {
   if (typeof window === "undefined") return false;
-  return localStorage.getItem(AUTH_KEY) === AUTH_VALUE;
+  return Boolean(getToken()) || isDemoMode();
 }
 
-export function signIn() {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(AUTH_KEY, AUTH_VALUE);
+export function getCurrentUser(): User | null {
+  return getCachedUser();
 }
 
-export function signOut() {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(AUTH_KEY);
+export function isDemoSession(): boolean {
+  return isDemoMode();
+}
+
+export async function signInWithEmail(email: string, password: string): Promise<User> {
+  const { user, token } = await signInOperator(email, password);
+  saveSession(token, user);
+  return user;
+}
+
+export async function signInWithPhone(phone: string, password: string): Promise<User> {
+  const { user, token } = await signInRealtor(phone, password);
+  saveSession(token, user);
+  return user;
+}
+
+export function signInAsDemo(): void {
+  setDemoMode();
+}
+
+/** Backwards-compat alias used by the onboarding setup flow. */
+export const signIn = signInAsDemo;
+
+export async function signOut(): Promise<void> {
+  const token = getToken();
+  if (token) {
+    try {
+      await signOutRequest(token);
+    } catch {
+      // ignore network error on sign-out; clear local state regardless
+    }
+  }
+  clearSession();
 }
