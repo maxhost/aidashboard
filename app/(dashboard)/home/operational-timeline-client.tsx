@@ -18,12 +18,13 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  REALTORS,
   STATUS_LABEL,
   type OperationalEvent,
   type OperationalEventStatus,
   type Realtor,
 } from "@/lib/data/operational-timeline";
+import { listRealtors, toUiRealtor, type UiRealtor } from "@/lib/api/realtors";
+import { getToken } from "@/lib/session";
 
 // ─── Status dot color tokens ────────────────────────────────────────────
 
@@ -72,18 +73,21 @@ export function OperationalTimelineSection({
 }: {
   events: OperationalEvent[];
 }) {
-  const realtors = useMemo(
-    () => Object.values(REALTORS).filter((r) => events.some((e) => e.realtor.id === r.id)),
-    [events]
-  );
-  const [realtorId, setRealtorId] = useState<string>(realtors[0]?.id ?? "");
+  const { realtors, status: realtorsStatus } = useRealtors();
+  const [realtorId, setRealtorId] = useState<string>("");
   const [tab, setTab] = useState<TimelineTab>("pending");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const realtor = REALTORS[realtorId] ?? realtors[0];
+  useEffect(() => {
+    if (!realtorId && realtors.length > 0) setRealtorId(realtors[0].id);
+  }, [realtors, realtorId]);
+
+  const realtor: UiRealtor | null =
+    realtors.find((r) => r.id === realtorId) ?? realtors[0] ?? null;
   const forRealtor = useMemo(
-    () => events.filter((e) => e.realtor.id === realtor.id),
-    [events, realtor.id]
+    () =>
+      realtor ? events.filter((e) => e.realtor.id === realtor.id) : [],
+    [events, realtor]
   );
 
   const counts: Record<TimelineTab, number> = {
@@ -98,18 +102,51 @@ export function OperationalTimelineSection({
   const visible = forRealtor.filter((e) => statusTab(e.status) === tab);
   const selected = events.find((e) => e.id === selectedId) ?? null;
 
+  const header = (
+    <div>
+      <h2 className="text-lg font-medium text-foreground">
+        Operational timeline
+      </h2>
+      <p className="text-sm text-muted-foreground mt-1 leading-snug">
+        Review voice notes from one realtor at a time. Approve, edit, or
+        reject what the AI extracted.
+      </p>
+    </div>
+  );
+
+  if (realtorsStatus === "loading") {
+    return (
+      <section aria-label="Operational timeline" className="space-y-4">
+        {header}
+        <p className="text-sm text-muted-foreground">Loading realtors…</p>
+      </section>
+    );
+  }
+  if (realtorsStatus === "error") {
+    return (
+      <section aria-label="Operational timeline" className="space-y-4">
+        {header}
+        <p className="text-sm text-destructive">
+          Couldn&apos;t load realtors. Check your connection and refresh.
+        </p>
+      </section>
+    );
+  }
+  if (!realtor) {
+    return (
+      <section aria-label="Operational timeline" className="space-y-4">
+        {header}
+        <p className="text-sm text-muted-foreground">
+          No realtors yet. They&apos;ll appear here once they send their first
+          message.
+        </p>
+      </section>
+    );
+  }
+
   return (
     <section aria-label="Operational timeline" className="space-y-4">
-      {/* Section title */}
-      <div>
-        <h2 className="text-lg font-medium text-foreground">
-          Operational timeline
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1 leading-snug">
-          Review voice notes from one realtor at a time. Approve, edit, or
-          reject what the AI extracted.
-        </p>
-      </div>
+      {header}
 
       {/* Realtor selector + pending count */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -559,5 +596,38 @@ function ReviewDialog({ event }: { event: OperationalEvent }) {
       </div>
     </>
   );
+}
+
+// ─── Realtors fetch hook ────────────────────────────────────────────────
+
+type RealtorsStatus = "loading" | "ready" | "error";
+
+function useRealtors(): { realtors: UiRealtor[]; status: RealtorsStatus } {
+  const [realtors, setRealtors] = useState<UiRealtor[]>([]);
+  const [status, setStatus] = useState<RealtorsStatus>("loading");
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token) {
+      setStatus("error");
+      return;
+    }
+    let cancelled = false;
+    listRealtors(token)
+      .then((res) => {
+        if (cancelled) return;
+        setRealtors(res.realtors.map(toUiRealtor));
+        setStatus("ready");
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setStatus("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { realtors, status };
 }
 
