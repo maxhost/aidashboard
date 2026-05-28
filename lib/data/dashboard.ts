@@ -1,11 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
 import { currentWeekIso } from "@/lib/data/types";
-import type {
-  AgentData,
-  Company,
-  CriticalLead,
-  User,
-} from "@/lib/data/types";
+import type { AgentData, Company, CriticalLead, User } from "@/lib/data/types";
 import type {
   ActionCardData,
   ActionTag,
@@ -29,83 +23,27 @@ export type MyDashboard = {
   team: TeamMember[];
 };
 
-/**
- * Loads everything Home needs for the currently logged-in user:
- * profile, their company (if any), and the latest agent_data row for the
- * current ISO week.
- *
- * Returns null if there's no session — caller should redirect.
- */
+// Mock data while the Pulsor backend is being wired up. The shape matches
+// what the existing pages expect, so the UI keeps rendering. Replace each
+// stub with a real /api/v1/* call when that page is migrated.
+const MOCK_USER: User = {
+  id: "mock-user-1",
+  email: "demo@pulsor.test",
+  full_name: "Demo User",
+  role: "admin",
+  company_id: null,
+  icp_type: null,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+};
+
 export async function getMyDashboard(): Promise<MyDashboard | null> {
-  const supabase = createClient();
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
-  if (!authUser) return null;
-
-  const { data: profile, error: profileError } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", authUser.id)
-    .single();
-  if (profileError || !profile) return null;
-
-  const weekIso = currentWeekIso();
-
-  const [companyRes, agentRes] = await Promise.all([
-    profile.company_id
-      ? supabase.from("companies").select("*").eq("id", profile.company_id).single()
-      : Promise.resolve({ data: null, error: null }),
-    supabase
-      .from("agent_data")
-      .select("*")
-      .eq("user_id", profile.id)
-      .eq("week_iso", weekIso)
-      .maybeSingle(),
-  ]);
-
-  // For team leaders, also fetch their team's basic stats this week.
-  let team: TeamMember[] = [];
-  if (profile.role === "team_leader" && profile.company_id) {
-    const { data: members } = await supabase
-      .from("users")
-      .select("id, full_name, email, role")
-      .eq("company_id", profile.company_id)
-      .neq("id", profile.id);
-    const memberIds = (members ?? []).map((m) => m.id);
-
-    let weekly: { user_id: string; pipeline_value: number; leads_total: number }[] = [];
-    if (memberIds.length > 0) {
-      const { data } = await supabase
-        .from("agent_data")
-        .select("user_id, pipeline_value, leads_total")
-        .in("user_id", memberIds)
-        .eq("week_iso", weekIso);
-      weekly = data ?? [];
-    }
-
-    const dataByUser = new Map(weekly.map((w) => [w.user_id, w]));
-    team = (members ?? []).map((m) => {
-      const w = dataByUser.get(m.id);
-      return {
-        id: m.id,
-        full_name: m.full_name ?? m.email,
-        email: m.email,
-        pipeline_value: Number(w?.pipeline_value ?? 0),
-        leads_total: Number(w?.leads_total ?? 0),
-        has_data: !!w,
-      };
-    });
-    // Sort by pipeline desc
-    team.sort((a, b) => b.pipeline_value - a.pipeline_value);
-  }
-
   return {
-    user: profile as User,
-    company: (companyRes.data as Company) ?? null,
-    agentData: (agentRes.data as AgentData) ?? null,
-    weekIso,
-    team,
+    user: MOCK_USER,
+    company: null,
+    agentData: null,
+    weekIso: currentWeekIso(),
+    team: [],
   };
 }
 
@@ -134,4 +72,3 @@ export function criticalLeadToCard(l: CriticalLead): ActionCardData {
     summary: parts.join(" · "),
   };
 }
-

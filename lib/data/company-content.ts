@@ -1,4 +1,3 @@
-import { createClient } from "@/lib/supabase/server";
 import type { ActionCardData } from "@/components/dashboard/action-card";
 
 // ─── Strategy ────────────────────────────────────────────────
@@ -33,20 +32,14 @@ export type CompanyStrategy = {
   updated_at: string;
 };
 
+// Stubbed — Pulsor backend doesn't model company strategy yet.
 export async function getCompanyStrategy(
-  companyId: string
+  _companyId: string,
 ): Promise<CompanyStrategy | null> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("company_strategy")
-    .select("*")
-    .eq("company_id", companyId)
-    .maybeSingle();
-  if (error) throw error;
-  return data as CompanyStrategy | null;
+  return null;
 }
 
-export async function upsertCompanyStrategy(input: {
+export async function upsertCompanyStrategy(_input: {
   company_id: string;
   milestones: StrategyMilestone[];
   current_focus_label: string | null;
@@ -60,11 +53,7 @@ export async function upsertCompanyStrategy(input: {
   next_milestone_date: string | null;
   next_milestone_days_away: number;
 }): Promise<void> {
-  const supabase = createClient();
-  const { error } = await supabase
-    .from("company_strategy")
-    .upsert(input, { onConflict: "company_id" });
-  if (error) throw error;
+  // no-op
 }
 
 // ─── Marketing ───────────────────────────────────────────────
@@ -91,19 +80,12 @@ export type CompanyMarketing = {
 };
 
 export async function getCompanyMarketing(
-  companyId: string
+  _companyId: string,
 ): Promise<CompanyMarketing | null> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("company_marketing")
-    .select("*")
-    .eq("company_id", companyId)
-    .maybeSingle();
-  if (error) throw error;
-  return data as CompanyMarketing | null;
+  return null;
 }
 
-export async function upsertCompanyMarketing(input: {
+export async function upsertCompanyMarketing(_input: {
   company_id: string;
   total_leads_value: string;
   total_leads_delta: string | null;
@@ -114,9 +96,5 @@ export async function upsertCompanyMarketing(input: {
   channels: MarketingChannel[];
   insights: ActionCardData[];
 }): Promise<void> {
-  const supabase = createClient();
-  const { error } = await supabase
-    .from("company_marketing")
-    .upsert(input, { onConflict: "company_id" });
-  if (error) throw error;
+  // no-op
 }

@@ -1,55 +1,28 @@
-import { createClient } from "@/lib/supabase/server";
 import type { Company, IcpType } from "@/lib/data/types";
 
+// Stubbed — Pulsor backend doesn't model companies yet. Pages render empty.
 export async function listCompanies(): Promise<Company[]> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("companies")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return (data ?? []) as Company[];
+  return [];
 }
 
-export async function getCompany(id: string): Promise<Company | null> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("companies")
-    .select("*")
-    .eq("id", id)
-    .single();
-  if (error) {
-    if (error.code === "PGRST116") return null; // no rows
-    throw error;
-  }
-  return data as Company;
+export async function getCompany(_id: string): Promise<Company | null> {
+  return null;
 }
 
-export async function createCompany(input: {
+export async function createCompany(_input: {
   name: string;
   icp_type: IcpType;
 }): Promise<Company> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("companies")
-    .insert({ name: input.name, icp_type: input.icp_type })
-    .select()
-    .single();
-  if (error) throw error;
-  return data as Company;
+  throw new Error("createCompany not implemented (no companies in Pulsor backend yet)");
 }
 
 export async function updateCompany(
-  id: string,
-  patch: { name?: string; icp_type?: IcpType }
+  _id: string,
+  _patch: { name?: string; icp_type?: IcpType },
 ): Promise<void> {
-  const supabase = createClient();
-  const { error } = await supabase.from("companies").update(patch).eq("id", id);
-  if (error) throw error;
+  // no-op
 }
 
-export async function deleteCompany(id: string): Promise<void> {
-  const supabase = createClient();
-  const { error } = await supabase.from("companies").delete().eq("id", id);
-  if (error) throw error;
+export async function deleteCompany(_id: string): Promise<void> {
+  // no-op
 }

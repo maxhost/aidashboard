@@ -1,5 +1,3 @@
-import { createClient } from "@/lib/supabase/server";
-
 export type TeamData = {
   id: string;
   company_id: string;
@@ -12,22 +10,15 @@ export type TeamData = {
   updated_at: string;
 };
 
+// Stubbed — Pulsor backend doesn't track weekly team snapshots yet.
 export async function getTeamData(
-  companyId: string,
-  weekIso: string
+  _companyId: string,
+  _weekIso: string,
 ): Promise<TeamData | null> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("team_data")
-    .select("*")
-    .eq("company_id", companyId)
-    .eq("week_iso", weekIso)
-    .maybeSingle();
-  if (error) throw error;
-  return data as TeamData | null;
+  return null;
 }
 
-export async function upsertTeamData(input: {
+export async function upsertTeamData(_input: {
   company_id: string;
   week_iso: string;
   team_pipeline_value: number;
@@ -35,9 +26,5 @@ export async function upsertTeamData(input: {
   bottom_performer_id: string | null;
   insights: { id: string; text: string }[];
 }): Promise<void> {
-  const supabase = createClient();
-  const { error } = await supabase
-    .from("team_data")
-    .upsert(input, { onConflict: "company_id,week_iso" });
-  if (error) throw error;
+  // no-op
 }

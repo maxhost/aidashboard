@@ -1,35 +1,20 @@
-import { createClient } from "@/lib/supabase/server";
 import type { AgentData, CriticalLead } from "@/lib/data/types";
 
+// Stubbed — Pulsor backend doesn't track weekly agent snapshots yet.
 export async function getAgentData(
-  userId: string,
-  weekIso: string
+  _userId: string,
+  _weekIso: string,
 ): Promise<AgentData | null> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("agent_data")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("week_iso", weekIso)
-    .maybeSingle();
-  if (error) throw error;
-  return data as AgentData | null;
+  return null;
 }
 
 export async function listAgentDataWeeks(
-  userId: string
+  _userId: string,
 ): Promise<{ week_iso: string }[]> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("agent_data")
-    .select("week_iso")
-    .eq("user_id", userId)
-    .order("week_iso", { ascending: false });
-  if (error) throw error;
-  return data ?? [];
+  return [];
 }
 
-export async function upsertAgentData(input: {
+export async function upsertAgentData(_input: {
   user_id: string;
   week_iso: string;
   leads_total: number;
@@ -42,22 +27,12 @@ export async function upsertAgentData(input: {
   last_week_wins: string | null;
   critical_leads: CriticalLead[];
 }): Promise<void> {
-  const supabase = createClient();
-  const { error } = await supabase
-    .from("agent_data")
-    .upsert(input, { onConflict: "user_id,week_iso" });
-  if (error) throw error;
+  // no-op
 }
 
 export async function deleteAgentData(
-  userId: string,
-  weekIso: string
+  _userId: string,
+  _weekIso: string,
 ): Promise<void> {
-  const supabase = createClient();
-  const { error } = await supabase
-    .from("agent_data")
-    .delete()
-    .eq("user_id", userId)
-    .eq("week_iso", weekIso);
-  if (error) throw error;
+  // no-op
 }
