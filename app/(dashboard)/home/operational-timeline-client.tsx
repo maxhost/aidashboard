@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CheckSquare,
   AlertTriangle,
@@ -8,6 +8,7 @@ import {
   ChevronDown,
   Check,
   Pencil,
+  RefreshCw,
   Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -82,7 +83,12 @@ export function OperationalTimelineSection() {
   const realtor: UiRealtor | null =
     realtors.find((r) => r.id === realtorId) ?? realtors[0] ?? null;
 
-  const { events, status: eventsStatus } = useTimeline(realtor);
+  const {
+    events,
+    status: eventsStatus,
+    refreshing,
+    refresh,
+  } = useTimeline(realtor);
   const forRealtor = events;
 
   const counts: Record<TimelineTab, number> = {
@@ -143,16 +149,34 @@ export function OperationalTimelineSection() {
     <section aria-label="Operational timeline" className="space-y-4">
       {header}
 
-      {/* Realtor selector + pending count */}
+      {/* Realtor selector + pending count + refresh */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <RealtorSelector
-          realtors={realtors}
-          value={realtor}
-          onChange={(r) => {
-            setRealtorId(r.id);
-            setTab("pending");
-          }}
-        />
+        <div className="flex items-center gap-2">
+          <RealtorSelector
+            realtors={realtors}
+            value={realtor}
+            onChange={(r) => {
+              setRealtorId(r.id);
+              setTab("pending");
+            }}
+          />
+          <button
+            type="button"
+            onClick={refresh}
+            disabled={refreshing || eventsStatus === "loading"}
+            aria-label="Refresh voice notes"
+            title="Refresh"
+            className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RefreshCw
+              className={cn(
+                "h-3.5 w-3.5",
+                (refreshing || eventsStatus === "loading") && "animate-spin"
+              )}
+              strokeWidth={2}
+            />
+          </button>
+        </div>
         <span className="text-sm text-muted-foreground tabular-nums">
           {pendingCount === 0
             ? "Nothing pending review"
@@ -638,12 +662,20 @@ function useRealtors(): { realtors: UiRealtor[]; status: RealtorsStatus } {
 
 type TimelineStatus = "loading" | "ready" | "error";
 
+const POLL_MS = 15_000;
+
 function useTimeline(realtor: UiRealtor | null): {
   events: OperationalEvent[];
   status: TimelineStatus;
+  refreshing: boolean;
+  refresh: () => void;
 } {
   const [events, setEvents] = useState<OperationalEvent[]>([]);
   const [status, setStatus] = useState<TimelineStatus>("loading");
+  const [refreshing, setRefreshing] = useState(false);
+  const [tick, setTick] = useState(0);
+
+  const refresh = useCallback(() => setTick((n) => n + 1), []);
 
   useEffect(() => {
     if (!realtor) {
@@ -656,23 +688,35 @@ function useTimeline(realtor: UiRealtor | null): {
       setStatus("error");
       return;
     }
+
     let cancelled = false;
-    setStatus("loading");
-    listTimeline(token, realtor.id)
-      .then((res) => {
+    let isFirst = true;
+
+    async function load() {
+      if (isFirst) setStatus("loading");
+      else setRefreshing(true);
+      try {
+        const res = await listTimeline(token!, realtor!.id);
         if (cancelled) return;
-        setEvents(res.events.map((e) => toUiEvent(e, realtor)));
+        setEvents(res.events.map((e) => toUiEvent(e, realtor!)));
         setStatus("ready");
-      })
-      .catch(() => {
+      } catch {
         if (cancelled) return;
-        setStatus("error");
-      });
+        if (isFirst) setStatus("error");
+      } finally {
+        if (!cancelled) setRefreshing(false);
+        isFirst = false;
+      }
+    }
+
+    load();
+    const id = setInterval(load, POLL_MS);
     return () => {
       cancelled = true;
+      clearInterval(id);
     };
-  }, [realtor]);
+  }, [realtor, tick]);
 
-  return { events, status };
+  return { events, status, refreshing, refresh };
 }
 
