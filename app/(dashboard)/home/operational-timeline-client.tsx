@@ -24,6 +24,7 @@ import {
   type Realtor,
 } from "@/lib/data/operational-timeline";
 import { listRealtors, toUiRealtor, type UiRealtor } from "@/lib/api/realtors";
+import { listTimeline, toUiEvent } from "@/lib/api/operator";
 import { getToken } from "@/lib/session";
 
 // ─── Status dot color tokens ────────────────────────────────────────────
@@ -68,11 +69,7 @@ function statusTab(status: OperationalEventStatus): TimelineTab {
  *
  * Optimized for the human review workflow, NOT for monitoring AI metrics.
  */
-export function OperationalTimelineSection({
-  events,
-}: {
-  events: OperationalEvent[];
-}) {
+export function OperationalTimelineSection() {
   const { realtors, status: realtorsStatus } = useRealtors();
   const [realtorId, setRealtorId] = useState<string>("");
   const [tab, setTab] = useState<TimelineTab>("pending");
@@ -84,11 +81,9 @@ export function OperationalTimelineSection({
 
   const realtor: UiRealtor | null =
     realtors.find((r) => r.id === realtorId) ?? realtors[0] ?? null;
-  const forRealtor = useMemo(
-    () =>
-      realtor ? events.filter((e) => e.realtor.id === realtor.id) : [],
-    [events, realtor]
-  );
+
+  const { events, status: eventsStatus } = useTimeline(realtor);
+  const forRealtor = events;
 
   const counts: Record<TimelineTab, number> = {
     pending: forRealtor.filter((e) => statusTab(e.status) === "pending").length,
@@ -169,7 +164,15 @@ export function OperationalTimelineSection({
       <TimelineTabs tab={tab} onChange={setTab} counts={counts} />
 
       {/* Card with rows */}
-      {visible.length > 0 ? (
+      {eventsStatus === "loading" ? (
+        <p className="text-sm text-muted-foreground px-1 py-8 text-center">
+          Loading voice notes…
+        </p>
+      ) : eventsStatus === "error" ? (
+        <p className="text-sm text-destructive px-1 py-8 text-center">
+          Couldn&apos;t load voice notes for {realtor.shortName}.
+        </p>
+      ) : visible.length > 0 ? (
         <ul className="rounded-xl border border-border bg-card divide-y divide-border/60 overflow-hidden">
           {visible.map((event) => (
             <TimelineRow
@@ -629,5 +632,47 @@ function useRealtors(): { realtors: UiRealtor[]; status: RealtorsStatus } {
   }, []);
 
   return { realtors, status };
+}
+
+// ─── Timeline fetch hook ────────────────────────────────────────────────
+
+type TimelineStatus = "loading" | "ready" | "error";
+
+function useTimeline(realtor: UiRealtor | null): {
+  events: OperationalEvent[];
+  status: TimelineStatus;
+} {
+  const [events, setEvents] = useState<OperationalEvent[]>([]);
+  const [status, setStatus] = useState<TimelineStatus>("loading");
+
+  useEffect(() => {
+    if (!realtor) {
+      setEvents([]);
+      setStatus("ready");
+      return;
+    }
+    const token = getToken();
+    if (!token) {
+      setStatus("error");
+      return;
+    }
+    let cancelled = false;
+    setStatus("loading");
+    listTimeline(token, realtor.id)
+      .then((res) => {
+        if (cancelled) return;
+        setEvents(res.events.map((e) => toUiEvent(e, realtor)));
+        setStatus("ready");
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setStatus("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [realtor]);
+
+  return { events, status };
 }
 

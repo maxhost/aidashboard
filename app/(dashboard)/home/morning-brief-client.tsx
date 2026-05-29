@@ -27,7 +27,6 @@ import { useIsBackOffice } from "@/components/dashboard/use-role";
 import { useRemoveWithReason } from "@/components/dashboard/use-remove-with-reason";
 import { useSnoozeWithReason } from "@/components/dashboard/use-snooze-with-reason";
 import { OperationalTimelineSection } from "./operational-timeline-client";
-import type { OperationalEvent } from "@/lib/data/operational-timeline";
 import {
   Dialog,
   DialogContent,
@@ -84,11 +83,9 @@ type PriorityTab = "todo" | "done";
 export function MorningBriefClient({
   firstName,
   brief,
-  events,
 }: {
   firstName: string;
   brief: MorningBrief;
-  events: OperationalEvent[];
 }) {
   const [period, setPeriod] = useState<GreetingPeriod>(() =>
     typeof window === "undefined" ? "morning" : getGreetingPeriod()
@@ -320,7 +317,7 @@ export function MorningBriefClient({
       </section>
 
       {/* BackOffice-only operational timeline — separate module below the brief */}
-      {isBackOffice && <OperationalTimelineSection events={events} />}
+      {isBackOffice && <OperationalTimelineSection />}
 
       <Dialog
         open={!!selectedId}
