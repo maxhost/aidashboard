@@ -123,6 +123,15 @@ export function MorningBriefClient({
     };
   }, [isAssistant, realTasks, briefFromProps]);
 
+  // In real-data mode, the detail dialog can be opened from BOTH lists.
+  // It always needs the full BriefPriority shape, so we build a global lookup.
+  const realPriorityById = useMemo(() => {
+    if (!isAssistant) return null;
+    const m = new Map<string, BriefPriority>();
+    for (const t of realTasks) m.set(t.id, toUiPriority(t));
+    return m;
+  }, [isAssistant, realTasks]);
+
   const subtitle = useMemo(() => buildBriefSubtitle(brief), [brief]);
   const active = useMemo(() => prioritizeAttention(brief.attention), [brief]);
 
@@ -179,7 +188,8 @@ export function MorningBriefClient({
   const [priorityTab, setPriorityTab] = useState<PriorityTab>("todo");
   const [attentionTab, setAttentionTab] = useState<PriorityTab>("todo");
   const selectedPriority =
-    brief.priorities.find((p) => p.id === selectedId) ?? null;
+    brief.priorities.find((p) => p.id === selectedId) ??
+    (selectedId ? (realPriorityById?.get(selectedId) ?? null) : null);
   const livePriorities = useMemo(
     () => brief.priorities.filter((p) => !priorityRemoval.isRemoved(p.id)),
     [brief.priorities, priorityRemoval]
@@ -329,6 +339,7 @@ export function MorningBriefClient({
         onToggleDone={toggleAttentionDone}
         onSnoozeRequest={attentionSnoozeReason.request}
         onRequestRemove={attentionRemoval.requestRemove}
+        onOpen={isAssistant ? (id) => setSelectedId(id) : undefined}
       />
 
       {/* Suggested priorities — action + context + optional risk */}
@@ -475,6 +486,7 @@ function PriorityOverview({
   onToggleDone,
   onSnoozeRequest,
   onRequestRemove,
+  onOpen,
 }: {
   tab: PriorityTab;
   onChange: (next: PriorityTab) => void;
@@ -483,6 +495,7 @@ function PriorityOverview({
   onToggleDone: (id: string) => void;
   onSnoozeRequest: (item: BriefAttentionItem) => void;
   onRequestRemove: (item: BriefAttentionItem) => void;
+  onOpen?: (id: string) => void;
 }) {
   const isBackOffice = useIsBackOffice();
   const visibleTodo = todoItems.slice(0, PRIORITY_OVERVIEW_LIMIT);
@@ -510,6 +523,7 @@ function PriorityOverview({
               onSnooze={() => onSnoozeRequest(item)}
               isBackOffice={isBackOffice}
               onRequestRemove={() => onRequestRemove(item)}
+              onOpen={onOpen ? () => onOpen(item.id) : undefined}
             />
           ))}
           {isBackOffice && tab === "todo" && (
@@ -536,6 +550,7 @@ function AttentionRow({
   onSnooze,
   isBackOffice,
   onRequestRemove,
+  onOpen,
 }: {
   item: BriefAttentionItem;
   done: boolean;
@@ -543,8 +558,24 @@ function AttentionRow({
   onSnooze: () => void;
   isBackOffice: boolean;
   onRequestRemove: () => void;
+  onOpen?: () => void;
 }) {
   const CategoryIcon = ATTENTION_CATEGORY_ICON[item.category];
+  const TitleBlock = (
+    <>
+      <p
+        className={cn(
+          "text-[15px] leading-snug font-medium text-foreground truncate",
+          done && "line-through font-normal decoration-muted-foreground/40"
+        )}
+      >
+        {item.headline}
+      </p>
+      {item.tone === "critical" && item.risk && !done && (
+        <p className="mt-0.5 text-xs text-destructive truncate">{item.risk}</p>
+      )}
+    </>
+  );
   return (
     <li
       className={cn(
@@ -558,21 +589,18 @@ function AttentionRow({
         className="h-5 w-5 mt-0.5 shrink-0 text-foreground/70"
         strokeWidth={2}
       />
-      <div className="flex-1 min-w-0">
-        <p
-          className={cn(
-            "text-[15px] leading-snug font-medium text-foreground truncate",
-            done && "line-through font-normal decoration-muted-foreground/40"
-          )}
+      {onOpen ? (
+        <button
+          type="button"
+          onClick={onOpen}
+          aria-label={`Open details for ${item.headline}`}
+          className="flex-1 min-w-0 text-left"
         >
-          {item.headline}
-        </p>
-        {item.tone === "critical" && item.risk && !done && (
-          <p className="mt-0.5 text-xs text-destructive truncate">
-            {item.risk}
-          </p>
-        )}
-      </div>
+          {TitleBlock}
+        </button>
+      ) : (
+        <div className="flex-1 min-w-0">{TitleBlock}</div>
+      )}
       <div className="flex items-center gap-1 shrink-0">
         <button
           type="button"
@@ -792,6 +820,36 @@ function PriorityDetail({
           <p className="mt-7 pl-[34px] text-[15px] leading-relaxed text-foreground/70">
             {priority.context}
           </p>
+        )}
+
+        {/* Risk line — red when critical, neutral otherwise */}
+        {priority.risk && (
+          <p
+            className={cn(
+              "mt-4 pl-[34px] text-[14px] leading-snug",
+              priority.riskLevel === "critical"
+                ? "text-destructive"
+                : "text-foreground/70"
+            )}
+          >
+            {priority.risk}
+          </p>
+        )}
+
+        {/* Snapshot — Client / Amount / Zone / Due chips */}
+        {priority.snapshot && priority.snapshot.length > 0 && (
+          <dl className="mt-7 pl-[34px] flex flex-wrap gap-x-6 gap-y-3">
+            {priority.snapshot.map((s, i) => (
+              <div key={i} className="flex flex-col">
+                <dt className="text-[11px] uppercase tracking-wide text-foreground/55">
+                  {s.label}
+                </dt>
+                <dd className="text-[14px] text-foreground/85 mt-0.5">
+                  {s.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
         )}
 
         {/* Suggested by Pulsor — max 2 bullets, calm */}
