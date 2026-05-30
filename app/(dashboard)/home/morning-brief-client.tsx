@@ -113,6 +113,10 @@ export function MorningBriefClient({
 
   const role = useRole();
   const isAssistant = role === "assistant";
+  const isBackOfficeRole = role === "back-office";
+  // Modes that drive the brief from real tasks (vs mock data). Operator can
+  // 'view as' a realtor; realtor sessions are auto-scoped by the backend.
+  const useRealData = isAssistant || isBackOfficeRole;
 
   const [authUser, setAuthUser] = useState<User | null>(null);
   useEffect(() => {
@@ -120,10 +124,10 @@ export function MorningBriefClient({
   }, []);
   const isAuthOperator = authUser?.role === "operator";
 
-  // Operators viewing the Assistant tab can pick which realtor to "look as".
+  // Operators on Assistant or Back Office can pick which realtor to "look as".
   // Realtors are auto-scoped by their session, no picker.
   const { realtors: pickableRealtors } = usePickableRealtors(
-    isAssistant && isAuthOperator,
+    useRealData && isAuthOperator,
   );
   const [pickedRealtorId, setPickedRealtorId] = useState<string>("");
   useEffect(() => {
@@ -135,7 +139,7 @@ export function MorningBriefClient({
     pickableRealtors.find((r) => r.id === pickedRealtorId) ?? null;
 
   const scopedRealtorId = isAuthOperator ? pickedRealtorId || null : null;
-  const canFetchTasks = isAssistant && (!isAuthOperator || !!pickedRealtorId);
+  const canFetchTasks = useRealData && (!isAuthOperator || !!pickedRealtorId);
   const {
     tasks: realTasks,
     refresh: refreshTasks,
@@ -143,22 +147,21 @@ export function MorningBriefClient({
   } = useMyTasks(canFetchTasks, scopedRealtorId);
 
   // Greeting target:
-  //  - Assistant + operator viewing-as a realtor  -> that realtor's first name
-  //  - Assistant + realtor logged in              -> their own first name
-  //  - Back Office                                -> operator's first name
-  //  - Anything else (mock-data roles)            -> fall back to the prop
-  const isBackOfficeRole = role === "back-office";
+  //  - Operator viewing-as a realtor (Assistant or BO) -> that realtor's first name
+  //  - Realtor logged in (Assistant)                   -> their own first name
+  //  - Back Office without picker (no operator)        -> operator's first name
+  //  - Anything else (mock-data roles)                 -> fall back to the prop
   const displayFirstName =
-    isAssistant && isAuthOperator
+    useRealData && isAuthOperator && isAssistant
       ? pickedRealtor?.name
         ? pickFirstName(pickedRealtor.name)
         : firstName
-      : (isAssistant || isBackOfficeRole) && authUser?.name
+      : useRealData && authUser?.name
         ? pickFirstName(authUser.name)
         : firstName;
 
   const brief = useMemo<MorningBrief>(() => {
-    if (!isAssistant) return briefFromProps;
+    if (!useRealData) return briefFromProps;
     const { overview, priorities } = splitTasks(realTasks);
     return {
       attention: overview.map(toUiAttention),
@@ -166,27 +169,27 @@ export function MorningBriefClient({
       priorities: priorities.map(toUiPriority),
       handled: [],
     };
-  }, [isAssistant, realTasks, briefFromProps]);
+  }, [useRealData, realTasks, briefFromProps]);
 
   // In real-data mode, the detail dialog can be opened from BOTH lists.
   // It always needs the full BriefPriority shape, so we build a global lookup.
   const realPriorityById = useMemo(() => {
-    if (!isAssistant) return null;
+    if (!useRealData) return null;
     const m = new Map<string, BriefPriority>();
     for (const t of realTasks) m.set(t.id, toUiPriority(t));
     return m;
-  }, [isAssistant, realTasks]);
+  }, [useRealData, realTasks]);
 
   // Mirror the DB's done state into the local Sets so the Done tab in BOTH
   // lists stays accurate across the 15s poll. The DB is the source of truth
-  // in Assistant mode; mock-data modes keep their pure in-memory behavior.
+  // in real-data modes; mock-data modes keep their pure in-memory behavior.
   useEffect(() => {
-    if (!isAssistant) return;
+    if (!useRealData) return;
     const done = new Set<string>();
     for (const t of realTasks) if (t.status === "done") done.add(t.id);
     setDoneIds(done);
     setAttentionDoneIds(new Set(done));
-  }, [isAssistant, realTasks]);
+  }, [useRealData, realTasks]);
 
   const subtitle = useMemo(() => buildBriefSubtitle(brief), [brief]);
   const active = useMemo(() => prioritizeAttention(brief.attention), [brief]);
@@ -287,7 +290,7 @@ export function MorningBriefClient({
       next.delete(id);
       return next;
     });
-    if (isAssistant) {
+    if (useRealData) {
       void persistStatus(id, wasDone ? "assigned" : "done");
     }
   }
@@ -298,7 +301,7 @@ export function MorningBriefClient({
       next.add(id);
       return next;
     });
-    if (isAssistant) {
+    if (useRealData) {
       void persistStatus(id, "ignored", reason);
     }
   }
@@ -318,7 +321,7 @@ export function MorningBriefClient({
       next.delete(id);
       return next;
     });
-    if (isAssistant) {
+    if (useRealData) {
       void persistStatus(id, wasDone ? "assigned" : "done");
     }
   }
@@ -329,7 +332,7 @@ export function MorningBriefClient({
       next.add(id);
       return next;
     });
-    if (isAssistant) {
+    if (useRealData) {
       void persistStatus(id, "ignored", reason);
     }
   }
@@ -373,8 +376,9 @@ export function MorningBriefClient({
         </p>
       </header>
 
-      {/* Toolbar — operator's realtor picker (operator only) + refresh */}
-      {isAssistant && (
+      {/* Toolbar — operator's realtor picker (operator only) + refresh.
+          One picker scopes BOTH the brief lists AND the operational timeline. */}
+      {useRealData && (
         <div className="flex items-center gap-3 flex-wrap">
           {isAuthOperator && (
             <>
@@ -421,7 +425,7 @@ export function MorningBriefClient({
         onToggleDone={toggleAttentionDone}
         onSnoozeRequest={attentionSnoozeReason.request}
         onRequestRemove={attentionRemoval.requestRemove}
-        onOpen={isAssistant ? (id) => setSelectedId(id) : undefined}
+        onOpen={useRealData ? (id) => setSelectedId(id) : undefined}
       />
 
       {/* Suggested priorities — action + context + optional risk */}
@@ -465,7 +469,11 @@ export function MorningBriefClient({
       </section>
 
       {/* BackOffice-only operational timeline — separate module below the brief */}
-      {isBackOffice && <OperationalTimelineSection />}
+      {isBackOffice && (
+        <OperationalTimelineSection
+          realtor={isAuthOperator ? pickedRealtor : null}
+        />
+      )}
 
       <Dialog
         open={!!selectedId}

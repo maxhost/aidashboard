@@ -9,10 +9,7 @@ import {
   RefreshCw,
   Send,
 } from "lucide-react";
-import {
-  RealtorAvatar as Avatar,
-  RealtorSelector,
-} from "@/components/dashboard/realtor-selector";
+import { RealtorAvatar as Avatar } from "@/components/dashboard/realtor-selector";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -26,7 +23,7 @@ import {
   type OperationalEventStatus,
   type Realtor,
 } from "@/lib/data/operational-timeline";
-import { listRealtors, toUiRealtor, type UiRealtor } from "@/lib/api/realtors";
+import type { UiRealtor } from "@/lib/api/realtors";
 import {
   approveConversation,
   listTimeline,
@@ -77,21 +74,16 @@ function statusTab(status: OperationalEventStatus): TimelineTab {
  *
  * Optimized for the human review workflow, NOT for monitoring AI metrics.
  */
-export function OperationalTimelineSection() {
-  const { realtors, status: realtorsStatus } = useRealtors();
-  const [realtorId, setRealtorId] = useState<string>("");
+export function OperationalTimelineSection({
+  realtor,
+}: {
+  realtor: UiRealtor | null;
+}) {
   const [tab, setTab] = useState<TimelineTab>("pending");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reviewBusy, setReviewBusy] = useState<"approve" | "reject" | null>(
     null,
   );
-
-  useEffect(() => {
-    if (!realtorId && realtors.length > 0) setRealtorId(realtors[0].id);
-  }, [realtors, realtorId]);
-
-  const realtor: UiRealtor | null =
-    realtors.find((r) => r.id === realtorId) ?? realtors[0] ?? null;
 
   const {
     events,
@@ -158,31 +150,12 @@ export function OperationalTimelineSection() {
     </div>
   );
 
-  if (realtorsStatus === "loading") {
-    return (
-      <section aria-label="Operational timeline" className="space-y-4">
-        {header}
-        <p className="text-sm text-muted-foreground">Loading realtors…</p>
-      </section>
-    );
-  }
-  if (realtorsStatus === "error") {
-    return (
-      <section aria-label="Operational timeline" className="space-y-4">
-        {header}
-        <p className="text-sm text-destructive">
-          Couldn&apos;t load realtors. Check your connection and refresh.
-        </p>
-      </section>
-    );
-  }
   if (!realtor) {
     return (
       <section aria-label="Operational timeline" className="space-y-4">
         {header}
         <p className="text-sm text-muted-foreground">
-          No realtors yet. They&apos;ll appear here once they send their first
-          message.
+          Pick a realtor at the top to load their review queue.
         </p>
       </section>
     );
@@ -192,39 +165,29 @@ export function OperationalTimelineSection() {
     <section aria-label="Operational timeline" className="space-y-4">
       {header}
 
-      {/* Realtor selector + pending count + refresh */}
+      {/* Pending count + refresh — realtor picker now lives at top of Home */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          <RealtorSelector
-            realtors={realtors}
-            value={realtor}
-            onChange={(r) => {
-              setRealtorId(r.id);
-              setTab("pending");
-            }}
-          />
-          <button
-            type="button"
-            onClick={refresh}
-            disabled={refreshing || eventsStatus === "loading"}
-            aria-label="Refresh voice notes"
-            title="Refresh"
-            className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <RefreshCw
-              className={cn(
-                "h-3.5 w-3.5",
-                (refreshing || eventsStatus === "loading") && "animate-spin"
-              )}
-              strokeWidth={2}
-            />
-          </button>
-        </div>
         <span className="text-sm text-muted-foreground tabular-nums">
           {pendingCount === 0
             ? "Nothing pending review"
             : `${pendingCount} pending review`}
         </span>
+        <button
+          type="button"
+          onClick={refresh}
+          disabled={refreshing || eventsStatus === "loading"}
+          aria-label="Refresh voice notes"
+          title="Refresh"
+          className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <RefreshCw
+            className={cn(
+              "h-3.5 w-3.5",
+              (refreshing || eventsStatus === "loading") && "animate-spin"
+            )}
+            strokeWidth={2}
+          />
+        </button>
       </div>
 
       {/* Tabs */}
@@ -583,39 +546,6 @@ function ReviewDialog({
       </div>
     </>
   );
-}
-
-// ─── Realtors fetch hook ────────────────────────────────────────────────
-
-type RealtorsStatus = "loading" | "ready" | "error";
-
-function useRealtors(): { realtors: UiRealtor[]; status: RealtorsStatus } {
-  const [realtors, setRealtors] = useState<UiRealtor[]>([]);
-  const [status, setStatus] = useState<RealtorsStatus>("loading");
-
-  useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      setStatus("error");
-      return;
-    }
-    let cancelled = false;
-    listRealtors(token)
-      .then((res) => {
-        if (cancelled) return;
-        setRealtors(res.realtors.map(toUiRealtor));
-        setStatus("ready");
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setStatus("error");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return { realtors, status };
 }
 
 // ─── Timeline fetch hook ────────────────────────────────────────────────
