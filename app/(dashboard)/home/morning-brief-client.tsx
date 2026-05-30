@@ -632,7 +632,7 @@ function AttentionRow({
             )}
             strokeWidth={2.5}
           />
-          Done
+          {done ? "Mark pending" : "Done"}
         </button>
         {!done && (
           <button
@@ -724,7 +724,7 @@ function PriorityRow({
             )}
             strokeWidth={2.5}
           />
-          Done
+          {done ? "Mark pending" : "Done"}
         </button>
         {!done && (
           <button
