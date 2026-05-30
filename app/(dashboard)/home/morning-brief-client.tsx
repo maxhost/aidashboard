@@ -142,15 +142,20 @@ export function MorningBriefClient({
     refreshing: tasksRefreshing,
   } = useMyTasks(canFetchTasks, scopedRealtorId);
 
-  // The greeting addresses the realtor whose day this is:
-  //  - operator viewing as someone -> that someone's first name
-  //  - realtor logged in -> their own first name
-  //  - other roles / mock mode -> fall back to the prop
-  const displayFirstName = isAssistant
-    ? isAuthOperator
-      ? (pickedRealtor?.name ? pickFirstName(pickedRealtor.name) : firstName)
-      : (authUser?.name ? pickFirstName(authUser.name) : firstName)
-    : firstName;
+  // Greeting target:
+  //  - Assistant + operator viewing-as a realtor  -> that realtor's first name
+  //  - Assistant + realtor logged in              -> their own first name
+  //  - Back Office                                -> operator's first name
+  //  - Anything else (mock-data roles)            -> fall back to the prop
+  const isBackOfficeRole = role === "back-office";
+  const displayFirstName =
+    isAssistant && isAuthOperator
+      ? pickedRealtor?.name
+        ? pickFirstName(pickedRealtor.name)
+        : firstName
+      : (isAssistant || isBackOfficeRole) && authUser?.name
+        ? pickFirstName(authUser.name)
+        : firstName;
 
   const brief = useMemo<MorningBrief>(() => {
     if (!isAssistant) return briefFromProps;
