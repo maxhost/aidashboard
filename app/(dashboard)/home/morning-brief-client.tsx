@@ -166,15 +166,15 @@ export function MorningBriefClient({
   const prioritySnoozeReason = useSnoozeWithReason<BriefPriority>({
     itemType: "priority",
     getDisplayName: (p) => p.headline,
-    onSnooze: (p) => {
-      snoozePriority(p.id);
+    onSnooze: (p, reason) => {
+      snoozePriority(p.id, reason);
       setSelectedId((current) => (current === p.id ? null : current));
     },
   });
   const attentionSnoozeReason = useSnoozeWithReason<BriefAttentionItem>({
     itemType: "attention",
     getDisplayName: (a) => a.headline,
-    onSnooze: (a) => snoozeAttention(a.id),
+    onSnooze: (a, reason) => snoozeAttention(a.id, reason),
   });
   const lastCelebratedRef = useRef(0);
   const totalDone = doneIds.size + attentionDoneIds.size;
@@ -266,14 +266,14 @@ export function MorningBriefClient({
     }
   }
 
-  function snoozeAttention(id: string) {
+  function snoozeAttention(id: string, reason?: string) {
     setAttentionSnoozedIds((prev) => {
       const next = new Set(prev);
       next.add(id);
       return next;
     });
     if (isAssistant) {
-      void persistStatus(id, "ignored");
+      void persistStatus(id, "ignored", reason);
     }
   }
 
@@ -297,25 +297,31 @@ export function MorningBriefClient({
     }
   }
 
-  function snoozePriority(id: string) {
+  function snoozePriority(id: string, reason?: string) {
     setSnoozedIds((prev) => {
       const next = new Set(prev);
       next.add(id);
       return next;
     });
     if (isAssistant) {
-      void persistStatus(id, "ignored");
+      void persistStatus(id, "ignored", reason);
     }
   }
 
   async function persistStatus(
     id: string,
     status: "done" | "ignored" | "assigned",
+    dismissReason?: string,
   ) {
     const token = getToken();
     if (!token) return;
     try {
-      await updateTaskStatus(token, id, status);
+      await updateTaskStatus(
+        token,
+        id,
+        status,
+        dismissReason !== undefined ? { dismissReason } : undefined,
+      );
       refreshTasks();
     } catch {
       // Optimistic UI already applied; a refresh will reconcile.

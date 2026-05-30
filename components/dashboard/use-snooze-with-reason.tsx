@@ -31,7 +31,7 @@ type Layer = "main" | "wrong-priority" | "other";
 type Config<T extends { id: string }> = {
   itemType: string;
   getDisplayName?: (item: T) => string;
-  onSnooze: (item: T) => void;
+  onSnooze: (item: T, reason: string) => void;
 };
 
 /**
@@ -41,7 +41,7 @@ type Config<T extends { id: string }> = {
  * "Other…" reveals a small text input for free-form context.
  */
 export function useSnoozeWithReason<T extends { id: string }>({
-  itemType,
+  itemType: _itemType,
   getDisplayName,
   onSnooze,
 }: Config<T>) {
@@ -53,15 +53,7 @@ export function useSnoozeWithReason<T extends { id: string }>({
 
   function handleConfirm(reason: string) {
     if (!pending) return;
-    if (typeof window !== "undefined") {
-      console.log("[snooze]", {
-        item_id: pending.id,
-        item_type: itemType,
-        reason,
-        at: new Date().toISOString(),
-      });
-    }
-    onSnooze(pending);
+    onSnooze(pending, reason);
     setPending(null);
   }
 

@@ -43,11 +43,16 @@ export function updateTaskStatus(
   token: string,
   id: string,
   status: "done" | "ignored" | "in_progress" | "assigned",
+  options?: { dismissReason?: string },
 ): Promise<unknown> {
+  const body: Record<string, unknown> = { status };
+  if (options?.dismissReason !== undefined) {
+    body.dismiss_reason = options.dismissReason;
+  }
   return apiFetch(`/tasks/${id}`, {
     method: "PATCH",
     token,
-    body: JSON.stringify({ status }),
+    body: JSON.stringify(body),
   });
 }
 
