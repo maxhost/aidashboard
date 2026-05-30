@@ -27,7 +27,12 @@ import {
   type Realtor,
 } from "@/lib/data/operational-timeline";
 import { listRealtors, toUiRealtor, type UiRealtor } from "@/lib/api/realtors";
-import { listTimeline, toUiEvent } from "@/lib/api/operator";
+import {
+  approveConversation,
+  listTimeline,
+  rejectConversation,
+  toUiEvent,
+} from "@/lib/api/operator";
 import { getToken } from "@/lib/session";
 
 // ─── Status dot color tokens ────────────────────────────────────────────
@@ -77,6 +82,9 @@ export function OperationalTimelineSection() {
   const [realtorId, setRealtorId] = useState<string>("");
   const [tab, setTab] = useState<TimelineTab>("pending");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [reviewBusy, setReviewBusy] = useState<"approve" | "reject" | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!realtorId && realtors.length > 0) setRealtorId(realtors[0].id);
@@ -104,6 +112,39 @@ export function OperationalTimelineSection() {
 
   const visible = forRealtor.filter((e) => statusTab(e.status) === tab);
   const selected = events.find((e) => e.id === selectedId) ?? null;
+
+  async function handleApprove(conversationId: string) {
+    const token = getToken();
+    if (!token) return;
+    setReviewBusy("approve");
+    try {
+      await approveConversation(token, conversationId);
+      setSelectedId(null);
+      setTab("processed");
+      refresh();
+    } catch {
+      // optimistic; refresh will reconcile on next tick
+      refresh();
+    } finally {
+      setReviewBusy(null);
+    }
+  }
+
+  async function handleReject(conversationId: string, reason?: string) {
+    const token = getToken();
+    if (!token) return;
+    setReviewBusy("reject");
+    try {
+      await rejectConversation(token, conversationId, reason);
+      setSelectedId(null);
+      setTab("rejected");
+      refresh();
+    } catch {
+      refresh();
+    } finally {
+      setReviewBusy(null);
+    }
+  }
 
   const header = (
     <div>
@@ -217,7 +258,15 @@ export function OperationalTimelineSection() {
         onOpenChange={(open) => !open && setSelectedId(null)}
       >
         <DialogContent className="sm:max-w-2xl p-0 gap-0 max-h-[88dvh] flex flex-col overflow-hidden">
-          {selected && <ReviewDialog key={selected.id} event={selected} />}
+          {selected && (
+            <ReviewDialog
+              key={selected.id}
+              event={selected}
+              busy={reviewBusy}
+              onApprove={() => handleApprove(selected.id)}
+              onReject={() => handleReject(selected.id)}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </section>
@@ -412,7 +461,21 @@ function EmptyState({
 
 // ─── Review dialog (centered modal, MVP-stripped) ───────────────────────
 
-function ReviewDialog({ event }: { event: OperationalEvent }) {
+function ReviewDialog({
+  event,
+  busy,
+  onApprove,
+  onReject,
+}: {
+  event: OperationalEvent;
+  busy: "approve" | "reject" | null;
+  onApprove: () => void;
+  onReject: () => void;
+}) {
+  const isApproved = event.status === "approved" || event.status === "synced";
+  const isRejected = event.status === "rejected";
+  const isTerminal = isApproved || isRejected;
+  const disableAll = busy !== null || isTerminal;
   return (
     <>
       <DialogTitle className="sr-only">Review voice note</DialogTitle>
@@ -486,24 +549,35 @@ function ReviewDialog({ event }: { event: OperationalEvent }) {
       <div className="flex items-center justify-between gap-3 px-6 py-3 sm:py-3.5 border-t border-border/60 shrink-0">
         <button
           type="button"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+          disabled
+          title="Coming soon"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground/40 cursor-not-allowed"
         >
           <Pencil className="h-3.5 w-3.5" strokeWidth={2} />
           Edit
         </button>
         <div className="flex items-center gap-2">
+          {isTerminal && (
+            <span className="text-xs text-muted-foreground italic mr-2">
+              {isApproved ? "Already pushed" : "Rejected"}
+            </span>
+          )}
           <button
             type="button"
-            className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-destructive/80 hover:text-destructive hover:bg-destructive/10 transition-colors"
+            onClick={onReject}
+            disabled={disableAll}
+            className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-destructive/80 hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           >
-            Reject
+            {busy === "reject" ? "Rejecting…" : "Reject"}
           </button>
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-sm font-medium bg-foreground text-background hover:bg-foreground/90 transition-colors"
+            onClick={onApprove}
+            disabled={disableAll}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-sm font-medium bg-foreground text-background hover:bg-foreground/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-foreground"
           >
             <Send className="h-3.5 w-3.5" strokeWidth={2.25} />
-            Push to dashboard
+            {busy === "approve" ? "Pushing…" : "Push to dashboard"}
           </button>
         </div>
       </div>

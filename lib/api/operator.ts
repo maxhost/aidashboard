@@ -37,6 +37,31 @@ export function listTimeline(
   );
 }
 
+export function approveConversation(
+  token: string,
+  conversationId: string,
+): Promise<{ ok: true; conversation_id: string; tasks_assigned: number }> {
+  return apiFetch(
+    `/operator/conversations/${encodeURIComponent(conversationId)}/approve`,
+    { method: "POST", token, body: "{}" },
+  );
+}
+
+export function rejectConversation(
+  token: string,
+  conversationId: string,
+  reason?: string,
+): Promise<{ ok: true; conversation_id: string; tasks_rejected: number }> {
+  return apiFetch(
+    `/operator/conversations/${encodeURIComponent(conversationId)}/reject`,
+    {
+      method: "POST",
+      token,
+      body: JSON.stringify(reason ? { reason } : {}),
+    },
+  );
+}
+
 const PREVIEW_MAX = 140;
 
 function preview(text: string): string {
