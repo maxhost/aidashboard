@@ -141,6 +141,16 @@ export function MorningBriefClient({
     scopedRealtorId,
   );
 
+  // The greeting addresses the realtor whose day this is:
+  //  - operator viewing as someone -> that someone's first name
+  //  - realtor logged in -> their own first name
+  //  - other roles / mock mode -> fall back to the prop
+  const displayFirstName = isAssistant
+    ? isAuthOperator
+      ? (pickedRealtor?.name ? pickFirstName(pickedRealtor.name) : firstName)
+      : (authUser?.name ? pickFirstName(authUser.name) : firstName)
+    : firstName;
+
   const brief = useMemo<MorningBrief>(() => {
     if (!isAssistant) return briefFromProps;
     const { overview, priorities } = splitTasks(realTasks);
@@ -383,7 +393,7 @@ export function MorningBriefClient({
           suppressHydrationWarning
           className="text-2xl lg:text-3xl font-medium text-foreground tracking-tight"
         >
-          {GREETING_LABEL[period]}, {firstName}{" "}
+          {GREETING_LABEL[period]}, {displayFirstName}{" "}
           <span aria-hidden className="ml-0.5 align-[-2px] text-[0.9em]">
             {GREETING_EMOJI[period]}
           </span>
@@ -1067,5 +1077,11 @@ function usePickableRealtors(enabled: boolean): { realtors: UiRealtor[] } {
   }, [enabled]);
 
   return { realtors };
+}
+
+// "Maxi (test)" -> "Maxi"; "Operador Uno" -> "Operador"; "  Jane " -> "Jane".
+function pickFirstName(fullName: string): string {
+  const cleaned = fullName.trim().split(/\s+/)[0] ?? "";
+  return cleaned.replace(/[^A-Za-zÀ-ÿ-]/g, "") || fullName.trim();
 }
 
