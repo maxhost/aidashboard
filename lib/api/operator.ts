@@ -23,7 +23,7 @@ export type TimelineEventDTO = {
   realtor_id: string;
   received_at: string;
   transcript: string;
-  status: "pending" | "processed";
+  status: "pending" | "processed" | "rejected";
   tasks: TimelineTask[];
 };
 
@@ -99,7 +99,9 @@ function toSuggestedTasks(tasks: TimelineTask[]): SuggestedTask[] {
 }
 
 function toUiStatus(s: TimelineEventDTO["status"]): OperationalEventStatus {
-  return s === "pending" ? "pending" : "approved";
+  if (s === "pending") return "pending";
+  if (s === "rejected") return "rejected";
+  return "approved";
 }
 
 export function toUiEvent(
