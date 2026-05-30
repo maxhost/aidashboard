@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { celebrate } from "@/lib/celebrate";
+import { useEffect, useMemo, useState } from "react";
 import {
   Check,
   Phone,
@@ -174,22 +173,12 @@ export function MorningBriefClient({
   // Mirror the DB's done state into the local Sets so the Done tab in BOTH
   // lists stays accurate across the 15s poll. The DB is the source of truth
   // in Assistant mode; mock-data modes keep their pure in-memory behavior.
-  const hasSyncedDbDoneRef = useRef(false);
   useEffect(() => {
-    if (!isAssistant) {
-      hasSyncedDbDoneRef.current = false;
-      return;
-    }
+    if (!isAssistant) return;
     const done = new Set<string>();
     for (const t of realTasks) if (t.status === "done") done.add(t.id);
     setDoneIds(done);
     setAttentionDoneIds(new Set(done));
-    // Don't celebrate already-done tasks loaded from history. The first sync
-    // sets the baseline so the milestone effect only fires on user clicks.
-    if (!hasSyncedDbDoneRef.current) {
-      hasSyncedDbDoneRef.current = true;
-      lastCelebratedRef.current = done.size;
-    }
   }, [isAssistant, realTasks]);
 
   const subtitle = useMemo(() => buildBriefSubtitle(brief), [brief]);
@@ -225,32 +214,6 @@ export function MorningBriefClient({
     getDisplayName: (a) => a.headline,
     onSnooze: (a, reason) => snoozeAttention(a.id, reason),
   });
-  const lastCelebratedRef = useRef(0);
-  // Each task can show in both lists (priority + attention), so the two Sets
-  // mirror in real-data mode. Dedupe for the milestone count.
-  const totalDone = useMemo(() => {
-    const all = new Set<string>();
-    doneIds.forEach((id) => all.add(id));
-    attentionDoneIds.forEach((id) => all.add(id));
-    return all.size;
-  }, [doneIds, attentionDoneIds]);
-
-  useEffect(() => {
-    // Trigger a small celebration every 3rd completion (3, 6, 9, ...).
-    // Reset the milestone if the user un-checks something so a re-cross
-    // still feels rewarding.
-    if (totalDone === 0) {
-      lastCelebratedRef.current = 0;
-      return;
-    }
-    if (totalDone > lastCelebratedRef.current && totalDone % 3 === 0) {
-      const intensity = totalDone >= 9 ? 3 : totalDone >= 6 ? 2 : 1;
-      celebrate(intensity);
-      lastCelebratedRef.current = totalDone;
-    } else if (totalDone < lastCelebratedRef.current) {
-      lastCelebratedRef.current = totalDone;
-    }
-  }, [totalDone]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [priorityTab, setPriorityTab] = useState<PriorityTab>("todo");
   const [attentionTab, setAttentionTab] = useState<PriorityTab>("todo");
