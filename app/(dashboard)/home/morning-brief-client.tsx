@@ -132,6 +132,17 @@ export function MorningBriefClient({
     return m;
   }, [isAssistant, realTasks]);
 
+  // Mirror the DB's done state into the local Sets so the Done tab in BOTH
+  // lists stays accurate across the 15s poll. The DB is the source of truth
+  // in Assistant mode; mock-data modes keep their pure in-memory behavior.
+  useEffect(() => {
+    if (!isAssistant) return;
+    const done = new Set<string>();
+    for (const t of realTasks) if (t.status === "done") done.add(t.id);
+    setDoneIds(done);
+    setAttentionDoneIds(new Set(done));
+  }, [isAssistant, realTasks]);
+
   const subtitle = useMemo(() => buildBriefSubtitle(brief), [brief]);
   const active = useMemo(() => prioritizeAttention(brief.attention), [brief]);
 

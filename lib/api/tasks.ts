@@ -34,7 +34,7 @@ export type TaskRow = {
 
 export function listMyTasks(token: string): Promise<{ tasks: TaskRow[] }> {
   return apiFetch<{ tasks: TaskRow[] }>(
-    `/tasks?status=${encodeURIComponent("assigned,in_progress")}`,
+    `/tasks?status=${encodeURIComponent("assigned,in_progress,done")}`,
     { token },
   );
 }
