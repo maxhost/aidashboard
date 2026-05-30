@@ -18,8 +18,9 @@ import {
 import { cn } from "@/lib/utils";
 import { PulsorLockup } from "@/components/brand/pulsor";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { dashboardData } from "@/lib/mock-data";
 import { signOut } from "@/lib/auth";
+import { getCachedUser } from "@/lib/session";
+import type { User } from "@/lib/api/auth";
 import { ROLE_KEY, isRole, type Role } from "@/components/dashboard/role-switch";
 
 type NavItem = {
@@ -173,16 +174,26 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 
 function UserPill({ onNavigate }: { onNavigate?: () => void }) {
   const router = useRouter();
-  const { user } = dashboardData;
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    setUser(getCachedUser());
+  }, []);
+
   function handleSignOut() {
     signOut();
     router.push("/login");
   }
+
+  const displayName = pickDisplayName(user);
+  const subtitle = pickSubtitle(user);
+  const initials = pickInitials(user);
+
   return (
     <div className="flex items-center gap-2.5 px-2 py-2 mb-1">
       <Avatar className="h-8 w-8 shrink-0">
         <AvatarFallback className="bg-foreground text-background text-xs font-semibold">
-          {user.initials}
+          {initials}
         </AvatarFallback>
       </Avatar>
       <Link
@@ -191,11 +202,9 @@ function UserPill({ onNavigate }: { onNavigate?: () => void }) {
         className="flex-1 min-w-0 leading-tight"
       >
         <div className="text-sm font-medium text-foreground truncate">
-          {user.name.split(" ")[0]} {user.name.split(" ")[1]?.[0]}.
+          {displayName}
         </div>
-        <div className="text-xs text-muted-foreground truncate">
-          Account settings
-        </div>
+        <div className="text-xs text-muted-foreground truncate">{subtitle}</div>
       </Link>
       <button
         type="button"
@@ -208,6 +217,34 @@ function UserPill({ onNavigate }: { onNavigate?: () => void }) {
       </button>
     </div>
   );
+}
+
+function pickDisplayName(user: User | null): string {
+  if (!user) return "Guest";
+  if (user.name && user.name.trim()) return user.name;
+  return user.email ?? user.phone ?? "Guest";
+}
+
+function pickSubtitle(user: User | null): string {
+  if (!user) return "Not signed in";
+  return user.role === "operator" ? "Operator" : "Realtor";
+}
+
+function pickInitials(user: User | null): string {
+  if (!user) return "?";
+  const source =
+    (user.name && user.name.trim()) ||
+    user.email ||
+    user.phone ||
+    "";
+  const letters = source
+    .replace(/[^A-Za-zÀ-ÿ\s]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join("");
+  return letters || "?";
 }
 
 function Brand() {
