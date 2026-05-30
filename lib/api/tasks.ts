@@ -32,11 +32,17 @@ export type TaskRow = {
   createdAt: string;
 };
 
-export function listMyTasks(token: string): Promise<{ tasks: TaskRow[] }> {
-  return apiFetch<{ tasks: TaskRow[] }>(
-    `/tasks?status=${encodeURIComponent("assigned,in_progress,done")}`,
-    { token },
-  );
+export function listMyTasks(
+  token: string,
+  realtorId?: string | null,
+): Promise<{ tasks: TaskRow[] }> {
+  const params = new URLSearchParams({
+    status: "assigned,in_progress,done",
+  });
+  if (realtorId) params.set("realtor_id", realtorId);
+  return apiFetch<{ tasks: TaskRow[] }>(`/tasks?${params.toString()}`, {
+    token,
+  });
 }
 
 export function updateTaskStatus(

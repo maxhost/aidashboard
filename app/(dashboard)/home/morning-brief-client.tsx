@@ -25,7 +25,9 @@ import {
   BackOfficeRowActions,
 } from "@/components/dashboard/back-office-controls";
 import { useIsBackOffice, useRole } from "@/components/dashboard/use-role";
-import { getToken } from "@/lib/session";
+import { getCachedUser, getToken } from "@/lib/session";
+import { listRealtors, toUiRealtor, type UiRealtor } from "@/lib/api/realtors";
+import { RealtorSelector } from "@/components/dashboard/realtor-selector";
 import {
   listMyTasks,
   splitTasks,
@@ -34,6 +36,7 @@ import {
   updateTaskStatus,
   type TaskRow,
 } from "@/lib/api/tasks";
+import type { User } from "@/lib/api/auth";
 import { useRemoveWithReason } from "@/components/dashboard/use-remove-with-reason";
 import { useSnoozeWithReason } from "@/components/dashboard/use-snooze-with-reason";
 import { OperationalTimelineSection } from "./operational-timeline-client";
@@ -110,7 +113,33 @@ export function MorningBriefClient({
 
   const role = useRole();
   const isAssistant = role === "assistant";
-  const { tasks: realTasks, refresh: refreshTasks } = useMyTasks(isAssistant);
+
+  const [authUser, setAuthUser] = useState<User | null>(null);
+  useEffect(() => {
+    setAuthUser(getCachedUser());
+  }, []);
+  const isAuthOperator = authUser?.role === "operator";
+
+  // Operators viewing the Assistant tab can pick which realtor to "look as".
+  // Realtors are auto-scoped by their session, no picker.
+  const { realtors: pickableRealtors } = usePickableRealtors(
+    isAssistant && isAuthOperator,
+  );
+  const [pickedRealtorId, setPickedRealtorId] = useState<string>("");
+  useEffect(() => {
+    if (!pickedRealtorId && pickableRealtors.length > 0) {
+      setPickedRealtorId(pickableRealtors[0].id);
+    }
+  }, [pickableRealtors, pickedRealtorId]);
+  const pickedRealtor =
+    pickableRealtors.find((r) => r.id === pickedRealtorId) ?? null;
+
+  const scopedRealtorId = isAuthOperator ? pickedRealtorId || null : null;
+  const canFetchTasks = isAssistant && (!isAuthOperator || !!pickedRealtorId);
+  const { tasks: realTasks, refresh: refreshTasks } = useMyTasks(
+    canFetchTasks,
+    scopedRealtorId,
+  );
 
   const brief = useMemo<MorningBrief>(() => {
     if (!isAssistant) return briefFromProps;
@@ -363,6 +392,25 @@ export function MorningBriefClient({
           {subtitle}
         </p>
       </header>
+
+      {/* Operator-only realtor picker — lets the operator look as any realtor */}
+      {isAssistant && isAuthOperator && (
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-sm text-muted-foreground">Viewing as</span>
+          {pickableRealtors.length > 0 ? (
+            <RealtorSelector
+              realtors={pickableRealtors}
+              value={pickedRealtor}
+              onChange={(r) => setPickedRealtorId(r.id)}
+              placeholder="Select realtor"
+            />
+          ) : (
+            <span className="text-sm text-muted-foreground">
+              Loading realtors…
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Priority overview — live, sorted by urgency, top items only */}
       <PriorityOverview
@@ -953,7 +1001,10 @@ function PriorityDetail({
 
 const REALTOR_TASKS_POLL_MS = 15_000;
 
-function useMyTasks(enabled: boolean): {
+function useMyTasks(
+  enabled: boolean,
+  realtorId?: string | null,
+): {
   tasks: TaskRow[];
   refresh: () => void;
 } {
@@ -973,7 +1024,7 @@ function useMyTasks(enabled: boolean): {
 
     async function load() {
       try {
-        const res = await listMyTasks(token!);
+        const res = await listMyTasks(token!, realtorId ?? undefined);
         if (!cancelled) setTasks(res.tasks);
       } catch {
         // silent — UI shows whatever was loaded before
@@ -986,8 +1037,35 @@ function useMyTasks(enabled: boolean): {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [enabled, tick]);
+  }, [enabled, realtorId, tick]);
 
   return { tasks, refresh };
+}
+
+function usePickableRealtors(enabled: boolean): { realtors: UiRealtor[] } {
+  const [realtors, setRealtors] = useState<UiRealtor[]>([]);
+
+  useEffect(() => {
+    if (!enabled) {
+      setRealtors([]);
+      return;
+    }
+    const token = getToken();
+    if (!token) return;
+    let cancelled = false;
+    listRealtors(token)
+      .then((res) => {
+        if (cancelled) return;
+        setRealtors(res.realtors.map(toUiRealtor));
+      })
+      .catch(() => {
+        if (cancelled) return;
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled]);
+
+  return { realtors };
 }
 
