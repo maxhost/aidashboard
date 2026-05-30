@@ -8,6 +8,7 @@ import {
   Send,
   CalendarPlus,
   CheckCircle2,
+  RefreshCw,
   Key,
   FileText,
   Home as HomeIcon,
@@ -135,10 +136,11 @@ export function MorningBriefClient({
 
   const scopedRealtorId = isAuthOperator ? pickedRealtorId || null : null;
   const canFetchTasks = isAssistant && (!isAuthOperator || !!pickedRealtorId);
-  const { tasks: realTasks, refresh: refreshTasks } = useMyTasks(
-    canFetchTasks,
-    scopedRealtorId,
-  );
+  const {
+    tasks: realTasks,
+    refresh: refreshTasks,
+    refreshing: tasksRefreshing,
+  } = useMyTasks(canFetchTasks, scopedRealtorId);
 
   // The greeting addresses the realtor whose day this is:
   //  - operator viewing as someone -> that someone's first name
@@ -366,22 +368,42 @@ export function MorningBriefClient({
         </p>
       </header>
 
-      {/* Operator-only realtor picker — lets the operator look as any realtor */}
-      {isAssistant && isAuthOperator && (
+      {/* Toolbar — operator's realtor picker (operator only) + refresh */}
+      {isAssistant && (
         <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-sm text-muted-foreground">Viewing as</span>
-          {pickableRealtors.length > 0 ? (
-            <RealtorSelector
-              realtors={pickableRealtors}
-              value={pickedRealtor}
-              onChange={(r) => setPickedRealtorId(r.id)}
-              placeholder="Select realtor"
-            />
-          ) : (
-            <span className="text-sm text-muted-foreground">
-              Loading realtors…
-            </span>
+          {isAuthOperator && (
+            <>
+              <span className="text-sm text-muted-foreground">Viewing as</span>
+              {pickableRealtors.length > 0 ? (
+                <RealtorSelector
+                  realtors={pickableRealtors}
+                  value={pickedRealtor}
+                  onChange={(r) => setPickedRealtorId(r.id)}
+                  placeholder="Select realtor"
+                />
+              ) : (
+                <span className="text-sm text-muted-foreground">
+                  Loading realtors…
+                </span>
+              )}
+            </>
           )}
+          <button
+            type="button"
+            onClick={refreshTasks}
+            disabled={tasksRefreshing || !canFetchTasks}
+            aria-label="Refresh tasks"
+            title="Refresh"
+            className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RefreshCw
+              className={cn(
+                "h-3.5 w-3.5",
+                tasksRefreshing && "animate-spin"
+              )}
+              strokeWidth={2}
+            />
+          </button>
         </div>
       )}
 
@@ -980,9 +1002,11 @@ function useMyTasks(
 ): {
   tasks: TaskRow[];
   refresh: () => void;
+  refreshing: boolean;
 } {
   const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [tick, setTick] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
   const refresh = () => setTick((n) => n + 1);
 
@@ -996,11 +1020,14 @@ function useMyTasks(
     let cancelled = false;
 
     async function load() {
+      setRefreshing(true);
       try {
         const res = await listMyTasks(token!, realtorId ?? undefined);
         if (!cancelled) setTasks(res.tasks);
       } catch {
         // silent — UI shows whatever was loaded before
+      } finally {
+        if (!cancelled) setRefreshing(false);
       }
     }
 
@@ -1012,7 +1039,7 @@ function useMyTasks(
     };
   }, [enabled, realtorId, tick]);
 
-  return { tasks, refresh };
+  return { tasks, refresh, refreshing };
 }
 
 function usePickableRealtors(enabled: boolean): { realtors: UiRealtor[] } {
