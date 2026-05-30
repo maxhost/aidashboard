@@ -33,7 +33,12 @@ export type BriefAttentionItem = {
   resolvedAt?: string;
 };
 
-export type BriefPriorityAction = "call" | "send" | "message" | "schedule";
+export type BriefPriorityAction =
+  | "call"
+  | "send"
+  | "message"
+  | "schedule"
+  | "confirm";
 
 /**
  * Severity of the operational risk of leaving this priority unhandled today.

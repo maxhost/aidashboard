@@ -8,6 +8,7 @@ import {
   MessageCircle,
   Send,
   CalendarPlus,
+  CheckCircle2,
   Key,
   FileText,
   Home as HomeIcon,
@@ -23,7 +24,16 @@ import {
   BackOfficeAddRow,
   BackOfficeRowActions,
 } from "@/components/dashboard/back-office-controls";
-import { useIsBackOffice } from "@/components/dashboard/use-role";
+import { useIsBackOffice, useRole } from "@/components/dashboard/use-role";
+import { getToken } from "@/lib/session";
+import {
+  listMyTasks,
+  splitTasks,
+  toUiAttention,
+  toUiPriority,
+  updateTaskStatus,
+  type TaskRow,
+} from "@/lib/api/tasks";
 import { useRemoveWithReason } from "@/components/dashboard/use-remove-with-reason";
 import { useSnoozeWithReason } from "@/components/dashboard/use-snooze-with-reason";
 import { OperationalTimelineSection } from "./operational-timeline-client";
@@ -52,6 +62,7 @@ const ACTION_ICON: Record<BriefPriorityAction, typeof Phone> = {
   send: Send,
   message: MessageCircle,
   schedule: CalendarPlus,
+  confirm: CheckCircle2,
 };
 
 const ATTENTION_CATEGORY_ICON: Record<BriefAttentionCategory, typeof Phone> = {
@@ -82,7 +93,7 @@ type PriorityTab = "todo" | "done";
 
 export function MorningBriefClient({
   firstName,
-  brief,
+  brief: briefFromProps,
 }: {
   firstName: string;
   brief: MorningBrief;
@@ -96,6 +107,21 @@ export function MorningBriefClient({
     const id = window.setInterval(() => setPeriod(getGreetingPeriod()), 60_000);
     return () => window.clearInterval(id);
   }, []);
+
+  const role = useRole();
+  const isAssistant = role === "assistant";
+  const { tasks: realTasks, refresh: refreshTasks } = useMyTasks(isAssistant);
+
+  const brief = useMemo<MorningBrief>(() => {
+    if (!isAssistant) return briefFromProps;
+    const { overview, priorities } = splitTasks(realTasks);
+    return {
+      attention: overview.map(toUiAttention),
+      earlier: [],
+      priorities: priorities.map(toUiPriority),
+      handled: [],
+    };
+  }, [isAssistant, realTasks, briefFromProps]);
 
   const subtitle = useMemo(() => buildBriefSubtitle(brief), [brief]);
   const active = useMemo(() => prioritizeAttention(brief.attention), [brief]);
@@ -201,6 +227,7 @@ export function MorningBriefClient({
   );
 
   function toggleAttentionDone(id: string) {
+    const wasDone = attentionDoneIds.has(id);
     setAttentionDoneIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -213,6 +240,9 @@ export function MorningBriefClient({
       next.delete(id);
       return next;
     });
+    if (isAssistant) {
+      void persistStatus(id, wasDone ? "assigned" : "done");
+    }
   }
 
   function snoozeAttention(id: string) {
@@ -221,9 +251,13 @@ export function MorningBriefClient({
       next.add(id);
       return next;
     });
+    if (isAssistant) {
+      void persistStatus(id, "ignored");
+    }
   }
 
   function toggleDone(id: string) {
+    const wasDone = doneIds.has(id);
     setDoneIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -237,6 +271,9 @@ export function MorningBriefClient({
       next.delete(id);
       return next;
     });
+    if (isAssistant) {
+      void persistStatus(id, wasDone ? "assigned" : "done");
+    }
   }
 
   function snoozePriority(id: string) {
@@ -245,6 +282,24 @@ export function MorningBriefClient({
       next.add(id);
       return next;
     });
+    if (isAssistant) {
+      void persistStatus(id, "ignored");
+    }
+  }
+
+  async function persistStatus(
+    id: string,
+    status: "done" | "ignored" | "assigned",
+  ) {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await updateTaskStatus(token, id, status);
+      refreshTasks();
+    } catch {
+      // Optimistic UI already applied; a refresh will reconcile.
+      refreshTasks();
+    }
   }
 
   return (
@@ -800,5 +855,47 @@ function PriorityDetail({
       </div>
     </>
   );
+}
+
+// ─── Real-tasks fetch hook (Assistant role only) ─────────────────────────
+
+const REALTOR_TASKS_POLL_MS = 15_000;
+
+function useMyTasks(enabled: boolean): {
+  tasks: TaskRow[];
+  refresh: () => void;
+} {
+  const [tasks, setTasks] = useState<TaskRow[]>([]);
+  const [tick, setTick] = useState(0);
+
+  const refresh = () => setTick((n) => n + 1);
+
+  useEffect(() => {
+    if (!enabled) {
+      setTasks([]);
+      return;
+    }
+    const token = getToken();
+    if (!token) return;
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const res = await listMyTasks(token!);
+        if (!cancelled) setTasks(res.tasks);
+      } catch {
+        // silent — UI shows whatever was loaded before
+      }
+    }
+
+    load();
+    const id = window.setInterval(load, REALTOR_TASKS_POLL_MS);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [enabled, tick]);
+
+  return { tasks, refresh };
 }
 
