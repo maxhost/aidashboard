@@ -135,12 +135,22 @@ export function MorningBriefClient({
   // Mirror the DB's done state into the local Sets so the Done tab in BOTH
   // lists stays accurate across the 15s poll. The DB is the source of truth
   // in Assistant mode; mock-data modes keep their pure in-memory behavior.
+  const hasSyncedDbDoneRef = useRef(false);
   useEffect(() => {
-    if (!isAssistant) return;
+    if (!isAssistant) {
+      hasSyncedDbDoneRef.current = false;
+      return;
+    }
     const done = new Set<string>();
     for (const t of realTasks) if (t.status === "done") done.add(t.id);
     setDoneIds(done);
     setAttentionDoneIds(new Set(done));
+    // Don't celebrate already-done tasks loaded from history. The first sync
+    // sets the baseline so the milestone effect only fires on user clicks.
+    if (!hasSyncedDbDoneRef.current) {
+      hasSyncedDbDoneRef.current = true;
+      lastCelebratedRef.current = done.size;
+    }
   }, [isAssistant, realTasks]);
 
   const subtitle = useMemo(() => buildBriefSubtitle(brief), [brief]);
@@ -177,7 +187,14 @@ export function MorningBriefClient({
     onSnooze: (a, reason) => snoozeAttention(a.id, reason),
   });
   const lastCelebratedRef = useRef(0);
-  const totalDone = doneIds.size + attentionDoneIds.size;
+  // Each task can show in both lists (priority + attention), so the two Sets
+  // mirror in real-data mode. Dedupe for the milestone count.
+  const totalDone = useMemo(() => {
+    const all = new Set<string>();
+    doneIds.forEach((id) => all.add(id));
+    attentionDoneIds.forEach((id) => all.add(id));
+    return all.size;
+  }, [doneIds, attentionDoneIds]);
 
   useEffect(() => {
     // Trigger a small celebration every 3rd completion (3, 6, 9, ...).
