@@ -161,9 +161,11 @@ function buildSnapshot(t: TaskRow): PrioritySnapshotItem[] {
 export function toUiAttention(t: TaskRow): BriefAttentionItem {
   return {
     id: t.id,
-    // Deal-stage taxonomy is Fase 2 work. Default everything to "follow-up"
-    // so the row gets a sensible icon until we wire the deals model.
+    // Deal-stage taxonomy (closing / lender / inspection) is Fase 2 work.
+    // Default category to "follow-up" so the mock row still has a sensible
+    // fallback; real-data rows render their icon from actionKind below.
     category: "follow-up",
+    actionKind: toActionKind(t.category),
     headline: t.title,
     tone: toTone(t),
     risk: t.risk ?? undefined,

@@ -687,7 +687,12 @@ function AttentionRow({
   onRequestEdit?: () => void;
   onOpen?: () => void;
 }) {
-  const CategoryIcon = ATTENTION_CATEGORY_ICON[item.category];
+  // Prefer the action icon (Send / Call / Message / Schedule / Confirm) when
+  // the row carries an actionKind (real-data mode). Fall back to the deal-
+  // stage icon for the mock-data roles where category is the only signal.
+  const CategoryIcon = item.actionKind
+    ? ACTION_ICON[item.actionKind]
+    : ATTENTION_CATEGORY_ICON[item.category];
   const TitleBlock = (
     <>
       <p

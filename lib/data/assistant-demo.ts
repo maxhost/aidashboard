@@ -25,6 +25,13 @@ export type BriefAttentionCategory =
 export type BriefAttentionItem = {
   id: string;
   category: BriefAttentionCategory;
+  /**
+   * Action-flavored icon (Send / Call / Message / Schedule / Confirm). Set in
+   * real-data mode where each row is a backing task with a `category` column.
+   * Mock data leaves this undefined and renders the deal-stage icon
+   * (closing / lender / inspection / …) from `category` instead.
+   */
+  actionKind?: BriefPriorityAction;
   headline: string;
   tone: BriefAttentionTone;
   /** Short impact/risk line — typically shown only for critical items. */
