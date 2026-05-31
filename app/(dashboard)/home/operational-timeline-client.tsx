@@ -171,7 +171,8 @@ export function OperationalTimelineSection({
       if (draft) await applyEdits(conversationId, draft);
       await approveConversation(token, conversationId);
       setSelectedId(null);
-      setTab("processed");
+      // Stay on the current tab (usually Pending) so the operator can keep
+      // burning through the queue without context-switching.
       refresh();
     } catch {
       // optimistic; refresh will reconcile on next tick
@@ -188,7 +189,8 @@ export function OperationalTimelineSection({
     try {
       await rejectConversation(token, conversationId, reason);
       setSelectedId(null);
-      setTab("rejected");
+      // Stay on the current tab so the queue review flow doesn't switch
+      // contexts on every action.
       refresh();
     } catch {
       refresh();

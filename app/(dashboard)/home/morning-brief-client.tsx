@@ -100,7 +100,7 @@ const GREETING_EMOJI: Record<GreetingPeriod, string> = {
   evening: "🌙",
 };
 
-const PRIORITY_OVERVIEW_LIMIT = 4;
+const PRIORITY_OVERVIEW_LIMIT = 20;
 
 type PriorityTab = "todo" | "done";
 
