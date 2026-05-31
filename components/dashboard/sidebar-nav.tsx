@@ -12,8 +12,6 @@ import {
   LifeBuoy,
   LogOut,
   X,
-  Kanban,
-  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PulsorLockup } from "@/components/brand/pulsor";
@@ -38,8 +36,6 @@ const NAV_WORKSPACE_DEFAULT: NavItem[] = [
 
 const NAV_WORKSPACE_ASSISTANT: NavItem[] = [
   { href: "/home", label: "Home", icon: LayoutDashboard },
-  { href: "/operations", label: "Operations", icon: Kanban },
-  { href: "/transactions", label: "Transactions", icon: FileText },
 ];
 
 const NAV_SECONDARY_DEFAULT = [
