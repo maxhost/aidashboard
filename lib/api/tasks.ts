@@ -77,46 +77,30 @@ export function updateTaskFields(
   });
 }
 
-// ─── Split: tasks due within today+1d / today+2d / today+3d -> overview.
-//     Escalates only when no ACTIVE task fits the smaller window. Tasks
-//     without due_date land in priorities. ───────────────────────────────
+// ─── Split: tasks due within the next 72h OR overdue (past due but not yet
+//     resolved) -> Priority overview. Everything else -> Suggested priorities.
+//     Tasks without due_date always go to priorities. ─────────────────────
 
 export function splitTasks(
   rows: TaskRow[],
   now: Date = new Date(),
 ): { overview: TaskRow[]; priorities: TaskRow[] } {
   const ordered = [...rows].sort(taskComparator);
-  for (const extraDays of [1, 2, 3]) {
-    const cutoff = endOfDayPlus(now, extraDays);
-    // Only active tasks should anchor the window. A stale done/ignored task
-    // with a past due_date would otherwise lock overview to its bucket and
-    // starve tomorrow's actual work (see Pedro Mendez 2026-05-31 incident).
-    const activeInWin = ordered.filter(
-      (t) =>
-        t.status !== "done" &&
-        t.status !== "ignored" &&
-        t.dueDate &&
-        parseDueEnd(t.dueDate) <= cutoff,
-    );
-    if (activeInWin.length > 0) {
-      // Once the window is chosen, include done/ignored too so the Done tab
-      // of Priority overview keeps its historical context.
-      const inWin = ordered.filter(
-        (t) => t.dueDate && parseDueEnd(t.dueDate) <= cutoff,
-      );
-      const ids = new Set(inWin.map((t) => t.id));
-      return {
-        overview: inWin,
-        priorities: ordered.filter((t) => !ids.has(t.id)),
-      };
-    }
-  }
-  return { overview: [], priorities: ordered };
+  // End of (today + 3 calendar days). Any due_date <= this cutoff counts as
+  // "near or overdue" since past times are also <= future cutoff. The done/
+  // ignored ones with a past date stay visible in the Done tab of overview
+  // so the operator can see what was historically near-due.
+  const cutoff = endOfDayPlus(now, 3);
+  const overview = ordered.filter(
+    (t) => t.dueDate && parseDueEnd(t.dueDate) <= cutoff,
+  );
+  const ids = new Set(overview.map((t) => t.id));
+  const priorities = ordered.filter((t) => !ids.has(t.id));
+  return { overview, priorities };
 }
 
-// End-of-day local time for (today + extraDays). Using calendar days, not
-// 24h * N from now, so "tomorrow" actually fits in the first window
-// regardless of what time of day "now" is.
+// End-of-day local time for (today + extraDays). Calendar-day boundary so
+// "in 3 days" actually fits regardless of the current time-of-day.
 function endOfDayPlus(now: Date, extraDays: number): number {
   return new Date(
     now.getFullYear(),
