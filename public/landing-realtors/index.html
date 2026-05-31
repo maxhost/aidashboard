@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pulsor for Realtors — Your business shouldn't depend on memory</title>
-<meta name="description" content="Pulsor helps productive realtors stay on top of follow-ups, closings, client communication and daily priorities — without adding another complicated system to manage.">
+<title>Pulsor for Realtors — The relationship is the job. Everything else is work.</title>
+<meta name="description" content="Pulsor helps productive realtors stay on top of follow-ups, conversations, client communication and daily priorities without adding another system to manage.">
 <meta name="theme-color" content="#F7F4EE">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect x='14' y='26' width='52' height='28' rx='1.5' stroke='%230F0F10' stroke-width='3' fill='none'/%3E%3Cline x1='20' y1='40' x2='42' y2='40' stroke='%230F0F10' stroke-width='8'/%3E%3Ccircle cx='46' cy='40' r='5' fill='%230F0F10'/%3E%3Cline x1='49' y1='40' x2='60' y2='40' stroke='%230F0F10' stroke-width='8'/%3E%3C/svg%3E">
+<!-- Favicon: monochrome espresso version of the brand mark (gradient flattens at 16-24px) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80' fill='none'%3E%3Cpath d='M42 15.08 A25 25 0 0 0 42 64.92 Z' fill='%23211A14'/%3E%3Cline x1='48' y1='17.31' x2='48' y2='62.69' stroke='%23211A14' stroke-width='5.2' stroke-linecap='round'/%3E%3Cline x1='55' y1='21' x2='55' y2='59' stroke='%23211A14' stroke-width='5.2' stroke-linecap='round'/%3E%3Cline x1='62' y1='28.94' x2='62' y2='51.06' stroke='%23211A14' stroke-width='5.2' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://rsms.me/">
 <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
 <!-- Google tag (gtag.js) -->
@@ -29,6 +30,12 @@
     --accent: #00D9A3;
     --success: #2E7D5B;
     --error: #C44536;
+    --g1: #2EF0C4;
+    --g2: #00C79A;
+    --g3: #0E8FA0;
+    --amber: #E0A52E;
+    --rose: #D98A7E;
+    --gray-bg: #F7F8FA;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -40,7 +47,7 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: var(--bg);
+    background: #FFFFFF;
     color: var(--text);
     font-size: 17px;
     line-height: 1.6;
@@ -69,7 +76,7 @@
     position: sticky;
     top: 0;
     z-index: 50;
-    background: rgba(247, 244, 238, 0.78);
+    background: rgba(255, 255, 255, 0.8);
     backdrop-filter: saturate(180%) blur(16px);
     -webkit-backdrop-filter: saturate(180%) blur(16px);
     border-bottom: 0.5px solid transparent;
@@ -77,7 +84,7 @@
   }
   .nav.scrolled {
     border-bottom-color: var(--stone);
-    background: rgba(247, 244, 238, 0.94);
+    background: rgba(255, 255, 255, 0.94);
   }
 
   .nav-inner {
@@ -155,25 +162,25 @@
   .hero {
     display: flex;
     flex-direction: column;
-    padding: 56px 0 80px;
+    padding: 80px 0 120px;
   }
 
   .hero-grid {
     display: grid;
-    grid-template-columns: 0.9fr 1.4fr;
-    gap: 48px;
+    grid-template-columns: 0.82fr 1.5fr;
+    gap: 56px;
     align-items: center;
     width: 100%;
     flex: 1;
   }
 
   h1.hero-title {
-    font-size: clamp(40px, 4.6vw, 60px);
+    font-size: clamp(40px, 4.8vw, 58px);
     font-weight: 500;
     letter-spacing: -0.038em;
     line-height: 1.05;
-    margin-bottom: 28px;
-    max-width: 13ch;
+    margin-bottom: 36px;
+    max-width: 16ch;
   }
   .hero-title .grad {
     background: linear-gradient(180deg, var(--text) 0%, var(--text) 55%, #4A4844 100%);
@@ -192,7 +199,7 @@
     color: var(--text-muted);
     line-height: 1.5;
     max-width: 540px;
-    margin-bottom: 36px;
+    margin-bottom: 48px;
     letter-spacing: -0.014em;
   }
 
@@ -234,7 +241,7 @@
   }
 
   .form-meta {
-    margin-top: 14px;
+    margin-top: 20px;
     font-size: 13px;
     color: var(--text-faint);
     letter-spacing: -0.005em;
@@ -1013,6 +1020,727 @@
     .value-title { font-size: 17px; }
     .values-tagline { font-size: 18px; padding-top: 32px; }
   }
+
+  /* ───────── BRAND MARK (new gradient circle that orders itself) ───────── */
+  .brand-mark {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  /* ───────── ROLES (Section 3 — You're already doing enough) ───────── */
+  .roles {
+    padding: 120px 0;
+    background: var(--surface);
+    border-top: 0.5px solid var(--stone);
+  }
+  .roles-inner {
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .roles-heading {
+    font-size: 44px;
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .roles-wheel {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 12px;
+    margin: 56px auto;
+    max-width: 620px;
+  }
+  .role-pill {
+    padding: 9px 18px;
+    border-radius: 24px;
+    border: 0.5px solid var(--stone);
+    background: var(--bg);
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .role-pill.center {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+  .roles-body {
+    font-size: 18px;
+    color: var(--text-muted);
+    max-width: 560px;
+    margin: 24px auto 0;
+    line-height: 1.55;
+  }
+
+  /* ───────── FEATURE DETAIL (Sections 4-7 — one row per feature) ───────── */
+  .feature-detail {
+    padding: 128px 0;
+    border-top: 0.5px solid var(--stone);
+  }
+  .feature-detail-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 72px;
+    align-items: center;
+  }
+  .feature-detail.reverse .feature-detail-content { order: 2; }
+  .feature-detail.reverse .feature-detail-visual { order: 1; }
+  .feature-detail-eyebrow {
+    font-family: 'SF Mono', ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 22px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .feature-detail-eyebrow::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+  .feature-detail-heading {
+    font-size: 32px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1.12;
+    margin-bottom: 20px;
+    max-width: 440px;
+  }
+  .feature-detail-body {
+    font-size: 17px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 440px;
+  }
+  .feature-detail-body p { margin-bottom: 12px; }
+  .feature-detail-body p:last-child { margin-bottom: 0; }
+  .feature-detail-visual {
+    background: var(--surface);
+    border: 0.5px solid var(--stone);
+    border-radius: 16px;
+    aspect-ratio: 4/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 36px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Visual mocks (lightweight illustrations, no real screenshots) */
+  .fv-brief, .fv-voice, .fv-comm, .fv-stack {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fv-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--bg);
+    border: 0.5px solid var(--stone);
+    font-size: 13.5px;
+    color: var(--text);
+  }
+  .fv-row .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .fv-row .dot.amber { background: #E8B341; }
+  .fv-row .dot.green { background: var(--success); }
+  .fv-row .dot.red { background: var(--error); }
+  .fv-row .meta {
+    margin-left: auto;
+    font-family: 'SF Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+  .fv-list {
+    display: flex; flex-direction: column; gap: 10px;
+    width: 100%;
+  }
+
+  /* Voice visual */
+  .fv-voice-chain {
+    display: flex; align-items: center; gap: 14px;
+    width: 100%;
+    justify-content: center;
+  }
+  .fv-voice-step {
+    background: var(--bg);
+    border: 0.5px solid var(--stone);
+    border-radius: 12px;
+    padding: 16px 14px;
+    text-align: center;
+    flex: 1;
+    min-width: 0;
+  }
+  .fv-voice-step .label {
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .fv-voice-step .icon {
+    width: 28px; height: 28px;
+    margin: 0 auto 6px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text);
+  }
+  .fv-voice-arrow {
+    color: var(--text-faint);
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+
+  /* Conversation visual — vertical flow */
+  .fv-conv {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+  .fv-conv-step {
+    background: var(--bg);
+    border: 0.5px solid var(--stone);
+    border-radius: 10px;
+    padding: 11px 28px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    min-width: 180px;
+    text-align: center;
+    letter-spacing: -0.01em;
+  }
+  .fv-conv-arrow {
+    color: var(--text-faint);
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  /* Feature list (vertical items inside feature body) */
+  .feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 14px;
+  }
+  .feature-list li {
+    padding: 2px 0;
+    line-height: 1.5;
+  }
+
+  /* Stack visual */
+  .fv-stack-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+  }
+  .fv-stack-cell {
+    background: var(--bg);
+    border: 0.5px solid var(--stone);
+    border-radius: 10px;
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .fv-stack-arrow-down {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 18px;
+    margin: 4px 0;
+  }
+  .fv-stack-target {
+    grid-column: 1 / -1;
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+    padding: 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  /* ───────── WORKS WITH (Section 8 — compatibility / reassurance) ───────── */
+  .works-with {
+    padding: 120px 0;
+    border-top: 0.5px solid var(--stone);
+    text-align: center;
+  }
+  .works-with-header {
+    max-width: 660px;
+    margin: 0 auto;
+  }
+  .works-with-heading {
+    font-size: 36px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+  .works-with-sub {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+  }
+  .works-with-body {
+    font-size: 18px;
+    color: var(--text-muted);
+  }
+
+  /* ───────── PRICING (Section 9) ───────── */
+  .pricing {
+    padding: 160px 0 128px;
+    border-top: 0;
+    background: var(--gray-bg);
+  }
+  .pricing-header {
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto 64px;
+  }
+  .pricing-heading {
+    font-size: 44px;
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1.08;
+    margin-bottom: 14px;
+  }
+  .pricing-sub {
+    font-size: 17px;
+    color: var(--text-muted);
+  }
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    max-width: 820px;
+    margin: 0 auto;
+    align-items: stretch;
+  }
+  .price-card {
+    background: #FFFFFF;
+    border: 0.5px solid var(--stone);
+    border-radius: 16px;
+    padding: 36px 30px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(15,15,16,.04);
+  }
+  .price-card.highlight {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+  .price-card.highlight::before {
+    content: 'Most popular';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: var(--text);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 12px;
+  }
+  .price-card-name {
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    font-family: 'SF Mono', ui-monospace, monospace;
+    color: var(--text-muted);
+  }
+  .price-card.highlight .price-card-name { color: rgba(247,244,238,0.7); }
+  .price-card-amount {
+    font-size: 44px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .price-card-amount small {
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: var(--text-muted);
+    margin-left: 4px;
+  }
+  .price-card.highlight .price-card-amount small { color: rgba(247,244,238,0.6); }
+  .price-card-blurb {
+    font-size: 14.5px;
+    color: var(--text-muted);
+    line-height: 1.55;
+    margin: 0 0 28px;
+    min-height: 44px;
+  }
+  .price-card.highlight .price-card-blurb { color: rgba(247,244,238,0.7); }
+  .price-card-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 28px;
+    flex: 1;
+  }
+  .price-card-features li {
+    font-size: 14.5px;
+    padding: 9px 0;
+    border-top: 0.5px solid var(--stone);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.45;
+  }
+  .price-card-features li:first-child { border-top: 0.5px solid transparent; }
+  .price-card.highlight .price-card-features li {
+    border-top-color: rgba(247,244,238,0.12);
+  }
+  .price-card.highlight .price-card-features li:first-child { border-top-color: transparent; }
+  .price-card-features li::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    margin-top: 3px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%230F0F10' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='2.5 6.2 5 8.5 9.5 3.5'/%3E%3C/svg%3E");
+    background-size: 80%;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  .price-card .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .price-card.highlight .btn-primary {
+    background: var(--bg);
+    color: var(--text);
+  }
+  .price-card.highlight .btn-primary:hover { background: rgba(247,244,238,0.92); }
+
+  /* ───────── MISSION LIST (right column vertical items) ───────── */
+  .mission-list {
+    list-style: none;
+    padding: 0;
+    margin: 6px 0 0;
+  }
+  .mission-list li {
+    font-size: 17px;
+    color: var(--text);
+    padding: 3px 0;
+    line-height: 1.55;
+  }
+
+  /* ───────── THE REAL PROBLEM (single-column centered statement) ───────── */
+  .problem {
+    padding: 104px 0;
+    border-top: 0.5px solid var(--stone);
+    text-align: center;
+  }
+  .problem-inner {
+    max-width: 840px;
+    margin: 0 auto;
+  }
+  .problem-eyebrow {
+    margin-bottom: 36px;
+  }
+  .problem-headline,
+  .problem-headline-2,
+  .problem-headline-3 {
+    font-size: 44px;
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1.08;
+    margin: 0;
+  }
+  .problem-headline { color: var(--text); }
+  .problem-headline-2 { color: var(--text-muted); }
+  .problem-headline-3 {
+    color: var(--text);
+    margin-top: 28px;
+    max-width: 18ch;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ───────── FOCUS ON PEOPLE (emotional finale — 2nd strongest after hero) ───────── */
+  .people {
+    padding: 152px 0;
+    border-top: 0.5px solid var(--stone);
+  }
+  .people-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: 72px;
+    align-items: center;
+  }
+  .people-heading {
+    font-size: 52px;
+    font-weight: 500;
+    letter-spacing: -0.038em;
+    line-height: 1.03;
+    margin-bottom: 16px;
+  }
+  .people-cta {
+    margin-top: 30px;
+    padding: 14px 26px;
+    font-size: 16px;
+  }
+  .people-sub {
+    font-size: 19px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-bottom: 18px;
+  }
+  .people-body {
+    font-size: 18px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 440px;
+  }
+  .people-visual { display: flex; justify-content: center; }
+  .people-scene { position: relative; width: 100%; max-width: 440px; }
+  .people-panel {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background: var(--gray-bg);
+    border: 0.5px solid var(--stone);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .people-figures { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .pcard {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    background: #FFFFFF;
+    border: 0.5px solid var(--stone);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(15, 15, 16, 0.09);
+    padding: 9px 13px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .pcard-ico {
+    width: 19px;
+    height: 19px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: var(--accent);
+    color: #0F0F10;
+  }
+  .pcard-ico.clock { background: #EAF7F1; color: var(--g3); }
+  .pcard-1 { top: 9%; left: -6%; }
+  .pcard-2 { top: 44%; right: -8%; }
+  .pcard-3 { bottom: 8%; left: 4%; }
+  .pcard-lines { display: inline-flex; flex-direction: column; gap: 3px; }
+  .pcard-lines span { display: block; height: 3px; border-radius: 2px; background: var(--stone-2); }
+  .pcard-lines span:nth-child(1) { width: 34px; }
+  .pcard-lines span:nth-child(2) { width: 22px; }
+  .pcard-lines span:nth-child(3) { width: 28px; }
+  .pcard-cap { color: var(--text-muted); font-weight: 500; }
+
+  /* ───────── FINAL CTA (Section 10) ───────── */
+  .final-cta {
+    padding: 144px 0 120px;
+    text-align: center;
+    border-top: 0.5px solid var(--stone);
+  }
+  .final-cta-heading {
+    font-size: 56px;
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1.04;
+    margin: 0 auto 22px;
+    max-width: 760px;
+  }
+  .final-cta-accent {
+    color: var(--text-muted);
+  }
+  .final-cta-sub {
+    font-size: 19px;
+    color: var(--text-muted);
+    margin: 0 auto 40px;
+    max-width: 480px;
+    line-height: 1.5;
+  }
+  .final-cta .btn { padding: 14px 26px; font-size: 16px; }
+
+  /* ───────── Mobile overrides for new sections ───────── */
+  @media (max-width: 860px) {
+    .feature-detail { padding: 80px 0; }
+    .feature-detail-grid { grid-template-columns: 1fr; gap: 40px; }
+    .feature-detail.reverse .feature-detail-content { order: 1; }
+    .feature-detail.reverse .feature-detail-visual { order: 2; }
+    .feature-detail-heading { font-size: 26px; }
+    .works-with { padding: 80px 0; }
+    .works-with-heading { font-size: 27px; }
+    .pricing { padding: 88px 0; }
+    .pricing-heading { font-size: 30px; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .final-cta { padding: 96px 0 80px; }
+    .final-cta-heading { font-size: 38px; }
+    .problem { padding: 80px 0; }
+    .problem-headline, .problem-headline-2, .problem-headline-3 { font-size: 28px; }
+    .problem-headline-3 { margin-top: 20px; }
+    .people { padding: 96px 0; }
+    .people-grid { grid-template-columns: 1fr; gap: 48px; }
+    .people-heading { font-size: 38px; }
+    .people-scene { max-width: 380px; margin: 0 auto; }
+  }
+  @media (max-width: 540px) {
+    .feature-detail-heading { font-size: 22px; }
+    .works-with-heading { font-size: 23px; }
+    .pricing-heading { font-size: 28px; }
+    .final-cta-heading { font-size: 32px; }
+    .price-card { padding: 28px 22px; }
+    .problem-headline, .problem-headline-2, .problem-headline-3 { font-size: 24px; }
+    .people-heading { font-size: 31px; }
+    .pcard { font-size: 11px; padding: 7px 10px; }
+  }
+
+  /* ═══════════ MOTION LIBRARY (ported animations) ═══════════ */
+
+  /* Feature visual becomes a calm "stage" so animated cards pop */
+  .feature-detail-visual {
+    background: var(--bg);
+    border: 0.5px solid var(--stone);
+    border-radius: 16px;
+    aspect-ratio: auto;
+    min-height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ---- Daily Brief card (anim 01) ---- */
+  .db-card{background:var(--surface);border-radius:20px;box-shadow:0 18px 50px rgba(15,15,16,.08);padding:24px;width:100%;max-width:420px;opacity:0;transform:translateY(16px) scale(.98);}
+  .db-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .db-brand{display:flex;align-items:center;gap:9px;}
+  .db-t{font-size:11px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);}
+  .db-led{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+  .db-row{display:flex;align-items:flex-start;gap:13px;background:var(--bg);border-radius:12px;padding:13px 15px;margin-bottom:9px;opacity:0;transform:translateX(10px);}
+  .db-row:last-child{margin-bottom:0;}
+  .db-icon{width:19px;height:19px;flex-shrink:0;color:var(--text-muted);margin-top:1px;}
+  .db-icon svg{width:19px;height:19px;display:block;}
+  .db-main{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .db-task{font-size:14.5px;font-weight:500;letter-spacing:-0.02em;color:var(--text);line-height:1.35;}
+  .db-note{font-size:12.5px;color:var(--error);margin-top:3px;}
+  .db-meta{font-family:'SF Mono',ui-monospace,monospace;font-size:12px;color:var(--text-muted);flex-shrink:0;margin-top:1px;}
+
+  /* ---- Your Day card (anim 02 — hero) ---- */
+  .hero-anim{display:flex;align-items:center;justify-content:center;width:100%;}
+  .yd-scene{width:500px;max-width:100%;}
+  .yd-chips{display:flex;justify-content:center;gap:14px;margin-bottom:18px;}
+  .yd-chip{width:52px;height:52px;border-radius:14px;background:var(--surface);box-shadow:0 6px 18px rgba(15,15,16,.07);display:flex;align-items:center;justify-content:center;opacity:0;transform:translateY(-10px);}
+  .yd-chip svg{width:27px;height:27px;}
+  .yd-card{background:var(--surface);border-radius:22px;box-shadow:0 18px 50px rgba(15,15,16,.09);padding:26px;opacity:0;transform:translateY(16px) scale(.98);}
+  .yd-head{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+  .yd-title{font-size:20px;font-weight:500;letter-spacing:-0.03em;}
+  .yd-label{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);text-transform:uppercase;margin:4px 0 2px;opacity:0;}
+  .yd-row{display:flex;align-items:center;gap:13px;padding:11px 0;border-bottom:0.5px solid var(--stone);opacity:0;transform:translateX(-8px);}
+  .yd-row:last-of-type{border-bottom:none;}
+  .yd-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .yd-time{font-size:14px;color:var(--text-muted);width:72px;flex-shrink:0;font-variant-numeric:tabular-nums;}
+  .yd-task{font-size:15px;font-weight:500;letter-spacing:-0.02em;}
+  .yd-voice{margin-top:15px;background:linear-gradient(100deg,rgba(46,240,196,.13),rgba(14,143,160,.10));border:0.5px solid rgba(0,199,154,.25);border-radius:13px;padding:12px 14px;display:flex;align-items:center;gap:12px;opacity:0;transform:translateY(8px);}
+  .yd-wave{display:flex;align-items:center;gap:2.5px;height:20px;}
+  .yd-wave span{width:2.5px;border-radius:2px;background:linear-gradient(180deg,var(--g1),var(--g3));height:5px;}
+  .yd-vtext{font-size:12.5px;color:var(--g3);font-weight:500;}
+
+  /* ---- Voice flow (anim 05) — single row, shrinks to fit, never wraps ---- */
+  .vf-flow{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;}
+  .vf-step{position:relative;flex:1 1 0;min-width:0;max-width:108px;aspect-ratio:0.9;border-radius:15px;background:#F2EEE4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;opacity:0;transform:translateY(14px) scale(.96);transition:background .4s ease,box-shadow .4s ease;}
+  .vf-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--text);transition:color .4s ease,transform .4s ease;}
+  .vf-icon svg{width:23px;height:23px;}
+  .vf-label{font-family:'SF Mono',ui-monospace,monospace;font-size:9.5px;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-muted);text-align:center;line-height:1.45;transition:color .4s ease;}
+  .vf-wave{display:flex;align-items:center;gap:2.5px;height:26px;}
+  .vf-wave span{width:3px;border-radius:3px;background:linear-gradient(180deg,var(--g1),var(--g3));height:6px;}
+  .vf-arrow{flex:0 0 auto;width:18px;height:22px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);opacity:0;}
+  .vf-arrow svg{width:16px;height:16px;}
+  .vf-dash{stroke-dasharray:30;stroke-dashoffset:30;transition:stroke-dashoffset .5s ease;}
+  .vf-step.on{background:#fff;box-shadow:0 0 0 1.5px var(--accent),0 10px 26px rgba(0,199,154,.14);}
+  .vf-step.on .vf-icon{color:var(--g2);transform:scale(1.08);}
+  .vf-step.on .vf-label{color:var(--text);}
+  .vf-arrow.on{opacity:1;}
+  .vf-arrow.on .vf-dash{stroke-dashoffset:0;}
+
+  /* ---- Hub / One Operational View (anim 06) ---- */
+  .hub{position:relative;width:400px;height:400px;max-width:100%;}
+  .hub-lines{position:absolute;inset:0;width:100%;height:100%;z-index:0;}
+  .hub-lines line{stroke:var(--stone);stroke-width:1.5;stroke-dasharray:200;stroke-dashoffset:200;transition:stroke-dashoffset .6s ease;}
+  .hub-lines line.on{stroke-dashoffset:0;stroke:rgba(0,199,154,.55);}
+  .hub-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.8);z-index:2;width:120px;height:120px;border-radius:50%;background:#fff;box-shadow:0 10px 30px rgba(15,15,16,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;opacity:0;transition:opacity .5s ease, transform .5s cubic-bezier(0.34,1.2,0.64,1);}
+  .hub-center.on{opacity:1;transform:translate(-50%,-50%) scale(1);}
+  .hub-center.pulse{animation:hubpulse 1.6s ease-in-out infinite;}
+  @keyframes hubpulse{0%,100%{box-shadow:0 10px 30px rgba(15,15,16,.12),0 0 0 0 rgba(0,199,154,.0);}50%{box-shadow:0 10px 30px rgba(15,15,16,.12),0 0 0 14px rgba(0,199,154,.10);}}
+  .hub-name{font-size:14px;font-weight:500;letter-spacing:-0.03em;color:var(--text);}
+  .hub-node{position:absolute;z-index:1;background:#fff;border:0.5px solid var(--stone);border-radius:12px;padding:10px 14px;font-size:13px;font-weight:500;letter-spacing:-0.02em;color:var(--text);display:flex;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(15,15,16,.05);white-space:nowrap;opacity:0;transform:scale(.9);transition:opacity .45s ease, transform .5s cubic-bezier(0.34,1.15,0.64,1);}
+  .hub-node.on{opacity:1;transform:scale(1);}
+  .hub-dot{width:7px;height:7px;border-radius:50%;background:var(--text-muted);flex-shrink:0;}
+  #hn0{top:6%;left:50%;transform:translate(-50%,0) scale(.9);}
+  #hn0.on{transform:translate(-50%,0) scale(1);}
+  #hn1{top:25%;right:2%;}
+  #hn2{bottom:25%;right:2%;}
+  #hn3{bottom:6%;left:50%;transform:translate(-50%,0) scale(.9);}
+  #hn3.on{transform:translate(-50%,0) scale(1);}
+  #hn4{bottom:25%;left:2%;}
+  #hn5{top:25%;left:2%;}
+
+  /* ---- Conversation management (anim 07 — vertical flow) ---- */
+  .cv-flow{display:flex;flex-direction:column;align-items:center;gap:0;width:290px;max-width:100%;}
+  .cv-step{width:100%;background:#F2EEE4;border-radius:14px;padding:15px 20px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:15.5px;font-weight:500;letter-spacing:-0.02em;color:var(--text);opacity:0;transform:translateY(-10px);transition:opacity .5s ease,transform .5s cubic-bezier(0.34,1.1,0.64,1),background .4s ease,box-shadow .4s ease;}
+  .cv-icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:color .4s ease;}
+  .cv-icon svg{width:18px;height:18px;}
+  .cv-arrow{height:28px;color:var(--text-muted);opacity:0;transition:opacity .4s ease;display:flex;align-items:center;}
+  .cv-arrow svg{width:20px;height:26px;}
+  .cv-dash{stroke-dasharray:24;stroke-dashoffset:24;transition:stroke-dashoffset .45s ease;}
+  .cv-step.on{opacity:1;transform:translateY(0);}
+  .cv-step.lit{background:#fff;box-shadow:0 0 0 1.5px var(--accent),0 8px 22px rgba(0,199,154,.13);}
+  .cv-step.lit .cv-icon{color:var(--g2);}
+  .cv-arrow.on{opacity:1;}
+  .cv-arrow.on .cv-dash{stroke-dashoffset:0;}
+
+  @media (max-width: 860px) {
+    .feature-detail-visual { min-height: 320px; padding: 24px; }
+  }
 </style>
 </head>
 <body>
@@ -1021,17 +1749,24 @@
   <nav class="nav" id="nav">
     <div class="container nav-inner">
       <a href="#" class="brand" aria-label="Pulsor">
-        <svg width="40" height="40" viewBox="0 0 80 80" fill="none">
-          <rect x="14" y="26" width="52" height="28" rx="1.5" stroke="#0F0F10" stroke-width="3" fill="none"/>
-          <line x1="20" y1="40" x2="42" y2="40" stroke="#0F0F10" stroke-width="8"/>
-          <circle cx="46" cy="40" r="5" fill="#0F0F10"/>
-          <line x1="49" y1="40" x2="60" y2="40" stroke="#0F0F10" stroke-width="8"/>
+        <svg class="brand-mark" viewBox="0 0 80 80" fill="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="brandG" gradientUnits="userSpaceOnUse" x1="15" y1="15" x2="65" y2="65">
+              <stop offset="0%" stop-color="#2EF0C4"/>
+              <stop offset="50%" stop-color="#00C79A"/>
+              <stop offset="100%" stop-color="#0E8FA0"/>
+            </linearGradient>
+          </defs>
+          <path d="M42 15.08 A25 25 0 0 0 42 64.92 Z" fill="url(#brandG)"/>
+          <line x1="48" y1="17.31" x2="48" y2="62.69" stroke="url(#brandG)" stroke-width="5.2" stroke-linecap="round"/>
+          <line x1="55" y1="21" x2="55" y2="59" stroke="url(#brandG)" stroke-width="5.2" stroke-linecap="round"/>
+          <line x1="62" y1="28.94" x2="62" y2="51.06" stroke="url(#brandG)" stroke-width="5.2" stroke-linecap="round"/>
         </svg>
         <span class="brand-word">pulsor</span>
       </a>
       <div class="nav-actions">
         <a href="/login" class="btn btn-text">Log in</a>
-        <a href="#access" class="btn btn-primary">Request access <span class="btn-arrow">→</span></a>
+        <a href="#access" class="btn btn-primary">Get Early Access <span class="btn-arrow">→</span></a>
       </div>
     </div>
   </nav>
@@ -1041,20 +1776,20 @@
     <div class="container hero-grid">
       <div class="hero-copy">
         <h1 class="hero-title">
-          <span class="grad">Your business shouldn&apos;t depend on<br><span class="accent-word">your memory.</span></span>
+          <span class="grad">Missed follow-ups become<br><span class="accent-word">missed opportunities.</span></span>
         </h1>
 
         <p class="hero-sub">
-          Pulsor helps productive realtors organize the daily operational chaos around follow-ups, closings and client communication — without another complicated system to manage.
+          Pulsor helps real estate agents stay on top of conversations, follow-ups and priorities before things fall through the cracks.
         </p>
 
         <form class="access-form" id="access-form" novalidate>
           <input type="email" name="email" id="access" placeholder="you@company.com" required autocomplete="email" aria-label="Work email">
-          <button type="submit" class="btn btn-primary">Request access <span class="btn-arrow">→</span></button>
+          <button type="submit" class="btn btn-primary">Get Early Access <span class="btn-arrow">→</span></button>
         </form>
 
         <div class="form-meta">
-          Invite-only · Reviewed manually · Already a customer? <a href="/login" style="color: var(--text); text-decoration: underline; text-decoration-color: var(--stone-2); text-underline-offset: 3px;">Log in</a>
+          <a href="#how-it-works" style="color: var(--text); text-decoration: underline; text-decoration-color: var(--stone-2); text-underline-offset: 3px;">See how it works →</a> · Invite-only · Already a customer? <a href="/login" style="color: var(--text); text-decoration: underline; text-decoration-color: var(--stone-2); text-underline-offset: 3px;">Log in</a>
         </div>
 
         <div class="form-success" id="form-success" role="status" aria-live="polite">
@@ -1063,229 +1798,212 @@
         </div>
       </div>
 
-      <!-- HERO ANIMATION: Your Day, Organized -->
-      <section class="day-organized" aria-label="Your day, organized">
-        <!-- Connection curves -->
-        <svg class="connections fade-in d1" viewBox="0 0 1600 900" preserveAspectRatio="none">
-          <path d="M 476 200 C 510 230, 525 320, 540 430"/>
-          <path d="M 410 440 C 470 442, 510 446, 540 450"/>
-          <path d="M 476 700 C 510 660, 525 580, 540 470"/>
-          <path d="M 1124 200 C 1090 230, 1075 320, 1060 430"/>
-          <path d="M 1190 440 C 1130 442, 1090 446, 1060 450"/>
-          <path d="M 1124 700 C 1090 660, 1075 580, 1060 470"/>
-        </svg>
-
-        <!-- Mobile-only top row -->
-        <div class="tools-mobile-row tools-mobile-top fade-in d2">
-          <div class="tool-tile"><svg viewBox="0 0 32 32"><path fill="#25D366" d="M16 3C8.8 3 3 8.8 3 16c0 2.3.6 4.5 1.7 6.4L3 29l6.8-1.7A13 13 0 1 0 16 3Z"/><path fill="#fff" d="M22.6 19.3c-.3-.2-1.9-1-2.2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.6.1-.4-.2-1.4-.5-2.7-1.7-1-.9-1.7-2-1.9-2.4-.2-.3 0-.5.1-.7l.5-.6.3-.4c.1-.2 0-.4 0-.5l-1-2.3c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.2 3.4 5.4 4.7 3.2 1.3 3.2.9 3.8.8.6-.1 1.9-.8 2.2-1.5.3-.7.3-1.4.2-1.5 0-.1-.2-.2-.5-.3Z"/></svg></div>
-          <div class="tool-tile"><svg viewBox="0 0 32 32"><defs><linearGradient id="mailGradM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7BC8FF"/><stop offset="1" stop-color="#1E8BFF"/></linearGradient></defs><rect x="3" y="7" width="26" height="18" rx="3.5" fill="url(#mailGradM)"/><path d="M5 9.5 16 17.5 27 9.5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <div class="tool-tile"><svg viewBox="0 0 32 32"><rect x="3.5" y="5.5" width="25" height="21" rx="3.5" fill="#fff" stroke="#E5E0D6" stroke-width="1"/><circle cx="11" cy="13" r="3" fill="#FF7A59"/><rect x="16" y="11" width="9" height="1.8" rx="0.9" fill="#0F0F10" opacity="0.8"/><rect x="16" y="14" width="6" height="1.6" rx="0.8" fill="#6B6862"/><rect x="7" y="19" width="18" height="1.6" rx="0.8" fill="#E5E0D6"/><rect x="7" y="22" width="12" height="1.6" rx="0.8" fill="#E5E0D6"/></svg></div>
-        </div>
-
-        <!-- Desktop tools -->
-        <div class="tools-desktop">
-          <div class="tool t-whatsapp fade-in d2">
-            <div class="tool-tile">
-              <svg viewBox="0 0 32 32">
-                <path fill="#25D366" d="M16 3C8.8 3 3 8.8 3 16c0 2.3.6 4.5 1.7 6.4L3 29l6.8-1.7A13 13 0 1 0 16 3Z"/>
-                <path fill="#FFFFFF" d="M22.6 19.3c-.3-.2-1.9-1-2.2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.6.1-.4-.2-1.4-.5-2.7-1.7-1-.9-1.7-2-1.9-2.4-.2-.3 0-.5.1-.7l.5-.6.3-.4c.1-.2 0-.4 0-.5l-1-2.3c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.2 3.4 5.4 4.7 3.2 1.3 3.2.9 3.8.8.6-.1 1.9-.8 2.2-1.5.3-.7.3-1.4.2-1.5 0-.1-.2-.2-.5-.3Z"/>
-              </svg>
-            </div>
-            <span class="tool-label">WhatsApp</span>
-          </div>
-
-          <div class="tool t-mail fade-in d2">
-            <div class="tool-tile">
-              <svg viewBox="0 0 32 32">
-                <defs><linearGradient id="mailGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7BC8FF"/><stop offset="1" stop-color="#1E8BFF"/></linearGradient></defs>
-                <rect x="3" y="7" width="26" height="18" rx="3.5" fill="url(#mailGrad)"/>
-                <path d="M5 9.5 16 17.5 27 9.5" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <span class="tool-label">Mail</span>
-          </div>
-
-          <div class="tool t-crm fade-in d2">
-            <div class="tool-tile">
-              <svg viewBox="0 0 32 32">
-                <rect x="3.5" y="5.5" width="25" height="21" rx="3.5" fill="#FFFFFF" stroke="#E5E0D6" stroke-width="1"/>
-                <circle cx="11" cy="13" r="3" fill="#FF7A59"/>
-                <rect x="16" y="11" width="9" height="1.8" rx="0.9" fill="#0F0F10" opacity="0.8"/>
-                <rect x="16" y="14" width="6" height="1.6" rx="0.8" fill="#6B6862"/>
-                <rect x="7" y="19" width="18" height="1.6" rx="0.8" fill="#E5E0D6"/>
-                <rect x="7" y="22" width="12" height="1.6" rx="0.8" fill="#E5E0D6"/>
-              </svg>
-            </div>
-            <span class="tool-label">CRM</span>
-          </div>
-
-          <div class="tool t-calendar fade-in d2">
-            <div class="tool-tile">
-              <svg viewBox="0 0 32 32">
-                <rect x="4" y="4" width="24" height="24" rx="3" fill="#FFFFFF" stroke="#E5E0D6" stroke-width="1"/>
-                <path d="M4 4h24v6H4z" fill="#4285F4"/>
-                <rect x="8" y="2" width="2" height="6" rx="1" fill="#4285F4"/>
-                <rect x="22" y="2" width="2" height="6" rx="1" fill="#34A853"/>
-                <text x="16" y="22" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#4285F4">31</text>
-              </svg>
-            </div>
-            <span class="tool-label">Calendar</span>
-          </div>
-
-          <div class="tool t-zillow fade-in d2">
-            <div class="tool-tile">
-              <svg viewBox="0 0 32 32">
-                <path fill="#006AFF" d="M16 4 5 13.2v2.4l4-1.4v10.3h4.6v-7.2l4.8-3 .4.5L23 17v7.5h4.6V14.2l4-1.4v-2.4L16 4Zm0 3 7.4 6.2-1.6 1.9-5.8-1.9V7Z"/>
-              </svg>
-            </div>
-            <span class="tool-label">Zillow</span>
-          </div>
-
-          <div class="tool t-gmail fade-in d2">
-            <div class="tool-tile">
-              <svg viewBox="0 0 32 32">
-                <path fill="#4285F4" d="M4 11v13a2 2 0 0 0 2 2h3V14.7L4 11Z"/>
-                <path fill="#34A853" d="M23 26h3a2 2 0 0 0 2-2V11l-5 3.7V26Z"/>
-                <path fill="#FBBC04" d="M9 26V14.7L16 20l7-5.3V26h-3.5l-3.5-2.6L12.5 26H9Z"/>
-                <path fill="#EA4335" d="M9 14.7 16 20l7-5.3-3-2.2L16 15.6l-4-3.1L9 14.7Z"/>
-                <path fill="#C5221F" d="M4 11v.3l5 3.4v-2.2L7 11a2 2 0 0 0-3 0Z"/>
-                <path fill="#C5221F" d="M28 11v.3l-5 3.4v-2.2l2-1.5a2 2 0 0 1 3 0Z"/>
-              </svg>
-            </div>
-            <span class="tool-label">Gmail</span>
+      <!-- HERO ANIMATION: Your Day, Organized (motion library) -->
+      <div class="hero-anim" aria-label="Your day, organized">
+        <div class="yd-scene">
+          <div class="yd-chips" id="yd-chips"></div>
+          <div class="yd-card" id="yd-card">
+            <div class="yd-head"><span id="yd-iso"></span><span class="yd-title">Your day, organized</span></div>
+            <div class="yd-label" id="yd-l1">Today</div>
+            <div id="yd-today"></div>
+            <div class="yd-label" id="yd-l2">Tomorrow</div>
+            <div id="yd-tom"></div>
+            <div class="yd-voice" id="yd-voice"><div class="yd-wave" id="yd-wave"></div><span class="yd-vtext">Updated from your voice notes</span></div>
           </div>
         </div>
-
-        <!-- Card -->
-        <div class="card-wrap fade-in d3">
-          <div class="card-stack-2"></div>
-          <div class="card-stack-1"></div>
-
-          <div class="card">
-            <div class="card-head">
-              <h3 class="card-title">Your Day, Organized</h3>
-            </div>
-
-            <div class="day-label" style="animation-delay:0.1s">TODAY</div>
-            <ul class="agenda today">
-              <li style="animation-delay:0.4s"><span class="dot" style="animation-delay:0.4s"></span><span class="t-time">09:00 AM</span><span class="t-task">Follow up with John</span></li>
-              <li style="animation-delay:0.95s"><span class="dot" style="animation-delay:0.95s"></span><span class="t-time">11:00 AM</span><span class="t-task">Showing with Sarah</span></li>
-              <li style="animation-delay:1.5s"><span class="dot warn" style="animation-delay:1.5s"></span><span class="t-time">01:30 PM</span><span class="t-task">Send docs to title</span></li>
-              <li style="animation-delay:2.05s"><span class="dot" style="animation-delay:2.05s"></span><span class="t-time">03:00 PM</span><span class="t-task">Client update</span></li>
-            </ul>
-
-            <div class="day-label" style="animation-delay:2.55s">TOMORROW</div>
-            <ul class="agenda tomorrow">
-              <li style="animation-delay:2.9s"><span class="dot" style="animation-delay:2.9s"></span><span class="t-time">10:00 AM</span><span class="t-task">Inspection</span></li>
-              <li style="animation-delay:3.45s"><span class="dot danger" style="animation-delay:3.45s"></span><span class="t-time">02:00 PM</span><span class="t-task">Closing</span></li>
-            </ul>
-
-            <div class="voice">
-              <div class="wave" aria-hidden="true">
-                <span></span><span></span><span></span><span></span><span></span>
-                <span></span><span></span><span></span><span></span><span></span>
-                <span></span><span></span><span></span><span></span><span></span>
-              </div>
-              <div class="voice-text">Updated from your voice notes</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Mobile-only bottom row -->
-        <div class="tools-mobile-row tools-mobile-bottom fade-in d2">
-          <div class="tool-tile"><svg viewBox="0 0 32 32"><rect x="4" y="4" width="24" height="24" rx="3" fill="#fff" stroke="#E5E0D6" stroke-width="1"/><path d="M4 4h24v6H4z" fill="#4285F4"/><rect x="8" y="2" width="2" height="6" rx="1" fill="#4285F4"/><rect x="22" y="2" width="2" height="6" rx="1" fill="#34A853"/><text x="16" y="22" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#4285F4">31</text></svg></div>
-          <div class="tool-tile"><svg viewBox="0 0 32 32"><path fill="#006AFF" d="M16 4 5 13.2v2.4l4-1.4v10.3h4.6v-7.2l4.8-3 .4.5L23 17v7.5h4.6V14.2l4-1.4v-2.4L16 4Zm0 3 7.4 6.2-1.6 1.9-5.8-1.9V7Z"/></svg></div>
-          <div class="tool-tile"><svg viewBox="0 0 32 32"><path fill="#4285F4" d="M4 11v13a2 2 0 0 0 2 2h3V14.7L4 11Z"/><path fill="#34A853" d="M23 26h3a2 2 0 0 0 2-2V11l-5 3.7V26Z"/><path fill="#FBBC04" d="M9 26V14.7L16 20l7-5.3V26h-3.5l-3.5-2.6L12.5 26H9Z"/><path fill="#EA4335" d="M9 14.7 16 20l7-5.3-3-2.2L16 15.6l-4-3.1L9 14.7Z"/><path fill="#C5221F" d="M4 11v.3l5 3.4v-2.2L7 11a2 2 0 0 0-3 0Z"/><path fill="#C5221F" d="M28 11v.3l-5 3.4v-2.2l2-1.5a2 2 0 0 1 3 0Z"/></svg></div>
-        </div>
-
-        <!-- Sparkle -->
-        <svg class="sparkle fade-in d3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M12 2c.3 3.6 1.4 6.5 3.4 8.6C17.5 12.6 20.4 13.7 24 14c-3.6.3-6.5 1.4-8.6 3.4C13.4 19.5 12.3 22.4 12 26c-.3-3.6-1.4-6.5-3.4-8.6C6.5 15.4 3.6 14.3 0 14c3.6-.3 6.5-1.4 8.6-3.4C10.6 8.5 11.7 5.6 12 2Z"/>
-        </svg>
-      </section>
+      </div>
     </div>
 
   </section>
 
-  <!-- MISSION — two columns: heading left, body right -->
-  <section class="mission">
-    <div class="container mission-grid">
-      <div>
-        <div class="eyebrow mission-eyebrow">
+  <!-- SECTION 2 — THE REAL PROBLEM (single-column statement) -->
+  <section class="problem" id="how-it-works">
+    <div class="container">
+      <div class="problem-inner">
+        <div class="eyebrow problem-eyebrow">
           <span class="dot-mint"></span>THE REAL PROBLEM
         </div>
-        <h2 class="mission-heading">
-          Most real estate agents already have tools.
-          <span class="accent">The problem is operational, not technical.</span>
-        </h2>
-      </div>
-      <div class="mission-body">
-        <p>
-          The operation still lives between WhatsApp, emails, sticky notes,
-          disconnected apps, and mental reminders.
-        </p>
-        <p>
-          Pulsor creates one operational flow that helps realtors stay
-          organized, reduce mental overload, keep closings moving, and know
-          exactly what needs attention each day.
-        </p>
+        <h2 class="problem-headline">Everything lives in different places.</h2>
+        <p class="problem-headline-2">Much of it still lives in your head.</p>
+        <p class="problem-headline-3">That&apos;s where things start falling through the cracks.</p>
       </div>
     </div>
   </section>
 
-  <!-- CORE EXPERIENCE (4 cards) -->
-  <section class="automate">
+  <!-- SECTION 3 — FEATURE #1: Daily Brief -->
+  <section class="feature-detail">
     <div class="container">
-      <div class="eyebrow automate-eyebrow">
-        <span class="dot-mint"></span>CORE EXPERIENCE
+      <div class="feature-detail-grid">
+        <div class="feature-detail-content">
+          <h2 class="feature-detail-heading">Start every day knowing what matters.</h2>
+          <div class="feature-detail-body">
+            <p>See what needs your attention, what&apos;s waiting on others and what may be falling behind before your day even begins.</p>
+            <p>No digging through emails. No checking six different systems.</p>
+          </div>
+        </div>
+        <div class="feature-detail-visual" aria-hidden="true">
+          <div class="db-card" id="db-card">
+            <div class="db-head"><div class="db-brand"><span id="db-iso"></span><span class="db-t">Daily Brief</span></div><span class="db-led"></span></div>
+            <div id="db-rows"></div>
+          </div>
+        </div>
       </div>
-      <ul class="features-list">
-        <li class="feature">
-          <div class="feature-title">Daily Operational Clarity</div>
-          <p class="feature-text">
-            See what actually requires attention each day without digging
-            through multiple tools and conversations.
-          </p>
-        </li>
-        <li class="feature">
-          <div class="feature-title">Voice-Based Workflow</div>
-          <p class="feature-text">
-            After a showing or client call, send a quick voice note and keep
-            the operation moving naturally.
-          </p>
-        </li>
-        <li class="feature">
-          <div class="feature-title">Closing Coordination</div>
-          <p class="feature-text">
-            Track inspections, documents, lender/title communication and
-            transaction progress in one operational flow.
-          </p>
-        </li>
-        <li class="feature">
-          <div class="feature-title">Client Communication</div>
-          <p class="feature-text">
-            Keep buyers, sellers and tenants informed throughout the process
-            without constant manual updates.
-          </p>
-        </li>
-      </ul>
     </div>
   </section>
 
-  <!-- POSITIONING TAGLINE -->
-  <section class="values">
+  <!-- SECTION 5 — FEATURE #2: Voice -->
+  <section class="feature-detail reverse">
     <div class="container">
-      <p class="values-tagline" style="padding-top: 0; border-top: 0;">
-        Real estate agents don&apos;t need more tools.<br>
-        <em>They need operational clarity.</em>
-      </p>
+      <div class="feature-detail-grid">
+        <div class="feature-detail-content">
+          <h2 class="feature-detail-heading">Talk. Pulsor organizes the rest.</h2>
+          <div class="feature-detail-body">
+            <p>Leaving a showing? Finishing a client call? Send a voice note.</p>
+            <p>Pulsor turns conversations into organized actions, reminders and next steps.</p>
+          </div>
+        </div>
+        <div class="feature-detail-visual" aria-hidden="true">
+          <div class="vf-flow" id="vf-flow">
+            <div class="vf-step" id="vf-s0"><div class="vf-icon" id="vf-s0-icon"></div><div class="vf-label">Voice<br>note</div></div>
+            <div class="vf-arrow" id="vf-a0"><svg viewBox="0 0 30 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path class="vf-dash" d="M2 12h22"/><path d="M19 7l6 5-6 5"/></svg></div>
+            <div class="vf-step" id="vf-s1"><div class="vf-icon" id="vf-s1-icon"></div><div class="vf-label">Tasks</div></div>
+            <div class="vf-arrow" id="vf-a1"><svg viewBox="0 0 30 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path class="vf-dash" d="M2 12h22"/><path d="M19 7l6 5-6 5"/></svg></div>
+            <div class="vf-step" id="vf-s2"><div class="vf-icon" id="vf-s2-icon"></div><div class="vf-label">Reminders</div></div>
+            <div class="vf-arrow" id="vf-a2"><svg viewBox="0 0 30 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path class="vf-dash" d="M2 12h22"/><path d="M19 7l6 5-6 5"/></svg></div>
+            <div class="vf-step" id="vf-s3"><div class="vf-icon" id="vf-s3-icon"></div><div class="vf-label">Actions</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6 — FEATURE #3: Conversation Management -->
+  <section class="feature-detail">
+    <div class="container">
+      <div class="feature-detail-grid">
+        <div class="feature-detail-content">
+          <h2 class="feature-detail-heading">Stay on top of every conversation.</h2>
+          <div class="feature-detail-body">
+            <p>Never lose track of a follow-up, client request or important detail.</p>
+          </div>
+        </div>
+        <div class="feature-detail-visual" aria-hidden="true">
+          <div class="cv-flow" id="cv-flow">
+            <div class="cv-step" id="cv0"><span class="cv-icon" id="cv0-i"></span><span>Message</span></div>
+            <div class="cv-arrow" id="cv-a0"><svg viewBox="0 0 24 30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path class="cv-dash" d="M12 2v22"/><path d="M7 19l5 5 5-5"/></svg></div>
+            <div class="cv-step" id="cv1"><span class="cv-icon" id="cv1-i"></span><span>Follow-up</span></div>
+            <div class="cv-arrow" id="cv-a1"><svg viewBox="0 0 24 30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path class="cv-dash" d="M12 2v22"/><path d="M7 19l5 5 5-5"/></svg></div>
+            <div class="cv-step" id="cv2"><span class="cv-icon" id="cv2-i"></span><span>Reminder</span></div>
+            <div class="cv-arrow" id="cv-a2"><svg viewBox="0 0 24 30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path class="cv-dash" d="M12 2v22"/><path d="M7 19l5 5 5-5"/></svg></div>
+            <div class="cv-step" id="cv3"><span class="cv-icon" id="cv3-i"></span><span>Action</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 7 — WORKS WITH (compatibility reassurance — typography only) -->
+  <section class="works-with">
+    <div class="container">
+      <div class="works-with-header">
+        <h2 class="works-with-heading">Works with the systems you already have.</h2>
+        <p class="works-with-sub">Email. Calendar. CRM. Messages.</p>
+        <p class="works-with-body">Pulsor helps organize what matters across all of them.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 8 — PRICING -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <div class="pricing-grid">
+        <div class="price-card highlight">
+          <div class="price-card-name">Pro</div>
+          <div class="price-card-amount">$199<small>/month</small></div>
+          <p class="price-card-blurb">For real estate agents who want more clarity and less operational overhead.</p>
+          <ul class="price-card-features">
+            <li>Daily Brief</li>
+            <li>Voice Notes</li>
+            <li>Tasks &amp; Follow-ups</li>
+            <li>Client Communication</li>
+            <li>Priority Tracking</li>
+            <li>CRM Integrations</li>
+            <li>Operational Workspace</li>
+          </ul>
+          <a href="#access" class="btn btn-primary">Get Early Access <span class="btn-arrow">→</span></a>
+        </div>
+        <div class="price-card">
+          <div class="price-card-name">Teams &amp; Brokerages</div>
+          <div class="price-card-amount">Custom</div>
+          <p class="price-card-blurb">For growing teams and brokerages.</p>
+          <ul class="price-card-features">
+            <li>Shared workflows</li>
+            <li>Brokerage visibility</li>
+            <li>Team operations</li>
+            <li>Custom integrations</li>
+            <li>Dedicated onboarding</li>
+          </ul>
+          <a href="mailto:hello@pulsor.co?subject=Pulsor%20for%20teams" class="btn btn-text" style="border: 0.5px solid var(--stone); background: var(--surface);">Contact Us <span class="btn-arrow">→</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 9 — FOCUS ON PEOPLE (emotional finale + CTA) -->
+  <section class="people people-finale">
+    <div class="container people-grid">
+      <div class="people-copy">
+        <h2 class="people-heading">Focus on people.</h2>
+        <p class="people-sub">Let Pulsor help organize the rest.</p>
+        <p class="people-body">
+          The best agents win through relationships. Not by spending their day
+          chasing updates, searching emails or trying to remember what needs
+          attention next.
+        </p>
+        <a href="#access" class="btn btn-primary people-cta">Get Early Access <span class="btn-arrow">→</span></a>
+      </div>
+      <div class="people-visual" aria-hidden="true">
+        <div class="people-scene">
+          <div class="people-panel">
+            <svg class="people-figures" viewBox="0 0 380 300" fill="none">
+              <g>
+                <rect x="156" y="44" width="68" height="36" rx="15" fill="#EAF7F1"/>
+                <path d="M178 79 l8 10 6 -10 Z" fill="#EAF7F1"/>
+                <circle cx="176" cy="62" r="3.2" fill="#00C79A"/>
+                <circle cx="190" cy="62" r="3.2" fill="#00C79A"/>
+                <circle cx="204" cy="62" r="3.2" fill="#00C79A"/>
+              </g>
+              <path d="M78 272 Q78 184 128 184 Q178 184 178 272 Z" fill="#D6F0E6"/>
+              <circle cx="128" cy="146" r="34" fill="#B7E6D5"/>
+              <path d="M202 272 Q202 184 252 184 Q302 184 302 272 Z" fill="#F0E7D6"/>
+              <circle cx="252" cy="146" r="34" fill="#E7D6BD"/>
+            </svg>
+          </div>
+          <div class="pcard pcard-1">
+            <span class="pcard-ico ok">
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 6.2 5 8.5 9.5 3.5"/></svg>
+            </span>
+            <span>Follow up — Reyes family</span>
+          </div>
+          <div class="pcard pcard-2">
+            <span class="pcard-ico clock">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+            </span>
+            <span>Call lender · 2 PM</span>
+          </div>
+          <div class="pcard pcard-3">
+            <span class="pcard-lines"><span></span><span></span><span></span></span>
+            <span class="pcard-cap">Conversation summary</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
   <!-- FOOTER -->
   <footer>
     <div class="container foot">
-      <div>© 2026 Pulsor Systems, Inc.</div>
+      <div>© 2026 Pulsor</div>
     </div>
   </footer>
 
@@ -1961,6 +2679,225 @@
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
+})();
+</script>
+
+<!-- ═══════════ MOTION LIBRARY (product + hero animations) ═══════════ -->
+<script>
+(function(){
+  const REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const E='cubic-bezier(0.4,0,0.2,1)';
+  const G=['#2EF0C4','#00C79A','#0E8FA0'];
+  const R=25,CX=40,CY=40,SOLID='M42 15.08 A25 25 0 0 0 42 64.92 Z';
+  const BARS=[{x:48,h:22.69},{x:55,h:19.0},{x:62,h:11.06}];
+  let GID=0;
+  function isoGrad(size){
+    GID++;const gid='mg'+GID;
+    const defs=`<defs><linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="15" y1="15" x2="65" y2="65"><stop offset="0%" stop-color="${G[0]}"/><stop offset="50%" stop-color="${G[1]}"/><stop offset="100%" stop-color="${G[2]}"/></linearGradient></defs>`;
+    const bars=BARS.map(b=>`<line x1="${b.x}" y1="${(CY-b.h).toFixed(2)}" x2="${b.x}" y2="${(CY+b.h).toFixed(2)}" stroke="url(#${gid})" stroke-width="5.2" stroke-linecap="round"/>`).join('');
+    return `<svg width="${size}" height="${size}" viewBox="0 0 80 80" fill="none" style="vertical-align:middle">${defs}<path d="${SOLID}" fill="url(#${gid})"/>${bars}</svg>`;
+  }
+  const ICONS={
+    wa:`<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#25D366"/><path d="M16 8a8 8 0 0 0-6.9 12l-1 3.6 3.7-1A8 8 0 1 0 16 8Z" fill="#fff"/><path d="M12.5 12c.2-.4.4-.4.6-.4h.5c.2 0 .4 0 .6.5l.7 1.6c.1.2 0 .4-.1.5l-.4.5c-.1.1-.2.3 0 .5a6 6 0 0 0 2.4 2c.2.1.4.1.5 0l.6-.6c.2-.2.4-.2.5-.1l1.4.7c.2.1.3.2.3.3 0 .5-.3 1.2-.7 1.4-.5.3-1.5.5-3.3-.5a8 8 0 0 1-3.3-3.6c-.3-.7-.4-1.7-.1-2.2Z" fill="#25D366"/></svg>`,
+    mail:`<svg viewBox="0 0 32 32"><rect x="4" y="7" width="24" height="18" rx="3" fill="#4A8CF7"/><path d="M5 9l11 8 11-8" stroke="#fff" stroke-width="2" fill="none"/></svg>`,
+    crm:`<svg viewBox="0 0 32 32"><rect x="4" y="6" width="24" height="20" rx="3" fill="#fff" stroke="#E5E0D6"/><circle cx="11" cy="13" r="3" fill="#D98A7E"/><rect x="16" y="11" width="9" height="2" rx="1" fill="#C9C4BA"/><rect x="16" y="15" width="6" height="2" rx="1" fill="#E5E0D6"/><rect x="7" y="20" width="18" height="2" rx="1" fill="#E5E0D6"/></svg>`,
+  };
+  const ACTION={
+    send:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 11 13"/><path d="M21 3 14.5 21 11 13 3 9.5 21 3Z"/></svg>`,
+    call:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3a2 2 0 0 0-2 2c0 8.3 6.7 15 15 15a2 2 0 0 0 2-2v-2.5a1 1 0 0 0-.8-1l-3-.6a1 1 0 0 0-1 .4l-1 1.3a12 12 0 0 1-5.5-5.5l1.3-1a1 1 0 0 0 .4-1l-.6-3a1 1 0 0 0-1-.8H5Z"/></svg>`,
+    message:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.3 7.3L4 21l1.7-5.7A8 8 0 1 1 21 12Z"/></svg>`,
+    calendar:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg>`,
+    check:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>`,
+  };
+  const $=id=>document.getElementById(id);
+
+  // ---- populate Daily Brief ----
+  if($('db-iso')) $('db-iso').innerHTML=isoGrad(22);
+  const brief=[
+    {icon:'call',task:'Call title office — Harper payoff',note:'Closing slips if not received Wed',meta:'9:00'},
+    {icon:'send',task:'Send counter to Bennett agent',note:'',meta:'11:30'},
+    {icon:'message',task:'Confirm appraisal with Carter',note:'',meta:'2:00'},
+    {icon:'calendar',task:'Schedule Oakwood showing',note:'',meta:'4:00'},
+    {icon:'check',task:'Inspection received · 14 Maple',note:'',meta:'Done'},
+  ];
+  if($('db-rows')) $('db-rows').innerHTML=brief.map(r=>
+    `<div class="db-row"><span class="db-icon">${ACTION[r.icon]}</span><span class="db-main"><span class="db-task">${r.task}</span>${r.note?`<span class="db-note">${r.note}</span>`:''}</span><span class="db-meta">${r.meta}</span></div>`
+  ).join('');
+
+  // ---- populate Your Day (hero) ----
+  if($('yd-chips')) $('yd-chips').innerHTML=['wa','mail','crm'].map(k=>`<div class="yd-chip">${ICONS[k]}</div>`).join('');
+  if($('yd-iso')) $('yd-iso').innerHTML=isoGrad(26);
+  const ydToday=[
+    {t:'09:00 AM',task:'Follow up with John',c:'var(--accent)'},
+    {t:'11:00 AM',task:'Showing with Sarah',c:'var(--accent)'},
+    {t:'01:30 PM',task:'Send docs to title',c:'var(--amber)'},
+    {t:'03:00 PM',task:'Client update',c:'var(--accent)'},
+  ];
+  const ydTom=[
+    {t:'10:00 AM',task:'Inspection',c:'rgba(0,199,154,.5)'},
+    {t:'02:00 PM',task:'Closing',c:'var(--rose)'},
+  ];
+  const ydRows=arr=>arr.map(r=>`<div class="yd-row"><span class="yd-dot" style="background:${r.c}"></span><span class="yd-time">${r.t}</span><span class="yd-task">${r.task}</span></div>`).join('');
+  if($('yd-today')) $('yd-today').innerHTML=ydRows(ydToday);
+  if($('yd-tom')) $('yd-tom').innerHTML=ydRows(ydTom);
+  if($('yd-wave')) $('yd-wave').innerHTML=Array.from({length:18}).map(()=>`<span></span>`).join('');
+
+  // ---- populate Voice flow icons ----
+  const VF_ICON={
+    mic:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg>`,
+    tasks:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 12l2.5 2.5L16 9"/></svg>`,
+    clock:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>`,
+    send:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 11 13"/><path d="M21 3 14.5 21 11 13 3 9.5 21 3Z"/></svg>`,
+  };
+  if($('vf-s0-icon')) $('vf-s0-icon').innerHTML=VF_ICON.mic;
+  if($('vf-s1-icon')) $('vf-s1-icon').innerHTML=VF_ICON.tasks;
+  if($('vf-s2-icon')) $('vf-s2-icon').innerHTML=VF_ICON.clock;
+  if($('vf-s3-icon')) $('vf-s3-icon').innerHTML=VF_ICON.send;
+  const VF_WAVE=`<div class="vf-wave">${Array.from({length:9}).map(()=>'<span></span>').join('')}</div>`;
+
+  // ---- populate Hub ----
+  if($('hub-iso')) $('hub-iso').innerHTML=isoGrad(38);
+  const HUB_NODES=[{x:220,y:50},{x:392,y:122},{x:392,y:318},{x:220,y:390},{x:48,y:318},{x:48,y:122}];
+  const hubLines=$('hub-lines');
+  if(hubLines) hubLines.innerHTML=HUB_NODES.map((n,i)=>`<line id="hl${i}" x1="${n.x}" y1="${n.y}" x2="220" y2="220"/>`).join('');
+
+  // ---- populate Conversation icons ----
+  const CV_ICON={
+    message:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.3 7.3L4 21l1.7-5.7A8 8 0 1 1 21 12Z"/></svg>`,
+    followup:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>`,
+    reminder:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>`,
+    action:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 11 13"/><path d="M21 3 14.5 21 11 13 3 9.5 21 3Z"/></svg>`,
+  };
+  if($('cv0-i')) $('cv0-i').innerHTML=CV_ICON.message;
+  if($('cv1-i')) $('cv1-i').innerHTML=CV_ICON.followup;
+  if($('cv2-i')) $('cv2-i').innerHTML=CV_ICON.reminder;
+  if($('cv3-i')) $('cv3-i').innerHTML=CV_ICON.action;
+
+  // =========== ENGINES ===========
+  let ydWaveTimer=null, vfWaveTimer=null;
+
+  function animDailyBrief(){
+    const card=$('db-card'); if(!card) return;
+    const rows=document.querySelectorAll('.db-row');
+    if(REDUCE){card.style.opacity='1';card.style.transform='none';rows.forEach(r=>{r.style.opacity='1';r.style.transform='none';});return;}
+    [card,...rows].forEach(el=>el.style.transition='none');
+    card.style.opacity='0';card.style.transform='translateY(16px) scale(.98)';
+    rows.forEach(r=>{r.style.opacity='0';r.style.transform='translateX(10px)';});
+    void document.body.offsetHeight;
+    setTimeout(()=>{card.style.transition=`opacity 700ms ${E},transform 800ms cubic-bezier(0.34,1.05,0.64,1)`;card.style.opacity='1';card.style.transform='translateY(0) scale(1)';},120);
+    rows.forEach((r,i)=>setTimeout(()=>{r.style.transition=`opacity 600ms ${E},transform 640ms ${E}`;r.style.opacity='1';r.style.transform='translateX(0)';},700+i*300));
+  }
+
+  function animYourDay(){
+    const card=$('yd-card'); if(!card) return;
+    const chips=document.querySelectorAll('.yd-chip');
+    const l1=$('yd-l1'),l2=$('yd-l2');
+    const rows=document.querySelectorAll('.yd-row');
+    const voice=$('yd-voice');
+    const wave=document.querySelectorAll('#yd-wave span');
+    if(REDUCE){
+      [card,...chips,...rows,l1,l2,voice].forEach(el=>{el.style.opacity='1';el.style.transform='none';});
+      return;
+    }
+    [card,...chips,...rows,l1,l2,voice].forEach(el=>el.style.transition='none');
+    chips.forEach(c=>{c.style.opacity='0';c.style.transform='translateY(-10px)';});
+    card.style.opacity='0';card.style.transform='translateY(16px) scale(.98)';
+    rows.forEach(r=>{r.style.opacity='0';r.style.transform='translateX(-8px)';});
+    l1.style.opacity='0';l2.style.opacity='0';voice.style.opacity='0';voice.style.transform='translateY(8px)';
+    if(ydWaveTimer)clearInterval(ydWaveTimer);
+    void document.body.offsetHeight;
+    chips.forEach((c,i)=>setTimeout(()=>{c.style.transition=`opacity 360ms ${E},transform 460ms ${E}`;c.style.opacity='1';c.style.transform='translateY(0)';},80+i*90));
+    setTimeout(()=>{card.style.transition=`opacity 480ms ${E},transform 560ms cubic-bezier(0.34,1.1,0.64,1)`;card.style.opacity='1';card.style.transform='translateY(0) scale(1)';},360);
+    setTimeout(()=>{l1.style.transition=`opacity 300ms ${E}`;l1.style.opacity='1';},700);
+    const tc=ydToday.length;
+    rows.forEach((r,i)=>{const tom=i>=tc;const base=tom?1440:800;const idx=tom?i-tc:i;setTimeout(()=>{r.style.transition=`opacity 380ms ${E},transform 420ms ${E}`;r.style.opacity='1';r.style.transform='translateX(0)';},base+idx*120);});
+    setTimeout(()=>{l2.style.transition=`opacity 300ms ${E}`;l2.style.opacity='1';},1360);
+    setTimeout(()=>{voice.style.transition=`opacity 420ms ${E},transform 480ms ${E}`;voice.style.opacity='1';voice.style.transform='translateY(0)';ydWaveTimer=setInterval(()=>{wave.forEach((b,i)=>{const h=4+Math.abs(Math.sin(Date.now()/220+i*0.6))*15;b.style.height=h.toFixed(0)+'px';});},60);},1820);
+  }
+
+  function animVoiceFlow(){
+    const steps=['vf-s0','vf-s1','vf-s2','vf-s3'].map($); if(!steps[0]) return;
+    const arrows=['vf-a0','vf-a1','vf-a2'].map($);
+    const s0icon=$('vf-s0-icon');
+    if(vfWaveTimer)clearInterval(vfWaveTimer);
+    if(REDUCE){steps.forEach(s=>{s.style.opacity='1';s.style.transform='none';s.classList.add('on');});arrows.forEach(a=>a.classList.add('on'));return;}
+    steps.forEach(s=>{s.style.transition='none';s.style.opacity='0';s.style.transform='translateY(14px) scale(.96)';s.classList.remove('on');});
+    arrows.forEach(a=>a.classList.remove('on'));
+    s0icon.innerHTML=VF_ICON.mic;
+    void document.body.offsetHeight;
+    steps.forEach((s,i)=>setTimeout(()=>{s.style.transition=`opacity 600ms ${E},transform 700ms cubic-bezier(0.34,1.05,0.64,1)`;s.style.opacity='1';s.style.transform='translateY(0) scale(1)';},150+i*180));
+    const start=1300,gap=850;
+    setTimeout(()=>{steps[0].classList.add('on');s0icon.innerHTML=VF_WAVE;const bars=s0icon.querySelectorAll('.vf-wave span');vfWaveTimer=setInterval(()=>{bars.forEach((b,i)=>{b.style.height=(6+Math.abs(Math.sin(Date.now()/200+i*0.7))*20).toFixed(0)+'px';});},55);},start);
+    setTimeout(()=>arrows[0].classList.add('on'),start+gap*0.6);
+    setTimeout(()=>steps[1].classList.add('on'),start+gap);
+    setTimeout(()=>arrows[1].classList.add('on'),start+gap*1.6);
+    setTimeout(()=>steps[2].classList.add('on'),start+gap*2);
+    setTimeout(()=>arrows[2].classList.add('on'),start+gap*2.6);
+    setTimeout(()=>steps[3].classList.add('on'),start+gap*3);
+  }
+
+  function animHub(){
+    const center=$('hub-center'); if(!center) return;
+    const nodes=[0,1,2,3,4,5].map(i=>$('hn'+i));
+    const lines=[0,1,2,3,4,5].map(i=>$('hl'+i));
+    if(REDUCE){nodes.forEach(n=>n.classList.add('on'));lines.forEach(l=>l.classList.add('on'));center.classList.add('on');return;}
+    center.classList.remove('on','pulse');
+    nodes.forEach(n=>n.classList.remove('on'));
+    lines.forEach(l=>l.classList.remove('on'));
+    void document.body.offsetHeight;
+    nodes.forEach((n,i)=>setTimeout(()=>n.classList.add('on'),200+i*140));
+    lines.forEach((l,i)=>setTimeout(()=>l.classList.add('on'),1100+i*120));
+    setTimeout(()=>center.classList.add('on'),1100);
+    setTimeout(()=>center.classList.add('pulse'),2100);
+  }
+
+  function animConvo(){
+    const steps=[0,1,2,3].map(i=>$('cv'+i)); if(!steps[0]) return;
+    const arrows=[0,1,2].map(i=>$('cv-a'+i));
+    if(REDUCE){steps.forEach(s=>{s.classList.add('on','lit');});arrows.forEach(a=>a.classList.add('on'));return;}
+    steps.forEach(s=>{s.style.transition='none';s.classList.remove('on','lit');s.style.opacity='';s.style.transform='';});
+    arrows.forEach(a=>a.classList.remove('on'));
+    void document.body.offsetHeight;
+    steps.forEach(s=>{s.style.transition='';});
+    const base=200,gap=600;
+    steps.forEach((s,i)=>{
+      setTimeout(()=>{s.classList.add('on','lit');},base+i*gap);
+      if(i>0)setTimeout(()=>arrows[i-1].classList.add('on'),base+i*gap-gap*0.5);
+    });
+  }
+
+  // ---- triggers ----
+  // Hero plays on load
+  if(document.readyState==='complete') animYourDay();
+  else window.addEventListener('load',animYourDay);
+
+  // Features play once when scrolled into view. A scroll-handler (rather than
+  // IntersectionObserver) is used so it fires reliably across environments;
+  // for 4 elements the cost is negligible.
+  const FEATURES=[
+    {sel:'#db-card',fn:animDailyBrief},
+    {sel:'#vf-flow',fn:animVoiceFlow},
+    {sel:'#cv-flow',fn:animConvo},
+  ].map(({sel,fn})=>({el:document.querySelector(sel),fn,done:false})).filter(x=>x.el);
+
+  if(REDUCE){
+    FEATURES.forEach(p=>p.fn());
+  } else {
+    const inView=el=>{const r=el.getBoundingClientRect();return r.top < window.innerHeight*0.78 && r.bottom > 40;};
+    let ticking=false;
+    function check(){
+      ticking=false;
+      FEATURES.forEach(p=>{if(!p.done && inView(p.el)){p.done=true;p.fn();}});
+    }
+    function onScroll(){if(!ticking){ticking=true;setTimeout(check,90);}}
+    window.addEventListener('scroll',onScroll,{passive:true});
+    window.addEventListener('resize',onScroll,{passive:true});
+    // Initial + a few delayed checks (covers features in view before first scroll,
+    // and guards against layout not being settled on the very first frame).
+    check();
+    setTimeout(check,300);
+    setTimeout(check,900);
+  }
 })();
 </script>
 </body>
