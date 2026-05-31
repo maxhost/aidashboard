@@ -70,6 +70,43 @@ export type EditConversationPayload = {
   }>;
 };
 
+export type RejectedItem = {
+  task: {
+    id: string;
+    title: string;
+    description: string | null;
+    category: "Send" | "Confirm" | "Call" | "Schedule" | "Message" | null;
+    due_date: string | null;
+    priority: string;
+    client_name: string | null;
+    amount: string | null;
+    zone: string | null;
+    status: "ignored" | "rejected";
+    created_at: string;
+  };
+  conversation: {
+    id: string;
+    transcript: string;
+  };
+  decision: {
+    kind: string;
+    decided_by_role: "operator" | "realtor";
+    decided_by_name: string | null;
+    decided_at: string;
+    reason_detail: string | null;
+  } | null;
+};
+
+export function listRejectedTasks(
+  token: string,
+  realtorId: string,
+): Promise<{ items: RejectedItem[] }> {
+  return apiFetch<{ items: RejectedItem[] }>(
+    `/operator/rejected-tasks?realtor_id=${encodeURIComponent(realtorId)}`,
+    { token },
+  );
+}
+
 export function editConversation(
   token: string,
   conversationId: string,

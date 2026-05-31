@@ -27,6 +27,10 @@ import {
 import { useIsBackOffice, useRole } from "@/components/dashboard/use-role";
 import { getCachedUser, getToken } from "@/lib/session";
 import { listRealtors, toUiRealtor, type UiRealtor } from "@/lib/api/realtors";
+import {
+  listRejectedTasks,
+  type RejectedItem,
+} from "@/lib/api/operator";
 import { RealtorSelector } from "@/components/dashboard/realtor-selector";
 import {
   listMyTasks,
@@ -488,6 +492,11 @@ export function MorningBriefClient({
           </p>
         )}
       </section>
+
+      {/* BackOffice-only: rejected tasks history (read-only) */}
+      {isBackOffice && isAuthOperator && pickedRealtor && (
+        <RejectedTasksSection realtorId={pickedRealtor.id} />
+      )}
 
       {/* BackOffice-only operational timeline — separate module below the brief */}
       {isBackOffice && (
@@ -1275,6 +1284,244 @@ function EditTaskDialog({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// ─── Rejected tasks section (BackOffice only) ─────────────────────────────
+
+function RejectedTasksSection({ realtorId }: { realtorId: string }) {
+  const [items, setItems] = useState<RejectedItem[]>([]);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
+  const [selected, setSelected] = useState<RejectedItem | null>(null);
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token) {
+      setStatus("error");
+      return;
+    }
+    let cancelled = false;
+    setStatus("loading");
+    listRejectedTasks(token, realtorId)
+      .then((res) => {
+        if (cancelled) return;
+        setItems(res.items);
+        setStatus("ready");
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setStatus("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [realtorId]);
+
+  return (
+    <section aria-label="Rejected tasks" className="space-y-3">
+      <SectionTitle
+        title="Rejected tasks"
+        tooltip="History of tasks the realtor or operator dismissed. Read-only — click a row to see the original transcript and the reason it was rejected."
+      />
+
+      {status === "loading" ? (
+        <p className="text-sm text-muted-foreground px-1 py-6">
+          Loading rejected tasks…
+        </p>
+      ) : status === "error" ? (
+        <p className="text-sm text-destructive px-1 py-6">
+          Couldn&apos;t load rejected tasks.
+        </p>
+      ) : items.length === 0 ? (
+        <p className="text-sm text-muted-foreground px-1 py-6">
+          Nothing rejected for this realtor.
+        </p>
+      ) : (
+        <ul className="rounded-xl border border-border bg-card divide-y divide-border/60 overflow-hidden">
+          {items.map((item) => (
+            <RejectedRow
+              key={item.task.id}
+              item={item}
+              onOpen={() => setSelected(item)}
+            />
+          ))}
+        </ul>
+      )}
+
+      <Dialog
+        open={!!selected}
+        onOpenChange={(open) => !open && setSelected(null)}
+      >
+        <DialogContent className="sm:max-w-lg p-0 gap-0 max-h-[88dvh] flex flex-col overflow-hidden">
+          {selected && (
+            <RejectedDetail
+              item={selected}
+              onClose={() => setSelected(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </section>
+  );
+}
+
+function RejectedRow({
+  item,
+  onOpen,
+}: {
+  item: RejectedItem;
+  onOpen: () => void;
+}) {
+  const kind = toActionKindForCategory(item.task.category);
+  const ActionIcon = ACTION_ICON[kind];
+  return (
+    <li className="group flex items-start gap-3.5 px-4 py-4 sm:px-5 sm:py-[18px] opacity-80 hover:opacity-100 transition-opacity">
+      <ActionIcon
+        aria-hidden
+        className="h-5 w-5 mt-0.5 shrink-0 text-foreground/55 line-through"
+        strokeWidth={2}
+      />
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex-1 min-w-0 text-left"
+        aria-label={`Open details for ${item.task.title}`}
+      >
+        <span className="block text-[15px] leading-snug text-foreground/70 truncate line-through decoration-muted-foreground/40">
+          {item.task.title}
+        </span>
+        {item.decision && (
+          <span className="block mt-0.5 text-xs text-muted-foreground truncate">
+            {item.decision.decided_by_role === "operator" ? "Operator" : "Realtor"}
+            {item.decision.decided_by_name
+              ? ` (${item.decision.decided_by_name})`
+              : ""}
+            {item.decision.reason_detail
+              ? ` · ${item.decision.reason_detail}`
+              : ""}
+          </span>
+        )}
+      </button>
+      <span className="text-[10px] uppercase tracking-wide text-muted-foreground/70 shrink-0 self-center">
+        {item.task.status}
+      </span>
+    </li>
+  );
+}
+
+function toActionKindForCategory(
+  c: RejectedItem["task"]["category"],
+): BriefPriorityAction {
+  if (c === "Call") return "call";
+  if (c === "Send") return "send";
+  if (c === "Message") return "message";
+  if (c === "Schedule") return "schedule";
+  if (c === "Confirm") return "confirm";
+  return "message";
+}
+
+function RejectedDetail({
+  item,
+  onClose,
+}: {
+  item: RejectedItem;
+  onClose: () => void;
+}) {
+  const decidedAt = item.decision
+    ? new Date(item.decision.decided_at).toLocaleString(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      })
+    : null;
+  return (
+    <>
+      <DialogTitle className="sr-only">Rejected task detail</DialogTitle>
+      <DialogDescription className="sr-only">
+        Transcript and rejection details for this task
+      </DialogDescription>
+
+      <div className="flex-1 overflow-y-auto px-6 sm:px-8 py-7 pr-12 space-y-6 min-h-0">
+        {/* Task */}
+        <section>
+          <h3 className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground/80 mb-2.5">
+            Task
+          </h3>
+          <p className="text-[16px] leading-snug font-medium text-foreground line-through decoration-muted-foreground/40">
+            {item.task.title}
+          </p>
+          {item.task.category && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              [{item.task.category}] · status: {item.task.status}
+            </p>
+          )}
+        </section>
+
+        {/* Decision */}
+        {item.decision && (
+          <section>
+            <h3 className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground/80 mb-2.5">
+              Rejected by
+            </h3>
+            <p className="text-[15px] leading-snug text-foreground/85">
+              <span className="font-medium capitalize">
+                {item.decision.decided_by_role}
+              </span>
+              {item.decision.decided_by_name
+                ? ` (${item.decision.decided_by_name})`
+                : ""}
+              {decidedAt ? ` · ${decidedAt}` : ""}
+            </p>
+            {item.decision.reason_detail && (
+              <p className="mt-2 text-[14px] text-foreground/70 leading-relaxed">
+                <span className="text-xs text-muted-foreground">Reason: </span>
+                {item.decision.reason_detail}
+              </p>
+            )}
+            {!item.decision.reason_detail && (
+              <p className="mt-2 text-[14px] text-muted-foreground italic">
+                No reason captured.
+              </p>
+            )}
+          </section>
+        )}
+        {!item.decision && (
+          <section>
+            <h3 className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground/80 mb-2.5">
+              Rejected by
+            </h3>
+            <p className="text-[14px] text-muted-foreground italic">
+              No audit record found.
+            </p>
+          </section>
+        )}
+
+        {/* Original transcript */}
+        <section>
+          <h3 className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground/80 mb-2.5">
+            Original transcript
+          </h3>
+          <p className="text-[14.5px] leading-relaxed text-foreground/80 whitespace-pre-wrap">
+            {item.conversation.transcript || (
+              <span className="italic text-muted-foreground">
+                No transcript available.
+              </span>
+            )}
+          </p>
+        </section>
+      </div>
+
+      <div className="flex items-center justify-end gap-2 px-6 py-3 border-t border-border/60">
+        <button
+          type="button"
+          onClick={onClose}
+          className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+        >
+          Close
+        </button>
+      </div>
+    </>
   );
 }
 
