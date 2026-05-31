@@ -20,10 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SectionTitle } from "@/components/dashboard/section-title";
-import {
-  BackOfficeAddRow,
-  BackOfficeRowActions,
-} from "@/components/dashboard/back-office-controls";
+import { BackOfficeRowActions } from "@/components/dashboard/back-office-controls";
 import { useIsBackOffice, useRole } from "@/components/dashboard/use-role";
 import { getCachedUser, getToken } from "@/lib/session";
 import { listRealtors, toUiRealtor, type UiRealtor } from "@/lib/api/realtors";
@@ -478,11 +475,6 @@ export function MorningBriefClient({
                 }
               />
             ))}
-            {isBackOffice && priorityTab === "todo" && (
-              <li>
-                <BackOfficeAddRow label="Add priority" />
-              </li>
-            )}
           </ul>
         ) : (
           <p className="text-sm text-muted-foreground px-1 py-6">
@@ -660,11 +652,6 @@ function PriorityOverview({
               onOpen={onOpen ? () => onOpen(item.id) : undefined}
             />
           ))}
-          {isBackOffice && tab === "todo" && (
-            <li>
-              <BackOfficeAddRow label="Add attention item" />
-            </li>
-          )}
         </ul>
       ) : (
         <p className="text-sm text-muted-foreground px-1 py-4">
