@@ -33,7 +33,9 @@ import {
   splitTasks,
   toUiAttention,
   toUiPriority,
+  updateTaskFields,
   updateTaskStatus,
+  type TaskCategory,
   type TaskRow,
 } from "@/lib/api/tasks";
 import type { User } from "@/lib/api/auth";
@@ -235,6 +237,11 @@ export function MorningBriefClient({
     onSnooze: (a, reason) => snoozeAttention(a.id, reason),
   });
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Operator-only inline edit of a task (title + category).
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const editingTask: TaskRow | null = editingTaskId
+    ? (realTasks.find((t) => t.id === editingTaskId) ?? null)
+    : null;
   const [priorityTab, setPriorityTab] = useState<PriorityTab>("todo");
   const [attentionTab, setAttentionTab] = useState<PriorityTab>("todo");
   const selectedPriority =
@@ -435,6 +442,7 @@ export function MorningBriefClient({
         onToggleDone={toggleAttentionDone}
         onSnoozeRequest={attentionSnoozeReason.request}
         onRequestRemove={attentionRemoval.requestRemove}
+        onRequestEdit={useRealData ? (id) => setEditingTaskId(id) : undefined}
         onOpen={useRealData ? (id) => setSelectedId(id) : undefined}
       />
 
@@ -461,6 +469,9 @@ export function MorningBriefClient({
                 onSnooze={() => prioritySnoozeReason.request(p)}
                 onOpen={() => setSelectedId(p.id)}
                 onRequestRemove={() => priorityRemoval.requestRemove(p)}
+                onRequestEdit={
+                  useRealData ? () => setEditingTaskId(p.id) : undefined
+                }
               />
             ))}
             {isBackOffice && priorityTab === "todo" && (
@@ -513,6 +524,15 @@ export function MorningBriefClient({
       {attentionRemoval.dialog}
       {prioritySnoozeReason.dialog}
       {attentionSnoozeReason.dialog}
+
+      <EditTaskDialog
+        task={editingTask}
+        onClose={() => setEditingTaskId(null)}
+        onSaved={() => {
+          setEditingTaskId(null);
+          refreshTasks();
+        }}
+      />
     </div>
   );
 }
@@ -586,6 +606,7 @@ function PriorityOverview({
   onToggleDone,
   onSnoozeRequest,
   onRequestRemove,
+  onRequestEdit,
   onOpen,
 }: {
   tab: PriorityTab;
@@ -595,6 +616,7 @@ function PriorityOverview({
   onToggleDone: (id: string) => void;
   onSnoozeRequest: (item: BriefAttentionItem) => void;
   onRequestRemove: (item: BriefAttentionItem) => void;
+  onRequestEdit?: (id: string) => void;
   onOpen?: (id: string) => void;
 }) {
   const isBackOffice = useIsBackOffice();
@@ -623,6 +645,9 @@ function PriorityOverview({
               onSnooze={() => onSnoozeRequest(item)}
               isBackOffice={isBackOffice}
               onRequestRemove={() => onRequestRemove(item)}
+              onRequestEdit={
+                onRequestEdit ? () => onRequestEdit(item.id) : undefined
+              }
               onOpen={onOpen ? () => onOpen(item.id) : undefined}
             />
           ))}
@@ -650,6 +675,7 @@ function AttentionRow({
   onSnooze,
   isBackOffice,
   onRequestRemove,
+  onRequestEdit,
   onOpen,
 }: {
   item: BriefAttentionItem;
@@ -658,6 +684,7 @@ function AttentionRow({
   onSnooze: () => void;
   isBackOffice: boolean;
   onRequestRemove: () => void;
+  onRequestEdit?: () => void;
   onOpen?: () => void;
 }) {
   const CategoryIcon = ATTENTION_CATEGORY_ICON[item.category];
@@ -736,6 +763,7 @@ function AttentionRow({
       {isBackOffice && (
         <BackOfficeRowActions
           label={item.headline}
+          onEdit={onRequestEdit}
           onDelete={onRequestRemove}
         />
       )}
@@ -750,6 +778,7 @@ function PriorityRow({
   onSnooze,
   onOpen,
   onRequestRemove,
+  onRequestEdit,
 }: {
   priority: BriefPriority;
   done: boolean;
@@ -757,6 +786,7 @@ function PriorityRow({
   onSnooze: () => void;
   onOpen: () => void;
   onRequestRemove: () => void;
+  onRequestEdit?: () => void;
 }) {
   const ActionIcon = ACTION_ICON[priority.action.kind];
   const isCritical = priority.riskLevel === "critical";
@@ -828,6 +858,7 @@ function PriorityRow({
       {isBackOffice && (
         <BackOfficeRowActions
           label={priority.headline}
+          onEdit={onRequestEdit}
           onDelete={onRequestRemove}
           className="shrink-0"
         />
@@ -1116,5 +1147,123 @@ function formatRemoveReason(meta: RemoveMetadata): string {
   if (!head && !custom) return "removed";
   if (custom) return head ? `${head} — ${custom}` : custom;
   return head;
+}
+
+// ─── Edit task dialog ─────────────────────────────────────────────────────
+
+const EDITABLE_CATEGORIES: TaskCategory[] = [
+  "Send",
+  "Confirm",
+  "Call",
+  "Schedule",
+  "Message",
+];
+
+function EditTaskDialog({
+  task,
+  onClose,
+  onSaved,
+}: {
+  task: TaskRow | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState<TaskCategory>("Send");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!task) return;
+    setTitle(task.title);
+    setCategory(task.category ?? "Send");
+    setSaving(false);
+  }, [task]);
+
+  async function handleSave() {
+    if (!task) return;
+    const token = getToken();
+    if (!token) return;
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    setSaving(true);
+    try {
+      await updateTaskFields(token, task.id, {
+        title: trimmed,
+        category,
+      });
+      onSaved();
+    } catch {
+      onSaved();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const isDirty =
+    !!task &&
+    (title.trim() !== task.title || category !== (task.category ?? "Send"));
+
+  return (
+    <Dialog open={!!task} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
+        <div className="px-6 pt-6 pb-2">
+          <DialogTitle className="text-base font-medium">Edit task</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground mt-1">
+            Update the title and category. The change persists immediately.
+          </DialogDescription>
+        </div>
+        <div className="px-6 py-4 space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">
+              Title
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && isDirty && !saving) handleSave();
+              }}
+              className="w-full h-9 px-3 rounded-md border border-border bg-card text-sm focus:outline-none focus:ring-1 focus:ring-foreground/30"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">
+              Category
+            </label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as TaskCategory)}
+              className="w-full h-9 px-2 rounded-md border border-border bg-card text-sm"
+            >
+              {EDITABLE_CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-2 px-6 py-3 border-t border-border/60">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors disabled:opacity-40"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving || !isDirty || !title.trim()}
+            className="inline-flex items-center px-3.5 py-1.5 rounded-md text-sm font-medium bg-foreground text-background hover:bg-foreground/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-foreground"
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
 

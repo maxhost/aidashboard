@@ -62,6 +62,21 @@ export function updateTaskStatus(
   });
 }
 
+export function updateTaskFields(
+  token: string,
+  id: string,
+  fields: Partial<{
+    title: string;
+    category: TaskCategory;
+  }>,
+): Promise<unknown> {
+  return apiFetch(`/tasks/${id}`, {
+    method: "PATCH",
+    token,
+    body: JSON.stringify(fields),
+  });
+}
+
 // ─── Split: tasks with due_date within 24h → overview (escalates to 48h then 72h).
 //     Tasks without due_date and the rest land in priorities. ───────────────────
 
