@@ -37,7 +37,11 @@ import {
   type TaskRow,
 } from "@/lib/api/tasks";
 import type { User } from "@/lib/api/auth";
-import { useRemoveWithReason } from "@/components/dashboard/use-remove-with-reason";
+import {
+  useRemoveWithReason,
+  type RemoveMetadata,
+  type RemoveReason,
+} from "@/components/dashboard/use-remove-with-reason";
 import { useSnoozeWithReason } from "@/components/dashboard/use-snooze-with-reason";
 import { OperationalTimelineSection } from "./operational-timeline-client";
 import {
@@ -198,10 +202,16 @@ export function MorningBriefClient({
   const priorityRemoval = useRemoveWithReason<BriefPriority>({
     itemType: "priority",
     getDisplayName: (p) => p.headline,
+    onRemove: (p, meta) => {
+      if (useRealData) void persistStatus(p.id, "ignored", formatRemoveReason(meta));
+    },
   });
   const attentionRemoval = useRemoveWithReason<BriefAttentionItem>({
     itemType: "attention",
     getDisplayName: (a) => a.headline,
+    onRemove: (a, meta) => {
+      if (useRealData) void persistStatus(a.id, "ignored", formatRemoveReason(meta));
+    },
   });
   const [doneIds, setDoneIds] = useState<Set<string>>(new Set());
   const [snoozedIds, setSnoozedIds] = useState<Set<string>>(new Set());
@@ -1086,5 +1096,25 @@ function usePickableRealtors(enabled: boolean): { realtors: UiRealtor[] } {
 function pickFirstName(fullName: string): string {
   const cleaned = fullName.trim().split(/\s+/)[0] ?? "";
   return cleaned.replace(/[^A-Za-zÀ-ÿ-]/g, "") || fullName.trim();
+}
+
+// Combines the trash dialog's structured reasons + free text into a single
+// string that gets persisted on tasks.dismissed_reason and captured in the
+// decisions audit log by the PATCH /tasks/:id endpoint.
+const REMOVE_REASON_LABEL: Record<RemoveReason, string> = {
+  "not-relevant": "No longer relevant",
+  duplicate: "Duplicate / already handled elsewhere",
+  "wrong-ai-suggestion": "Incorrect AI suggestion",
+  "low-priority": "Low priority / not worth tracking",
+  other: "Other",
+};
+
+function formatRemoveReason(meta: RemoveMetadata): string {
+  const labels = meta.selected_reasons.map((r) => REMOVE_REASON_LABEL[r]);
+  const head = labels.join(", ");
+  const custom = meta.custom_reason_text.trim();
+  if (!head && !custom) return "removed";
+  if (custom) return head ? `${head} — ${custom}` : custom;
+  return head;
 }
 
