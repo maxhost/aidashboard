@@ -508,13 +508,14 @@ function ReviewDialog({
   busy: "approve" | "reject" | "save" | null;
   onApprove: (draft: EditDraft) => void;
   onReject: () => void;
-  onSaveEdits: (draft: EditDraft) => void;
+  onSaveEdits: (draft: EditDraft) => void | Promise<void>;
 }) {
   const isApproved = event.status === "approved" || event.status === "synced";
   const isRejected = event.status === "rejected";
   const isTerminal = isApproved || isRejected;
   const disableAll = busy !== null || isTerminal;
 
+  const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState<EditDraft>({
     removedIds: new Set(),
     addedTasks: [],
@@ -524,9 +525,17 @@ function ReviewDialog({
   const [addCategory, setAddCategory] = useState<TaskCategoryValue>("Send");
 
   const isDirty = draft.removedIds.size > 0 || draft.addedTasks.length > 0;
-  const visibleTasks = event.suggestedTasks.filter(
-    (t) => !draft.removedIds.has(t.id),
-  );
+  const visibleTasks = isEditing
+    ? event.suggestedTasks.filter((t) => !draft.removedIds.has(t.id))
+    : event.suggestedTasks;
+
+  function cancelEdit() {
+    setIsEditing(false);
+    setDraft({ removedIds: new Set(), addedTasks: [] });
+    setShowAddForm(false);
+    setAddTitle("");
+    setAddCategory("Send");
+  }
 
   function toggleRemove(id: string) {
     setDraft((d) => {
@@ -594,7 +603,7 @@ function ReviewDialog({
                   className="mt-[9px] h-1 w-1 rounded-full bg-foreground/35 shrink-0"
                 />
                 <span className="flex-1">{task.text}</span>
-                {!isTerminal && (
+                {isEditing && !isTerminal && (
                   <button
                     type="button"
                     onClick={() => toggleRemove(task.id)}
@@ -635,8 +644,8 @@ function ReviewDialog({
             ))}
           </ul>
 
-          {/* Add task affordance */}
-          {!isTerminal && !showAddForm && (
+          {/* Add task affordance — only in edit mode */}
+          {isEditing && !isTerminal && !showAddForm && (
             <button
               type="button"
               onClick={() => setShowAddForm(true)}
@@ -645,7 +654,7 @@ function ReviewDialog({
               + Add task
             </button>
           )}
-          {!isTerminal && showAddForm && (
+          {isEditing && !isTerminal && showAddForm && (
             <div className="mt-3 flex items-center gap-2 flex-wrap">
               <input
                 type="text"
@@ -724,17 +733,50 @@ function ReviewDialog({
         )}
       </div>
 
-      {/* Footer — Save (when dirty) · Reject · Push to dashboard */}
+      {/* Footer — Edit toggle on the left, action buttons on the right.
+          In edit mode: 'Cancel' + 'Save changes' replace the pencil.
+          Reject and Push to dashboard are always visible (unless terminal). */}
       <div className="flex items-center justify-between gap-3 px-6 py-3 sm:py-3.5 border-t border-border/60 shrink-0">
-        <button
-          type="button"
-          onClick={() => onSaveEdits(draft)}
-          disabled={disableAll || !isDirty}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted/60 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-        >
-          <Pencil className="h-3.5 w-3.5" strokeWidth={2} />
-          {busy === "save" ? "Saving…" : "Save changes"}
-        </button>
+        <div className="flex items-center gap-2">
+          {!isEditing && !isTerminal && (
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              disabled={disableAll}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted/60 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Pencil className="h-3.5 w-3.5" strokeWidth={2} />
+              Edit
+            </button>
+          )}
+          {isEditing && (
+            <>
+              <button
+                type="button"
+                onClick={cancelEdit}
+                disabled={busy !== null}
+                className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await onSaveEdits(draft);
+                  } finally {
+                    cancelEdit();
+                  }
+                }}
+                disabled={disableAll || !isDirty}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium bg-foreground text-background hover:bg-foreground/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-foreground"
+              >
+                <Pencil className="h-3.5 w-3.5" strokeWidth={2} />
+                {busy === "save" ? "Saving…" : "Save changes"}
+              </button>
+            </>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           {isTerminal && (
             <span className="text-xs text-muted-foreground italic mr-2">
