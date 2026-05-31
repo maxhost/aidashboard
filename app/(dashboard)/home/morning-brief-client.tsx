@@ -1172,12 +1172,18 @@ function EditTaskDialog({
   const [category, setCategory] = useState<TaskCategory>("Send");
   const [saving, setSaving] = useState(false);
 
+  // Depend on task?.id, not task. Each useMyTasks poll returns a fresh
+  // realTasks array, so the parent's .find() yields a new object reference
+  // with the same data. Re-running the effect on every poll would overwrite
+  // whatever the operator is typing. Re-initializing only when the ID
+  // changes (open / close / switch task) is the right scope.
   useEffect(() => {
     if (!task) return;
     setTitle(task.title);
     setCategory(task.category ?? "Send");
     setSaving(false);
-  }, [task]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [task?.id]);
 
   async function handleSave() {
     if (!task) return;
