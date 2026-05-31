@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PulsorLockup } from "@/components/brand/pulsor";
-import { signInWithEmail, signInWithPhone } from "@/lib/auth";
+import { signInWithEmail, signInRealtorWithEmail } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 type Mode = "operator" | "realtor";
@@ -26,7 +26,7 @@ function LoginInner() {
 
   const [mode, setMode] = useState<Mode>("operator");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [realtorEmail, setRealtorEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -41,7 +41,7 @@ function LoginInner() {
       if (mode === "operator") {
         await signInWithEmail(email, password);
       } else {
-        await signInWithPhone(phone, password);
+        await signInRealtorWithEmail(realtorEmail, password);
       }
       window.location.href = next;
     } catch (err) {
@@ -111,18 +111,18 @@ function LoginInner() {
 
                 <TabsContent value="realtor" className="space-y-1.5">
                   <label
-                    htmlFor="phone"
+                    htmlFor="realtor-email"
                     className="text-xs font-semibold text-foreground"
                   >
-                    WhatsApp phone
+                    Email
                   </label>
                   <Input
-                    id="phone"
-                    type="tel"
-                    autoComplete="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+5491155555555"
+                    id="realtor-email"
+                    type="email"
+                    autoComplete="email"
+                    value={realtorEmail}
+                    onChange={(e) => setRealtorEmail(e.target.value)}
+                    placeholder="you@example.com"
                     required={mode === "realtor"}
                     className="h-10"
                   />

@@ -28,12 +28,12 @@ export function signInOperator(
 }
 
 export function signInRealtor(
-  phone: string,
+  email: string,
   password: string,
 ): Promise<SignInResponse> {
   return apiFetch<SignInResponse>("/auth/realtor/sign-in", {
     method: "POST",
-    body: JSON.stringify({ phone, password }),
+    body: JSON.stringify({ email, password }),
   });
 }
 

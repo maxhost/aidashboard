@@ -30,8 +30,11 @@ export async function signInWithEmail(email: string, password: string): Promise<
   return user;
 }
 
-export async function signInWithPhone(phone: string, password: string): Promise<User> {
-  const { user, token } = await signInRealtor(phone, password);
+export async function signInRealtorWithEmail(
+  email: string,
+  password: string,
+): Promise<User> {
+  const { user, token } = await signInRealtor(email, password);
   saveSession(token, user);
   return user;
 }

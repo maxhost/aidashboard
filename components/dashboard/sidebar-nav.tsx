@@ -12,6 +12,7 @@ import {
   LifeBuoy,
   LogOut,
   X,
+  Users as UsersIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PulsorLockup } from "@/components/brand/pulsor";
@@ -69,9 +70,18 @@ function useRole(): Role {
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const role = useRole();
+  const [authRole, setAuthRole] = useState<"operator" | "realtor" | null>(null);
+  useEffect(() => {
+    setAuthRole(getCachedUser()?.role ?? null);
+  }, []);
   const isAssistantArea = role === "assistant" || role === "back-office";
   const workspace = isAssistantArea
-    ? NAV_WORKSPACE_ASSISTANT
+    ? authRole === "operator"
+      ? [
+          ...NAV_WORKSPACE_ASSISTANT,
+          { href: "/users", label: "Users", icon: UsersIcon },
+        ]
+      : NAV_WORKSPACE_ASSISTANT
     : NAV_WORKSPACE_DEFAULT;
   const secondary = isAssistantArea
     ? NAV_SECONDARY_ASSISTANT
