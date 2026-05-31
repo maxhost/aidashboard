@@ -62,6 +62,34 @@ export function rejectConversation(
   );
 }
 
+export type EditConversationPayload = {
+  remove_task_ids?: string[];
+  add_tasks?: Array<{
+    title: string;
+    category: "Send" | "Confirm" | "Call" | "Schedule" | "Message";
+  }>;
+};
+
+export function editConversation(
+  token: string,
+  conversationId: string,
+  payload: EditConversationPayload,
+): Promise<{
+  ok: true;
+  conversation_id: string;
+  tasks_rejected: string[];
+  tasks_added: string[];
+}> {
+  return apiFetch(
+    `/operator/conversations/${encodeURIComponent(conversationId)}/edit`,
+    {
+      method: "POST",
+      token,
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
 const PREVIEW_MAX = 140;
 
 function preview(text: string): string {
