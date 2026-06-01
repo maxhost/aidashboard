@@ -884,7 +884,7 @@ function ReviewDialog({
                     onClick={() => toggleRemove(task.id)}
                     aria-label={`Remove task ${task.text}`}
                     title="Remove from this conversation"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center h-6 w-6 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                    className="inline-flex items-center justify-center h-6 w-6 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                   >
                     <X className="h-3.5 w-3.5" strokeWidth={2} />
                   </button>
@@ -925,7 +925,7 @@ function ReviewDialog({
                   type="button"
                   onClick={() => discardNewTask(t.tempId)}
                   aria-label="Discard new task"
-                  className="opacity-60 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center h-6 w-6 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  className="inline-flex items-center justify-center h-6 w-6 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 >
                   <X className="h-3.5 w-3.5" strokeWidth={2} />
                 </button>
