@@ -12,10 +12,11 @@ export type TimelineTask = {
   description: string | null;
   status: string;
   priority: string;
+  is_priority: boolean;
   client_name: string | null;
   amount: string | null;
   zone: string | null;
-  due_date: string | null;
+  due_at: string | null;
 };
 
 export type TimelineEventDTO = {
@@ -23,6 +24,7 @@ export type TimelineEventDTO = {
   realtor_id: string;
   received_at: string;
   transcript: string;
+  project_label: string | null;
   status: "pending" | "processed" | "rejected";
   tasks: TimelineTask[];
 };
@@ -76,7 +78,7 @@ export type RejectedItem = {
     title: string;
     description: string | null;
     category: "Send" | "Confirm" | "Call" | "Schedule" | "Message" | null;
-    due_date: string | null;
+    due_at: string | null;
     priority: string;
     client_name: string | null;
     amount: string | null;
