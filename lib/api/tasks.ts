@@ -16,8 +16,9 @@ export type TaskRow = {
   realtorId: string;
   title: string;
   description: string | null;
-  dueDate: string | null;
+  dueAt: string | null;
   priority: "alta" | "media" | "baja";
+  isPriority: boolean;
   clientName: string | null;
   amount: string | null;
   zone: string | null;
@@ -92,7 +93,7 @@ export function splitTasks(
   // so the operator can see what was historically near-due.
   const cutoff = endOfDayPlus(now, 3);
   const overview = ordered.filter(
-    (t) => t.dueDate && parseDueEnd(t.dueDate) <= cutoff,
+    (t) => t.dueAt && parseDueEnd(t.dueAt) <= cutoff,
   );
   const ids = new Set(overview.map((t) => t.id));
   const priorities = ordered.filter((t) => !ids.has(t.id));
@@ -120,17 +121,28 @@ const PRIORITY_RANK: Record<TaskRow["priority"], number> = {
 };
 
 function taskComparator(a: TaskRow, b: TaskRow): number {
-  // due_date ascending; null due_date goes last
-  const aMs = a.dueDate ? parseDueEnd(a.dueDate) : Number.POSITIVE_INFINITY;
-  const bMs = b.dueDate ? parseDueEnd(b.dueDate) : Number.POSITIVE_INFINITY;
+  // due_at ascending; null due_at goes last
+  const aMs = a.dueAt ? parseDueEnd(a.dueAt) : Number.POSITIVE_INFINITY;
+  const bMs = b.dueAt ? parseDueEnd(b.dueAt) : Number.POSITIVE_INFINITY;
   if (aMs !== bMs) return aMs - bMs;
   return PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority];
 }
 
-// Treat the due date's window as end-of-day local time so "today" still counts
-// even if it's 2pm and the date is today.
-function parseDueEnd(yyyyMmDd: string): number {
-  return new Date(`${yyyyMmDd.slice(0, 10)}T23:59:59`).getTime();
+// due_at is now a full ISO timestamp (tz-aware). Parse the instant directly.
+function parseDueEnd(iso: string): number {
+  return new Date(iso).getTime();
+}
+
+// Render due_at as date + time in the realtor's pilot tz (Orlando).
+const PILOT_TZ = "America/New_York";
+function formatDue(iso: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: PILOT_TZ,
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(iso));
 }
 
 // ─── Adapters to UI types ────────────────────────────────────────────────
@@ -163,7 +175,7 @@ function buildSnapshot(t: TaskRow): PrioritySnapshotItem[] {
   if (t.clientName) items.push({ label: "Client", value: t.clientName });
   if (t.amount) items.push({ label: "Amount", value: `$${t.amount}` });
   if (t.zone) items.push({ label: "Zone", value: t.zone });
-  if (t.dueDate) items.push({ label: "Due", value: t.dueDate.slice(0, 10) });
+  if (t.dueAt) items.push({ label: "Due", value: formatDue(t.dueAt) });
   return items;
 }
 
