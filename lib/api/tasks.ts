@@ -227,6 +227,16 @@ function buildSnapshot(t: TaskRow): PrioritySnapshotItem[] {
   return items;
 }
 
+// Small text helpers under a task's title in the realtor's day:
+// Cliente / Budget / Fecha, only what's present.
+function buildTaskHelpers(t: TaskRow): string[] {
+  const h: string[] = [];
+  if (t.clientName) h.push(`Cliente: ${t.clientName}`);
+  if (t.amount) h.push(`Budget: $${t.amount}`);
+  if (t.dueAt) h.push(formatDue(t.dueAt));
+  return h;
+}
+
 export function toUiAttention(t: TaskRow): BriefAttentionItem {
   return {
     id: t.id,
@@ -239,6 +249,7 @@ export function toUiAttention(t: TaskRow): BriefAttentionItem {
     tone: toTone(t),
     risk: t.risk ?? undefined,
     overdue: t.dueAt ? isOverdue(t.dueAt) : false,
+    helpers: buildTaskHelpers(t),
   };
 }
 
@@ -258,5 +269,6 @@ export function toUiPriority(t: TaskRow): BriefPriority {
     action: { kind, label: ACTION_LABEL[kind] },
     pulsorSuggestions: t.suggestions ?? undefined,
     snapshot: buildSnapshot(t),
+    helpers: buildTaskHelpers(t),
   };
 }

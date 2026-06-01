@@ -38,6 +38,8 @@ export type BriefAttentionItem = {
   risk?: string;
   /** Due date is before today (Orlando) and the task is still open. */
   overdue?: boolean;
+  /** Small text helpers under the title: Cliente / Budget / Fecha, when present. */
+  helpers?: string[];
   /** ISO timestamp; when present the item is treated as resolved and filtered out. */
   resolvedAt?: string;
 };
@@ -74,6 +76,8 @@ export type BriefPriority = {
   pulsorSuggestions?: string[];
   /** Compact key-value chips with quick operational context. */
   snapshot?: PrioritySnapshotItem[];
+  /** Small text helpers under the title: Cliente / Budget / Fecha, when present. */
+  helpers?: string[];
 };
 
 export type BriefHandled = {

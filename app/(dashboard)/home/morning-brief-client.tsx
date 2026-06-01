@@ -769,6 +769,11 @@ function AttentionRow({
       {item.tone === "critical" && item.risk && !done && (
         <p className="mt-0.5 text-xs text-destructive truncate">{item.risk}</p>
       )}
+      {item.helpers && item.helpers.length > 0 && (
+        <p className="mt-0.5 text-xs text-muted-foreground truncate">
+          {item.helpers.join(" · ")}
+        </p>
+      )}
     </>
   );
   return (
@@ -888,6 +893,11 @@ function PriorityRow({
         {isCritical && priority.risk && (
           <span className="block mt-0.5 text-xs text-destructive truncate">
             {priority.risk}
+          </span>
+        )}
+        {priority.helpers && priority.helpers.length > 0 && (
+          <span className="block mt-0.5 text-xs text-muted-foreground truncate">
+            {priority.helpers.join(" · ")}
           </span>
         )}
       </button>
