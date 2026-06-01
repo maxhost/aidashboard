@@ -78,40 +78,38 @@ export function updateTaskFields(
   });
 }
 
-// ─── Split: tasks due within the next 72h OR overdue (past due but not yet
-//     resolved) -> Priority overview. Everything else -> Suggested priorities.
-//     Tasks without due_date always go to priorities. ─────────────────────
+// ─── Window: today's calendar day (Orlando) + overdue. Tasks due tomorrow or
+//     later, and tasks with no due_at, are excluded — the operator sets a
+//     due_at before a task ever reaches the realtor. Sorted pinned-first, then
+//     soonest due_at. The first-5-todo / rest split happens in the view so the
+//     boundary re-fills as items are completed. ───────────────────────────────
 
-export function splitTasks(
+export function windowTasks(
   rows: TaskRow[],
   now: Date = new Date(),
-): { overview: TaskRow[]; priorities: TaskRow[] } {
-  const ordered = [...rows].sort(taskComparator);
-  // End of (today + 3 calendar days). Any due_date <= this cutoff counts as
-  // "near or overdue" since past times are also <= future cutoff. The done/
-  // ignored ones with a past date stay visible in the Done tab of overview
-  // so the operator can see what was historically near-due.
-  const cutoff = endOfDayPlus(now, 3);
-  const overview = ordered.filter(
-    (t) => t.dueAt && parseDueEnd(t.dueAt) <= cutoff,
-  );
-  const ids = new Set(overview.map((t) => t.id));
-  const priorities = ordered.filter((t) => !ids.has(t.id));
-  return { overview, priorities };
+): TaskRow[] {
+  const todayKey = orlandoDateKey(now);
+  return rows
+    .filter(
+      (t) => t.dueAt !== null && orlandoDateKey(new Date(t.dueAt)) <= todayKey,
+    )
+    .sort(taskComparator);
 }
 
-// End-of-day local time for (today + extraDays). Calendar-day boundary so
-// "in 3 days" actually fits regardless of the current time-of-day.
-function endOfDayPlus(now: Date, extraDays: number): number {
-  return new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate() + extraDays,
-    23,
-    59,
-    59,
-    999,
-  ).getTime();
+// Calendar date in the pilot tz as a sortable YYYY-MM-DD key. Comparing keys
+// (not instants) sidesteps DST/midnight math: "in window" == due on or before
+// today; "overdue" == due strictly before today.
+function orlandoDateKey(d: Date): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: PILOT_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
+
+export function isOverdue(iso: string, now: Date = new Date()): boolean {
+  return orlandoDateKey(new Date(iso)) < orlandoDateKey(now);
 }
 
 const PRIORITY_RANK: Record<TaskRow["priority"], number> = {
@@ -121,11 +119,15 @@ const PRIORITY_RANK: Record<TaskRow["priority"], number> = {
 };
 
 function taskComparator(a: TaskRow, b: TaskRow): number {
-  // due_at ascending; null due_at goes last
+  // Operator-pinned first, then due_at ascending (null last), then the auto
+  // urgency rank, then stable by creation time.
+  if (a.isPriority !== b.isPriority) return a.isPriority ? -1 : 1;
   const aMs = a.dueAt ? parseDueEnd(a.dueAt) : Number.POSITIVE_INFINITY;
   const bMs = b.dueAt ? parseDueEnd(b.dueAt) : Number.POSITIVE_INFINITY;
   if (aMs !== bMs) return aMs - bMs;
-  return PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority];
+  if (a.priority !== b.priority)
+    return PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority];
+  return parseDueEnd(a.createdAt) - parseDueEnd(b.createdAt);
 }
 
 // due_at is now a full ISO timestamp (tz-aware). Parse the instant directly.
@@ -190,6 +192,7 @@ export function toUiAttention(t: TaskRow): BriefAttentionItem {
     headline: t.title,
     tone: toTone(t),
     risk: t.risk ?? undefined,
+    overdue: t.dueAt ? isOverdue(t.dueAt) : false,
   };
 }
 

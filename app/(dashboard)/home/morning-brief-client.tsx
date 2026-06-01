@@ -31,7 +31,7 @@ import {
 import { RealtorSelector } from "@/components/dashboard/realtor-selector";
 import {
   listMyTasks,
-  splitTasks,
+  windowTasks,
   toUiAttention,
   toUiPriority,
   updateTaskFields,
@@ -97,7 +97,9 @@ const GREETING_EMOJI: Record<GreetingPeriod, string> = {
   evening: "🌙",
 };
 
-const PRIORITY_OVERVIEW_LIMIT = 20;
+// Priority overview shows the first 5 *todo* tasks of the window; the rest go
+// to Suggested. Completing one re-fills the slot from Suggested.
+const OVERVIEW_TODO_LIMIT = 5;
 
 type PriorityTab = "todo" | "done";
 
@@ -167,16 +169,22 @@ export function MorningBriefClient({
         ? pickFirstName(authUser.name)
         : firstName;
 
+  const windowed = useMemo(
+    () => (useRealData ? windowTasks(realTasks) : []),
+    [useRealData, realTasks],
+  );
+
   const brief = useMemo<MorningBrief>(() => {
     if (!useRealData) return briefFromProps;
-    const { overview, priorities } = splitTasks(realTasks);
+    // The first-5/rest split here only feeds the subtitle counts and the detail
+    // dialog's fallback lookup; the live, done-aware split lives in `sectioned`.
     return {
-      attention: overview.map(toUiAttention),
+      attention: windowed.slice(0, OVERVIEW_TODO_LIMIT).map(toUiAttention),
       earlier: [],
-      priorities: priorities.map(toUiPriority),
+      priorities: windowed.slice(OVERVIEW_TODO_LIMIT).map(toUiPriority),
       handled: [],
     };
-  }, [useRealData, realTasks, briefFromProps]);
+  }, [useRealData, windowed, briefFromProps]);
 
   // In real-data mode, the detail dialog can be opened from BOTH lists.
   // It always needs the full BriefPriority shape, so we build a global lookup.
@@ -245,6 +253,40 @@ export function MorningBriefClient({
     : null;
   const [priorityTab, setPriorityTab] = useState<PriorityTab>("todo");
   const [attentionTab, setAttentionTab] = useState<PriorityTab>("todo");
+  // Real-data: walk the single ordered window and assign the first 5 *todo*
+  // tasks (plus any done tasks whose sort position falls among them) to the
+  // overview, the rest to Suggested. Counting only todo items means completing
+  // one re-fills the overview from Suggested, and a done task keeps the section
+  // its position lands in (Done-per-section). Mock-data returns null and keeps
+  // the prior near/far logic below. Snooze/not-now state is read, not changed.
+  const sectioned = useMemo(() => {
+    if (!useRealData) return null;
+    const gone = (id: string) =>
+      priorityRemoval.isRemoved(id) ||
+      attentionRemoval.isRemoved(id) ||
+      snoozedIds.has(id) ||
+      attentionSnoozedIds.has(id);
+    const isDone = (id: string) => doneIds.has(id) || attentionDoneIds.has(id);
+    const overview: TaskRow[] = [];
+    const suggested: TaskRow[] = [];
+    let todoSeen = 0;
+    for (const t of windowed) {
+      if (gone(t.id)) continue;
+      (todoSeen < OVERVIEW_TODO_LIMIT ? overview : suggested).push(t);
+      if (!isDone(t.id)) todoSeen++;
+    }
+    return { overview, suggested, isDone };
+  }, [
+    useRealData,
+    windowed,
+    priorityRemoval,
+    attentionRemoval,
+    snoozedIds,
+    attentionSnoozedIds,
+    doneIds,
+    attentionDoneIds,
+  ]);
+
   const selectedPriority =
     brief.priorities.find((p) => p.id === selectedId) ??
     (selectedId ? (realPriorityById?.get(selectedId) ?? null) : null);
@@ -254,14 +296,23 @@ export function MorningBriefClient({
   );
   const todoPriorities = useMemo(
     () =>
-      livePriorities.filter(
-        (p) => !doneIds.has(p.id) && !snoozedIds.has(p.id)
-      ),
-    [livePriorities, doneIds, snoozedIds]
+      sectioned
+        ? sectioned.suggested
+            .filter((t) => !sectioned.isDone(t.id))
+            .map(toUiPriority)
+        : livePriorities.filter(
+            (p) => !doneIds.has(p.id) && !snoozedIds.has(p.id)
+          ),
+    [sectioned, livePriorities, doneIds, snoozedIds]
   );
   const donePriorities = useMemo(
-    () => livePriorities.filter((p) => doneIds.has(p.id)),
-    [livePriorities, doneIds]
+    () =>
+      sectioned
+        ? sectioned.suggested
+            .filter((t) => sectioned.isDone(t.id))
+            .map(toUiPriority)
+        : livePriorities.filter((p) => doneIds.has(p.id)),
+    [sectioned, livePriorities, doneIds]
   );
   const visiblePriorities =
     priorityTab === "todo" ? todoPriorities : donePriorities;
@@ -284,14 +335,23 @@ export function MorningBriefClient({
   );
   const todoAttention = useMemo(
     () =>
-      liveAttention.filter(
-        (a) => !attentionDoneIds.has(a.id) && !attentionSnoozedIds.has(a.id)
-      ),
-    [liveAttention, attentionDoneIds, attentionSnoozedIds]
+      sectioned
+        ? sectioned.overview
+            .filter((t) => !sectioned.isDone(t.id))
+            .map(toUiAttention)
+        : liveAttention.filter(
+            (a) => !attentionDoneIds.has(a.id) && !attentionSnoozedIds.has(a.id)
+          ),
+    [sectioned, liveAttention, attentionDoneIds, attentionSnoozedIds]
   );
   const doneAttention = useMemo(
-    () => liveAttention.filter((a) => attentionDoneIds.has(a.id)),
-    [liveAttention, attentionDoneIds]
+    () =>
+      sectioned
+        ? sectioned.overview
+            .filter((t) => sectioned.isDone(t.id))
+            .map(toUiAttention)
+        : liveAttention.filter((a) => attentionDoneIds.has(a.id)),
+    [sectioned, liveAttention, attentionDoneIds]
   );
 
   function toggleAttentionDone(id: string) {
@@ -621,7 +681,7 @@ function PriorityOverview({
   onOpen?: (id: string) => void;
 }) {
   const isBackOffice = useIsBackOffice();
-  const visibleTodo = todoItems.slice(0, PRIORITY_OVERVIEW_LIMIT);
+  const visibleTodo = todoItems.slice(0, OVERVIEW_TODO_LIMIT);
   const visible = tab === "todo" ? visibleTodo : doneItems;
   return (
     <section aria-label="Priority overview" className="space-y-3">
@@ -691,14 +751,21 @@ function AttentionRow({
     : ATTENTION_CATEGORY_ICON[item.category];
   const TitleBlock = (
     <>
-      <p
-        className={cn(
-          "text-[15px] leading-snug font-medium text-foreground truncate",
-          done && "line-through font-normal decoration-muted-foreground/40"
+      <div className="flex items-center gap-2 min-w-0">
+        <p
+          className={cn(
+            "text-[15px] leading-snug font-medium text-foreground truncate",
+            done && "line-through font-normal decoration-muted-foreground/40"
+          )}
+        >
+          {item.headline}
+        </p>
+        {item.overdue && !done && (
+          <span className="shrink-0 inline-flex items-center rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">
+            Tarea vencida
+          </span>
         )}
-      >
-        {item.headline}
-      </p>
+      </div>
       {item.tone === "critical" && item.risk && !done && (
         <p className="mt-0.5 text-xs text-destructive truncate">{item.risk}</p>
       )}

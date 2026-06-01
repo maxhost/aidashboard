@@ -36,6 +36,8 @@ export type BriefAttentionItem = {
   tone: BriefAttentionTone;
   /** Short impact/risk line — typically shown only for critical items. */
   risk?: string;
+  /** Due date is before today (Orlando) and the task is still open. */
+  overdue?: boolean;
   /** ISO timestamp; when present the item is treated as resolved and filtered out. */
   resolvedAt?: string;
 };
