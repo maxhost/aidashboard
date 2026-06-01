@@ -13,6 +13,7 @@ export type TimelineTask = {
   status: string;
   priority: string;
   is_priority: boolean;
+  category: "Send" | "Confirm" | "Call" | "Schedule" | "Message" | null;
   client_name: string | null;
   amount: string | null;
   zone: string | null;
@@ -71,6 +72,8 @@ export type EditConversationPayload = {
     category: "Send" | "Confirm" | "Call" | "Schedule" | "Message";
     is_priority?: boolean;
     due_at?: string | null;
+    client_name?: string | null;
+    amount?: number | null;
   }>;
 };
 
@@ -166,6 +169,9 @@ function toSuggestedTasks(tasks: TimelineTask[]): SuggestedTask[] {
     text: t.title,
     dueAt: t.due_at,
     isPriority: t.is_priority,
+    category: t.category,
+    clientName: t.client_name,
+    amount: t.amount,
   }));
 }
 

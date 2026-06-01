@@ -44,6 +44,10 @@ export type SuggestedTask = {
   dueAt: string | null;
   /** Operator-set pin that sorts the task to the top of the realtor's day. */
   isPriority: boolean;
+  category: "Send" | "Confirm" | "Call" | "Schedule" | "Message" | null;
+  clientName: string | null;
+  /** Budget, stored as a numeric string by the API. */
+  amount: string | null;
 };
 
 export type DetectedRisk = {

@@ -33,6 +33,7 @@ import {
   toUiEvent,
 } from "@/lib/api/operator";
 import {
+  formatDue,
   isoToOrlandoInput,
   orlandoWallClockToISO,
   updateTaskFields,
@@ -118,13 +119,17 @@ export function OperationalTimelineSection({
     const token = getToken();
     if (!token) return;
     const removeIds = Array.from(draft.removedIds);
-    const dueIds = Object.keys(draft.dueById);
-    const prioIds = Object.keys(draft.priorityById);
+    const editedIds = [
+      ...Object.keys(draft.dueById),
+      ...Object.keys(draft.priorityById),
+      ...Object.keys(draft.clientById),
+      ...Object.keys(draft.amountById),
+      ...Object.keys(draft.categoryById),
+    ];
     if (
       removeIds.length === 0 &&
       draft.addedTasks.length === 0 &&
-      dueIds.length === 0 &&
-      prioIds.length === 0
+      editedIds.length === 0
     ) {
       return;
     }
@@ -138,20 +143,31 @@ export function OperationalTimelineSection({
           category: t.category,
           is_priority: t.isPriority,
           due_at: t.dueAt,
+          client_name: t.clientName,
+          amount: t.amount,
         })),
       });
     }
 
-    // 2. PATCH existing tasks whose date or priority changed (skip removed).
+    // 2. PATCH existing tasks whose fields changed (skip removed ones).
     const removed = new Set(removeIds);
-    const changedIds = Array.from(new Set([...dueIds, ...prioIds])).filter(
+    const changedIds = Array.from(new Set(editedIds)).filter(
       (id) => !removed.has(id),
     );
     await Promise.all(
       changedIds.map((id) => {
-        const fields: { due_at?: string | null; is_priority?: boolean } = {};
+        const fields: {
+          due_at?: string | null;
+          is_priority?: boolean;
+          client_name?: string | null;
+          amount?: number | null;
+          category?: TaskCategoryValue | null;
+        } = {};
         if (id in draft.dueById) fields.due_at = draft.dueById[id];
         if (id in draft.priorityById) fields.is_priority = draft.priorityById[id];
+        if (id in draft.clientById) fields.client_name = draft.clientById[id];
+        if (id in draft.amountById) fields.amount = draft.amountById[id];
+        if (id in draft.categoryById) fields.category = draft.categoryById[id];
         return updateTaskFields(token, id, fields);
       }),
     );
@@ -500,36 +516,104 @@ type AddedTaskDraft = {
   category: TaskCategoryValue;
   isPriority: boolean;
   dueAt: string | null;
+  clientName: string | null;
+  amount: number | null;
 };
 
 type EditDraft = {
   removedIds: Set<string>;
   addedTasks: AddedTaskDraft[];
-  // Edits to existing tasks. A key present means the operator changed it; the
-  // value is the new due_at (ISO|null) / priority. Empty when nothing changed.
+  // Edits to existing tasks. A key present means the operator changed that
+  // field; the value is the new one. Empty maps == nothing changed.
   dueById: Record<string, string | null>;
   priorityById: Record<string, boolean>;
+  clientById: Record<string, string | null>;
+  amountById: Record<string, number | null>;
+  categoryById: Record<string, TaskCategoryValue | null>;
 };
 
-// Date + priority controls shared by existing tasks and pending new ones.
-function TaskEditControls({
+// Read-mode helper line: client · budget · category · date, when present.
+function TaskMetaLine({
+  clientName,
+  amount,
+  category,
+  dueAt,
+}: {
+  clientName: string | null;
+  amount: string | null;
+  category: string | null;
+  dueAt: string | null;
+}) {
+  const parts: string[] = [];
+  if (clientName) parts.push(`Cliente: ${clientName}`);
+  if (amount) parts.push(`Budget: $${amount}`);
+  if (category) parts.push(category);
+  if (dueAt) parts.push(formatDue(dueAt));
+  if (parts.length === 0) return null;
+  return (
+    <p className="mt-0.5 text-xs text-muted-foreground">{parts.join(" · ")}</p>
+  );
+}
+
+// Editable fields shared by existing tasks and pending new ones.
+function TaskEditFields({
+  client,
+  amount,
+  category,
   dueInputValue,
   priority,
+  onClientChange,
+  onAmountChange,
+  onCategoryChange,
   onDueChange,
   onPriorityChange,
 }: {
+  client: string;
+  amount: string;
+  category: TaskCategoryValue | "";
   dueInputValue: string;
   priority: boolean;
+  onClientChange: (value: string) => void;
+  onAmountChange: (value: string) => void;
+  onCategoryChange: (value: TaskCategoryValue | "") => void;
   onDueChange: (value: string) => void;
   onPriorityChange: (value: boolean) => void;
 }) {
+  const inputCls =
+    "h-7 px-2 rounded-md border border-border bg-card text-xs text-foreground/85 focus:outline-none focus:ring-1 focus:ring-foreground/30";
   return (
-    <div className="mt-1.5 flex items-center gap-3 flex-wrap">
+    <div className="mt-2 flex items-center gap-2 flex-wrap">
+      <input
+        type="text"
+        value={client}
+        onChange={(e) => onClientChange(e.target.value)}
+        placeholder="Cliente"
+        className={cn(inputCls, "min-w-[130px]")}
+      />
+      <input
+        type="number"
+        value={amount}
+        onChange={(e) => onAmountChange(e.target.value)}
+        placeholder="Budget"
+        className={cn(inputCls, "w-[110px]")}
+      />
+      <select
+        value={category}
+        onChange={(e) => onCategoryChange(e.target.value as TaskCategoryValue | "")}
+        className={inputCls}
+      >
+        <option value="">— Categoría</option>
+        {TASK_CATEGORIES.map((c) => (
+          <option key={c} value={c}>
+            {c}
+          </option>
+        ))}
+      </select>
       <input
         type="datetime-local"
         value={dueInputValue}
         onChange={(e) => onDueChange(e.target.value)}
-        className="h-7 px-2 rounded-md border border-border bg-card text-xs text-foreground/85 focus:outline-none focus:ring-1 focus:ring-foreground/30"
+        className={inputCls}
       />
       <label className="inline-flex items-center gap-1.5 text-xs text-foreground/80 cursor-pointer select-none">
         <input
@@ -571,12 +655,16 @@ function ReviewDialog({
   const disableAll = busy !== null || isTerminal;
 
   const [isEditing, setIsEditing] = useState(false);
-  const [draft, setDraft] = useState<EditDraft>({
+  const emptyDraft = (): EditDraft => ({
     removedIds: new Set(),
     addedTasks: [],
     dueById: {},
     priorityById: {},
+    clientById: {},
+    amountById: {},
+    categoryById: {},
   });
+  const [draft, setDraft] = useState<EditDraft>(emptyDraft);
   const [showAddForm, setShowAddForm] = useState(false);
   const [addTitle, setAddTitle] = useState("");
   const [addCategory, setAddCategory] = useState<TaskCategoryValue>("Send");
@@ -585,14 +673,17 @@ function ReviewDialog({
     draft.removedIds.size > 0 ||
     draft.addedTasks.length > 0 ||
     Object.keys(draft.dueById).length > 0 ||
-    Object.keys(draft.priorityById).length > 0;
+    Object.keys(draft.priorityById).length > 0 ||
+    Object.keys(draft.clientById).length > 0 ||
+    Object.keys(draft.amountById).length > 0 ||
+    Object.keys(draft.categoryById).length > 0;
   const visibleTasks = isEditing
     ? event.suggestedTasks.filter((t) => !draft.removedIds.has(t.id))
     : event.suggestedTasks;
 
   function cancelEdit() {
     setIsEditing(false);
-    setDraft({ removedIds: new Set(), addedTasks: [], dueById: {}, priorityById: {} });
+    setDraft(emptyDraft());
     setShowAddForm(false);
     setAddTitle("");
     setAddCategory("Send");
@@ -642,6 +733,62 @@ function ReviewDialog({
       ),
     }));
   }
+  function clientFor(id: string, fallback: string | null): string {
+    const v = id in draft.clientById ? draft.clientById[id] : fallback;
+    return v ?? "";
+  }
+  function amountFor(id: string, fallback: string | null): string {
+    const v = id in draft.amountById ? draft.amountById[id] : fallback;
+    return v == null ? "" : String(v);
+  }
+  function categoryFor(
+    id: string,
+    fallback: TaskCategoryValue | null,
+  ): TaskCategoryValue | "" {
+    const v = id in draft.categoryById ? draft.categoryById[id] : fallback;
+    return v ?? "";
+  }
+  function setExistingClient(id: string, value: string) {
+    const v = value.trim() === "" ? null : value;
+    setDraft((d) => ({ ...d, clientById: { ...d.clientById, [id]: v } }));
+  }
+  function setExistingAmount(id: string, value: string) {
+    const v = value === "" ? null : Number(value);
+    setDraft((d) => ({ ...d, amountById: { ...d.amountById, [id]: v } }));
+  }
+  function setExistingCategory(id: string, value: TaskCategoryValue | "") {
+    setDraft((d) => ({
+      ...d,
+      categoryById: { ...d.categoryById, [id]: value === "" ? null : value },
+    }));
+  }
+  function setAddedClient(tempId: string, value: string) {
+    const v = value.trim() === "" ? null : value;
+    setDraft((d) => ({
+      ...d,
+      addedTasks: d.addedTasks.map((t) =>
+        t.tempId === tempId ? { ...t, clientName: v } : t,
+      ),
+    }));
+  }
+  function setAddedAmount(tempId: string, value: string) {
+    const v = value === "" ? null : Number(value);
+    setDraft((d) => ({
+      ...d,
+      addedTasks: d.addedTasks.map((t) =>
+        t.tempId === tempId ? { ...t, amount: v } : t,
+      ),
+    }));
+  }
+  function setAddedCategory(tempId: string, value: TaskCategoryValue | "") {
+    if (value === "") return; // new tasks always carry a category
+    setDraft((d) => ({
+      ...d,
+      addedTasks: d.addedTasks.map((t) =>
+        t.tempId === tempId ? { ...t, category: value } : t,
+      ),
+    }));
+  }
 
   function commitNewTask() {
     const title = addTitle.trim();
@@ -656,6 +803,8 @@ function ReviewDialog({
           category: addCategory,
           isPriority: false,
           dueAt: null,
+          clientName: null,
+          amount: null,
         },
       ],
     }));
@@ -707,12 +856,25 @@ function ReviewDialog({
                 />
                 <div className="flex-1 min-w-0">
                   <span>{task.text}</span>
-                  {isEditing && !isTerminal && (
-                    <TaskEditControls
+                  {isEditing && !isTerminal ? (
+                    <TaskEditFields
+                      client={clientFor(task.id, task.clientName)}
+                      amount={amountFor(task.id, task.amount)}
+                      category={categoryFor(task.id, task.category)}
                       dueInputValue={dueInputFor(task.id, task.dueAt)}
                       priority={priorityFor(task.id, task.isPriority)}
+                      onClientChange={(v) => setExistingClient(task.id, v)}
+                      onAmountChange={(v) => setExistingAmount(task.id, v)}
+                      onCategoryChange={(v) => setExistingCategory(task.id, v)}
                       onDueChange={(v) => setExistingDue(task.id, v)}
                       onPriorityChange={(b) => setExistingPriority(task.id, b)}
+                    />
+                  ) : (
+                    <TaskMetaLine
+                      clientName={task.clientName}
+                      amount={task.amount}
+                      category={task.category}
+                      dueAt={task.dueAt}
                     />
                   )}
                 </div>
@@ -743,12 +905,18 @@ function ReviewDialog({
                   <span>
                     {t.title}{" "}
                     <span className="text-xs text-muted-foreground ml-1">
-                      [{t.category}] new
+                      new
                     </span>
                   </span>
-                  <TaskEditControls
+                  <TaskEditFields
+                    client={t.clientName ?? ""}
+                    amount={t.amount == null ? "" : String(t.amount)}
+                    category={t.category}
                     dueInputValue={t.dueAt ? isoToOrlandoInput(t.dueAt) : ""}
                     priority={t.isPriority}
+                    onClientChange={(v) => setAddedClient(t.tempId, v)}
+                    onAmountChange={(v) => setAddedAmount(t.tempId, v)}
+                    onCategoryChange={(v) => setAddedCategory(t.tempId, v)}
                     onDueChange={(v) => setAddedDue(t.tempId, v)}
                     onPriorityChange={(b) => setAddedPriority(t.tempId, b)}
                   />

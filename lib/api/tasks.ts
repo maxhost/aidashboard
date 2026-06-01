@@ -68,9 +68,11 @@ export function updateTaskFields(
   id: string,
   fields: Partial<{
     title: string;
-    category: TaskCategory;
+    category: TaskCategory | null;
     is_priority: boolean;
     due_at: string | null;
+    client_name: string | null;
+    amount: number | null;
   }>,
 ): Promise<unknown> {
   return apiFetch(`/tasks/${id}`, {
@@ -139,7 +141,7 @@ function parseDueEnd(iso: string): number {
 
 // Render due_at as date + time in the realtor's pilot tz (Orlando).
 const PILOT_TZ = "America/New_York";
-function formatDue(iso: string): string {
+export function formatDue(iso: string): string {
   return new Intl.DateTimeFormat("en-US", {
     timeZone: PILOT_TZ,
     month: "short",
