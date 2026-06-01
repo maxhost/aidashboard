@@ -69,6 +69,8 @@ export type EditConversationPayload = {
   add_tasks?: Array<{
     title: string;
     category: "Send" | "Confirm" | "Call" | "Schedule" | "Message";
+    is_priority?: boolean;
+    due_at?: string | null;
   }>;
 };
 
@@ -162,6 +164,8 @@ function toSuggestedTasks(tasks: TimelineTask[]): SuggestedTask[] {
   return tasks.map((t) => ({
     id: t.id,
     text: t.title,
+    dueAt: t.due_at,
+    isPriority: t.is_priority,
   }));
 }
 

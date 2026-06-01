@@ -32,6 +32,11 @@ import {
   rejectConversation,
   toUiEvent,
 } from "@/lib/api/operator";
+import {
+  isoToOrlandoInput,
+  orlandoWallClockToISO,
+  updateTaskFields,
+} from "@/lib/api/tasks";
 
 type TaskCategoryValue = "Send" | "Confirm" | "Call" | "Schedule" | "Message";
 import { getToken } from "@/lib/session";
@@ -109,37 +114,50 @@ export function OperationalTimelineSection({
   const visible = forRealtor.filter((e) => statusTab(e.status) === tab);
   const selected = events.find((e) => e.id === selectedId) ?? null;
 
-  async function applyEdits(
-    conversationId: string,
-    draft: {
-      removedIds: Set<string>;
-      addedTasks: Array<{ title: string; category: TaskCategoryValue }>;
-    },
-  ) {
+  async function applyEdits(conversationId: string, draft: EditDraft) {
     const token = getToken();
     if (!token) return;
     const removeIds = Array.from(draft.removedIds);
-    if (removeIds.length === 0 && draft.addedTasks.length === 0) return;
-    await editConversation(token, conversationId, {
-      remove_task_ids: removeIds,
-      add_tasks: draft.addedTasks.map((t) => ({
-        title: t.title,
-        category: t.category,
-      })),
-    });
+    const dueIds = Object.keys(draft.dueById);
+    const prioIds = Object.keys(draft.priorityById);
+    if (
+      removeIds.length === 0 &&
+      draft.addedTasks.length === 0 &&
+      dueIds.length === 0 &&
+      prioIds.length === 0
+    ) {
+      return;
+    }
+
+    // 1. Add new / remove existing tasks via the conversation edit endpoint.
+    if (removeIds.length > 0 || draft.addedTasks.length > 0) {
+      await editConversation(token, conversationId, {
+        remove_task_ids: removeIds,
+        add_tasks: draft.addedTasks.map((t) => ({
+          title: t.title,
+          category: t.category,
+          is_priority: t.isPriority,
+          due_at: t.dueAt,
+        })),
+      });
+    }
+
+    // 2. PATCH existing tasks whose date or priority changed (skip removed).
+    const removed = new Set(removeIds);
+    const changedIds = Array.from(new Set([...dueIds, ...prioIds])).filter(
+      (id) => !removed.has(id),
+    );
+    await Promise.all(
+      changedIds.map((id) => {
+        const fields: { due_at?: string | null; is_priority?: boolean } = {};
+        if (id in draft.dueById) fields.due_at = draft.dueById[id];
+        if (id in draft.priorityById) fields.is_priority = draft.priorityById[id];
+        return updateTaskFields(token, id, fields);
+      }),
+    );
   }
 
-  async function handleSaveEdits(
-    conversationId: string,
-    draft: {
-      removedIds: Set<string>;
-      addedTasks: Array<{
-        tempId: string;
-        title: string;
-        category: TaskCategoryValue;
-      }>;
-    },
-  ) {
+  async function handleSaveEdits(conversationId: string, draft: EditDraft) {
     const token = getToken();
     if (!token) return;
     setReviewBusy("save");
@@ -153,17 +171,7 @@ export function OperationalTimelineSection({
     }
   }
 
-  async function handleApprove(
-    conversationId: string,
-    draft?: {
-      removedIds: Set<string>;
-      addedTasks: Array<{
-        tempId: string;
-        title: string;
-        category: TaskCategoryValue;
-      }>;
-    },
-  ) {
+  async function handleApprove(conversationId: string, draft?: EditDraft) {
     const token = getToken();
     if (!token) return;
     setReviewBusy("approve");
@@ -486,10 +494,55 @@ function EmptyState({
 
 // ─── Review dialog (centered modal, MVP-stripped) ───────────────────────
 
+type AddedTaskDraft = {
+  tempId: string;
+  title: string;
+  category: TaskCategoryValue;
+  isPriority: boolean;
+  dueAt: string | null;
+};
+
 type EditDraft = {
   removedIds: Set<string>;
-  addedTasks: Array<{ tempId: string; title: string; category: TaskCategoryValue }>;
+  addedTasks: AddedTaskDraft[];
+  // Edits to existing tasks. A key present means the operator changed it; the
+  // value is the new due_at (ISO|null) / priority. Empty when nothing changed.
+  dueById: Record<string, string | null>;
+  priorityById: Record<string, boolean>;
 };
+
+// Date + priority controls shared by existing tasks and pending new ones.
+function TaskEditControls({
+  dueInputValue,
+  priority,
+  onDueChange,
+  onPriorityChange,
+}: {
+  dueInputValue: string;
+  priority: boolean;
+  onDueChange: (value: string) => void;
+  onPriorityChange: (value: boolean) => void;
+}) {
+  return (
+    <div className="mt-1.5 flex items-center gap-3 flex-wrap">
+      <input
+        type="datetime-local"
+        value={dueInputValue}
+        onChange={(e) => onDueChange(e.target.value)}
+        className="h-7 px-2 rounded-md border border-border bg-card text-xs text-foreground/85 focus:outline-none focus:ring-1 focus:ring-foreground/30"
+      />
+      <label className="inline-flex items-center gap-1.5 text-xs text-foreground/80 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={priority}
+          onChange={(e) => onPriorityChange(e.target.checked)}
+          className="h-3.5 w-3.5 rounded border-border accent-foreground"
+        />
+        Prioridad
+      </label>
+    </div>
+  );
+}
 
 const TASK_CATEGORIES: TaskCategoryValue[] = [
   "Send",
@@ -521,19 +574,25 @@ function ReviewDialog({
   const [draft, setDraft] = useState<EditDraft>({
     removedIds: new Set(),
     addedTasks: [],
+    dueById: {},
+    priorityById: {},
   });
   const [showAddForm, setShowAddForm] = useState(false);
   const [addTitle, setAddTitle] = useState("");
   const [addCategory, setAddCategory] = useState<TaskCategoryValue>("Send");
 
-  const isDirty = draft.removedIds.size > 0 || draft.addedTasks.length > 0;
+  const isDirty =
+    draft.removedIds.size > 0 ||
+    draft.addedTasks.length > 0 ||
+    Object.keys(draft.dueById).length > 0 ||
+    Object.keys(draft.priorityById).length > 0;
   const visibleTasks = isEditing
     ? event.suggestedTasks.filter((t) => !draft.removedIds.has(t.id))
     : event.suggestedTasks;
 
   function cancelEdit() {
     setIsEditing(false);
-    setDraft({ removedIds: new Set(), addedTasks: [] });
+    setDraft({ removedIds: new Set(), addedTasks: [], dueById: {}, priorityById: {} });
     setShowAddForm(false);
     setAddTitle("");
     setAddCategory("Send");
@@ -548,6 +607,42 @@ function ReviewDialog({
     });
   }
 
+  // Edit-mode helpers. Existing tasks overlay their change into dueById/
+  // priorityById (key present == changed); added tasks mutate their draft entry.
+  function dueInputFor(id: string, fallback: string | null): string {
+    const iso = id in draft.dueById ? draft.dueById[id] : fallback;
+    return iso ? isoToOrlandoInput(iso) : "";
+  }
+  function priorityFor(id: string, fallback: boolean): boolean {
+    return id in draft.priorityById ? draft.priorityById[id] : fallback;
+  }
+  function inputToIso(value: string): string | null {
+    return value ? orlandoWallClockToISO(value.slice(0, 10), value.slice(11, 16)) : null;
+  }
+  function setExistingDue(id: string, value: string) {
+    setDraft((d) => ({ ...d, dueById: { ...d.dueById, [id]: inputToIso(value) } }));
+  }
+  function setExistingPriority(id: string, value: boolean) {
+    setDraft((d) => ({ ...d, priorityById: { ...d.priorityById, [id]: value } }));
+  }
+  function setAddedDue(tempId: string, value: string) {
+    const iso = inputToIso(value);
+    setDraft((d) => ({
+      ...d,
+      addedTasks: d.addedTasks.map((t) =>
+        t.tempId === tempId ? { ...t, dueAt: iso } : t,
+      ),
+    }));
+  }
+  function setAddedPriority(tempId: string, value: boolean) {
+    setDraft((d) => ({
+      ...d,
+      addedTasks: d.addedTasks.map((t) =>
+        t.tempId === tempId ? { ...t, isPriority: value } : t,
+      ),
+    }));
+  }
+
   function commitNewTask() {
     const title = addTitle.trim();
     if (!title) return;
@@ -555,7 +650,13 @@ function ReviewDialog({
       ...d,
       addedTasks: [
         ...d.addedTasks,
-        { tempId: `new-${Date.now()}`, title, category: addCategory },
+        {
+          tempId: `new-${Date.now()}`,
+          title,
+          category: addCategory,
+          isPriority: false,
+          dueAt: null,
+        },
       ],
     }));
     setAddTitle("");
@@ -604,7 +705,17 @@ function ReviewDialog({
                   aria-hidden
                   className="mt-[9px] h-1 w-1 rounded-full bg-foreground/35 shrink-0"
                 />
-                <span className="flex-1">{task.text}</span>
+                <div className="flex-1 min-w-0">
+                  <span>{task.text}</span>
+                  {isEditing && !isTerminal && (
+                    <TaskEditControls
+                      dueInputValue={dueInputFor(task.id, task.dueAt)}
+                      priority={priorityFor(task.id, task.isPriority)}
+                      onDueChange={(v) => setExistingDue(task.id, v)}
+                      onPriorityChange={(b) => setExistingPriority(task.id, b)}
+                    />
+                  )}
+                </div>
                 {isEditing && !isTerminal && (
                   <button
                     type="button"
@@ -628,12 +739,20 @@ function ReviewDialog({
                   aria-hidden
                   className="mt-[9px] h-1 w-1 rounded-full bg-success shrink-0"
                 />
-                <span className="flex-1">
-                  {t.title}{" "}
-                  <span className="text-xs text-muted-foreground ml-1">
-                    [{t.category}] new
+                <div className="flex-1 min-w-0">
+                  <span>
+                    {t.title}{" "}
+                    <span className="text-xs text-muted-foreground ml-1">
+                      [{t.category}] new
+                    </span>
                   </span>
-                </span>
+                  <TaskEditControls
+                    dueInputValue={t.dueAt ? isoToOrlandoInput(t.dueAt) : ""}
+                    priority={t.isPriority}
+                    onDueChange={(v) => setAddedDue(t.tempId, v)}
+                    onPriorityChange={(b) => setAddedPriority(t.tempId, b)}
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() => discardNewTask(t.tempId)}

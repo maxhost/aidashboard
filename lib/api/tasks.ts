@@ -69,6 +69,8 @@ export function updateTaskFields(
   fields: Partial<{
     title: string;
     category: TaskCategory;
+    is_priority: boolean;
+    due_at: string | null;
   }>,
 ): Promise<unknown> {
   return apiFetch(`/tasks/${id}`, {
@@ -145,6 +147,48 @@ function formatDue(iso: string): string {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(iso));
+}
+
+// Wall-clock parts of an instant in the pilot tz. Used to seed a
+// <input type="datetime-local"> (which speaks naive local time).
+function tzParts(d: Date): Record<string, string> {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: PILOT_TZ,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).formatToParts(d);
+  const m: Record<string, string> = {};
+  for (const p of parts) m[p.type] = p.value;
+  return m;
+}
+
+// ISO instant -> "YYYY-MM-DDTHH:MM" in Orlando wall-clock, for a datetime-local
+// input's value.
+export function isoToOrlandoInput(iso: string): string {
+  const m = tzParts(new Date(iso));
+  return `${m.year}-${m.month}-${m.day}T${m.hour}:${m.minute}`;
+}
+
+// "YYYY-MM-DD" + "HH:MM" understood as Orlando wall-clock -> the ISO instant.
+// DST-correct: compute the tz offset at the target instant and back it out.
+export function orlandoWallClockToISO(date: string, time: string): string {
+  const naive = Date.parse(`${date}T${time}:00Z`); // pretend the wall-clock is UTC
+  const m = tzParts(new Date(naive));
+  const asTz = Date.UTC(
+    +m.year,
+    +m.month - 1,
+    +m.day,
+    +m.hour,
+    +m.minute,
+    +m.second,
+  );
+  const offset = asTz - naive;
+  return new Date(naive - offset).toISOString();
 }
 
 // ─── Adapters to UI types ────────────────────────────────────────────────

@@ -40,6 +40,10 @@ export type DetectedContext = {
 export type SuggestedTask = {
   id: string;
   text: string;
+  /** ISO timestamp; null when the operator hasn't set a date yet. */
+  dueAt: string | null;
+  /** Operator-set pin that sorts the task to the top of the realtor's day. */
+  isPriority: boolean;
 };
 
 export type DetectedRisk = {
