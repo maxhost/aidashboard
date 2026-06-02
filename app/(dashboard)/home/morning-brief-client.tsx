@@ -32,12 +32,14 @@ import { RealtorSelector } from "@/components/dashboard/realtor-selector";
 import {
   listMyTasks,
   windowTasks,
+  upcomingTasks,
   toUiAttention,
   toUiPriority,
   updateTaskFields,
   updateTaskStatus,
   isoToOrlandoInput,
   orlandoWallClockToISO,
+  formatDue,
   type TaskCategory,
   type TaskRow,
 } from "@/lib/api/tasks";
@@ -547,9 +549,13 @@ export function MorningBriefClient({
         )}
       </section>
 
-      {/* BackOffice-only: rejected tasks history (read-only) */}
+      {/* BackOffice-only: other tasks — next 72h + rejected history */}
       {isBackOffice && isAuthOperator && pickedRealtor && (
-        <RejectedTasksSection realtorId={pickedRealtor.id} />
+        <OtherTasksSection
+          realtorId={pickedRealtor.id}
+          realTasks={realTasks}
+          onEditTask={(id) => setEditingTaskId(id)}
+        />
       )}
 
       {/* BackOffice-only operational timeline — separate module below the brief */}
@@ -1413,12 +1419,34 @@ function EditTaskDialog({
 
 // ─── Rejected tasks section (BackOffice only) ─────────────────────────────
 
-function RejectedTasksSection({ realtorId }: { realtorId: string }) {
-  const [items, setItems] = useState<RejectedItem[]>([]);
+type OtherTab = "upcoming" | "rejected";
+const OTHER_TASKS_PAGE = 10;
+
+function OtherTasksSection({
+  realtorId,
+  realTasks,
+  onEditTask,
+}: {
+  realtorId: string;
+  realTasks: TaskRow[];
+  onEditTask: (id: string) => void;
+}) {
+  const [tab, setTab] = useState<OtherTab>("upcoming");
+  const [visibleCount, setVisibleCount] = useState(OTHER_TASKS_PAGE);
+
+  // Rejected history is fetched (≤200 newest-first, no server pagination).
+  const [rejected, setRejected] = useState<RejectedItem[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
-  const [selected, setSelected] = useState<RejectedItem | null>(null);
+  const [selectedRejected, setSelectedRejected] = useState<RejectedItem | null>(
+    null,
+  );
+  const [selectedUpcoming, setSelectedUpcoming] = useState<TaskRow | null>(null);
+
+  // Next-72h tasks are already in realTasks (fetched by status, hidden from the
+  // day view by windowTasks). Derive them client-side — no extra request.
+  const upcoming = useMemo(() => upcomingTasks(realTasks), [realTasks]);
 
   useEffect(() => {
     const token = getToken();
@@ -1431,7 +1459,7 @@ function RejectedTasksSection({ realtorId }: { realtorId: string }) {
     listRejectedTasks(token, realtorId)
       .then((res) => {
         if (cancelled) return;
-        setItems(res.items);
+        setRejected(res.items);
         setStatus("ready");
       })
       .catch(() => {
@@ -1443,14 +1471,45 @@ function RejectedTasksSection({ realtorId }: { realtorId: string }) {
     };
   }, [realtorId]);
 
+  // Reset the 10-at-a-time window when switching tabs.
+  useEffect(() => {
+    setVisibleCount(OTHER_TASKS_PAGE);
+  }, [tab]);
+
+  const total = tab === "upcoming" ? upcoming.length : rejected.length;
+  const visibleUpcoming = upcoming.slice(0, visibleCount);
+  const visibleRejected = rejected.slice(0, visibleCount);
+
   return (
-    <section aria-label="Rejected tasks" className="space-y-3">
+    <section aria-label="Other tasks" className="space-y-3">
       <SectionTitle
-        title="Rejected tasks"
-        tooltip="History of tasks the realtor or operator dismissed. Read-only — click a row to see the original transcript and the reason it was rejected."
+        title="Other Tasks"
+        tooltip="Tasks outside today's view: the next 72h (not yet shown in the day) and the rejected history. Read-only — click a row for details."
+      />
+      <OtherTasksTabs
+        tab={tab}
+        onChange={setTab}
+        upcomingCount={upcoming.length}
+        rejectedCount={rejected.length}
       />
 
-      {status === "loading" ? (
+      {tab === "upcoming" ? (
+        upcoming.length === 0 ? (
+          <p className="text-sm text-muted-foreground px-1 py-6">
+            Nothing due in the next 72h.
+          </p>
+        ) : (
+          <ul className="rounded-xl border border-border bg-card divide-y divide-border/60 overflow-hidden">
+            {visibleUpcoming.map((task) => (
+              <UpcomingRow
+                key={task.id}
+                task={task}
+                onOpen={() => setSelectedUpcoming(task)}
+              />
+            ))}
+          </ul>
+        )
+      ) : status === "loading" ? (
         <p className="text-sm text-muted-foreground px-1 py-6">
           Loading rejected tasks…
         </p>
@@ -1458,36 +1517,259 @@ function RejectedTasksSection({ realtorId }: { realtorId: string }) {
         <p className="text-sm text-destructive px-1 py-6">
           Couldn&apos;t load rejected tasks.
         </p>
-      ) : items.length === 0 ? (
+      ) : rejected.length === 0 ? (
         <p className="text-sm text-muted-foreground px-1 py-6">
           Nothing rejected for this realtor.
         </p>
       ) : (
         <ul className="rounded-xl border border-border bg-card divide-y divide-border/60 overflow-hidden">
-          {items.map((item) => (
+          {visibleRejected.map((item) => (
             <RejectedRow
               key={item.task.id}
               item={item}
-              onOpen={() => setSelected(item)}
+              onOpen={() => setSelectedRejected(item)}
             />
           ))}
         </ul>
       )}
 
+      {visibleCount < total && (
+        <div className="flex justify-center pt-1">
+          <button
+            type="button"
+            onClick={() => setVisibleCount((c) => c + OTHER_TASKS_PAGE)}
+            className="inline-flex items-center px-4 py-1.5 rounded-md border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+          >
+            Load more
+          </button>
+        </div>
+      )}
+
       <Dialog
-        open={!!selected}
-        onOpenChange={(open) => !open && setSelected(null)}
+        open={!!selectedUpcoming}
+        onOpenChange={(open) => !open && setSelectedUpcoming(null)}
       >
         <DialogContent className="sm:max-w-lg p-0 gap-0 max-h-[88dvh] flex flex-col overflow-hidden">
-          {selected && (
+          {selectedUpcoming && (
+            <UpcomingDetail
+              task={selectedUpcoming}
+              onClose={() => setSelectedUpcoming(null)}
+              onEdit={() => {
+                const id = selectedUpcoming.id;
+                setSelectedUpcoming(null);
+                onEditTask(id);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!selectedRejected}
+        onOpenChange={(open) => !open && setSelectedRejected(null)}
+      >
+        <DialogContent className="sm:max-w-lg p-0 gap-0 max-h-[88dvh] flex flex-col overflow-hidden">
+          {selectedRejected && (
             <RejectedDetail
-              item={selected}
-              onClose={() => setSelected(null)}
+              item={selectedRejected}
+              onClose={() => setSelectedRejected(null)}
             />
           )}
         </DialogContent>
       </Dialog>
     </section>
+  );
+}
+
+function OtherTasksTabs({
+  tab,
+  onChange,
+  upcomingCount,
+  rejectedCount,
+}: {
+  tab: OtherTab;
+  onChange: (next: OtherTab) => void;
+  upcomingCount: number;
+  rejectedCount: number;
+}) {
+  const tabs: { key: OtherTab; label: string; count: number }[] = [
+    { key: "upcoming", label: "Next 72h", count: upcomingCount },
+    { key: "rejected", label: "Rejected", count: rejectedCount },
+  ];
+  return (
+    <div
+      role="tablist"
+      aria-label="Filter other tasks"
+      className="flex items-center gap-6 border-b border-border/60"
+    >
+      {tabs.map(({ key, label, count }) => {
+        const active = tab === key;
+        return (
+          <button
+            key={key}
+            role="tab"
+            aria-selected={active}
+            type="button"
+            onClick={() => onChange(key)}
+            className={cn(
+              "relative -mb-px py-2 text-sm font-medium transition-colors",
+              active
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <span className="inline-flex items-center gap-1.5">
+              {label}
+              <span
+                className={cn(
+                  "font-mono text-[11px] tabular-nums",
+                  active ? "text-muted-foreground" : "text-muted-foreground/60"
+                )}
+              >
+                {count}
+              </span>
+            </span>
+            {active && (
+              <span
+                aria-hidden
+                className="absolute left-0 right-0 bottom-0 h-[2px] bg-foreground rounded-full"
+              />
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function UpcomingRow({
+  task,
+  onOpen,
+}: {
+  task: TaskRow;
+  onOpen: () => void;
+}) {
+  const kind = toActionKindForCategory(task.category);
+  const ActionIcon = ACTION_ICON[kind];
+  const meta: string[] = [];
+  if (task.clientName) meta.push(task.clientName);
+  if (task.amount) meta.push(`$${task.amount}`);
+  if (task.dueAt) meta.push(formatDue(task.dueAt));
+  return (
+    <li className="group flex items-start gap-3.5 px-4 py-4 sm:px-5 sm:py-[18px] hover:bg-muted/30 transition-colors">
+      <ActionIcon
+        aria-hidden
+        className="h-5 w-5 mt-0.5 shrink-0 text-foreground/55"
+        strokeWidth={2}
+      />
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex-1 min-w-0 text-left"
+        aria-label={`Open details for ${task.title}`}
+      >
+        <span className="block text-[15px] leading-snug text-foreground truncate">
+          {task.title}
+        </span>
+        {meta.length > 0 && (
+          <span className="block mt-0.5 text-xs text-muted-foreground truncate">
+            {meta.join(" · ")}
+          </span>
+        )}
+      </button>
+      {task.isPriority && (
+        <span className="text-[10px] uppercase tracking-wide text-foreground/70 shrink-0 self-center">
+          Priority
+        </span>
+      )}
+    </li>
+  );
+}
+
+function UpcomingDetail({
+  task,
+  onClose,
+  onEdit,
+}: {
+  task: TaskRow;
+  onClose: () => void;
+  onEdit: () => void;
+}) {
+  const rows: { label: string; value: string }[] = [];
+  if (task.clientName) rows.push({ label: "Client", value: task.clientName });
+  if (task.amount) rows.push({ label: "Amount", value: `$${task.amount}` });
+  if (task.zone) rows.push({ label: "Zone", value: task.zone });
+  if (task.dueAt) rows.push({ label: "Due", value: formatDue(task.dueAt) });
+  if (task.category) rows.push({ label: "Category", value: task.category });
+  return (
+    <>
+      <DialogTitle className="sr-only">Upcoming task detail</DialogTitle>
+      <DialogDescription className="sr-only">
+        Details for an upcoming task due in the next 72h
+      </DialogDescription>
+
+      <div className="flex-1 overflow-y-auto px-6 sm:px-8 py-7 pr-12 space-y-6 min-h-0">
+        <section>
+          <h3 className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground/80 mb-2.5">
+            Task
+          </h3>
+          <p className="text-[16px] leading-snug font-medium text-foreground">
+            {task.title}
+          </p>
+          {task.isPriority && (
+            <p className="mt-1 text-xs font-medium text-foreground/70 uppercase tracking-wide">
+              Priority
+            </p>
+          )}
+        </section>
+
+        {rows.length > 0 && (
+          <section>
+            <h3 className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground/80 mb-2.5">
+              Details
+            </h3>
+            <dl className="space-y-1.5">
+              {rows.map((r) => (
+                <div key={r.label} className="flex gap-2 text-[14.5px]">
+                  <dt className="text-muted-foreground w-20 shrink-0">
+                    {r.label}
+                  </dt>
+                  <dd className="text-foreground/85">{r.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
+
+        {task.context && (
+          <section>
+            <h3 className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground/80 mb-2.5">
+              Context
+            </h3>
+            <p className="text-[14.5px] leading-relaxed text-foreground/80 whitespace-pre-wrap">
+              {task.context}
+            </p>
+          </section>
+        )}
+      </div>
+
+      <div className="flex items-center justify-end gap-2 px-6 py-3 border-t border-border/60">
+        <button
+          type="button"
+          onClick={onClose}
+          className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+        >
+          Close
+        </button>
+        <button
+          type="button"
+          onClick={onEdit}
+          className="inline-flex items-center px-3.5 py-1.5 rounded-md text-sm font-medium bg-foreground text-background hover:bg-foreground/90 transition-colors"
+        >
+          Edit
+        </button>
+      </div>
+    </>
   );
 }
 

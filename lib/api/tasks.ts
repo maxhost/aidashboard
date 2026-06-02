@@ -101,6 +101,31 @@ export function windowTasks(
     .sort(taskComparator);
 }
 
+// ─── Upcoming: the next 72h that the day view hides by design. windowTasks
+//     shows due <= today; this shows due strictly after today through two days
+//     out (today+1 .. today+2 in Orlando). Same pinned-first / soonest-due
+//     ordering. Tasks with no due_at stay excluded (operator sets one first). ──
+export function upcomingTasks(
+  rows: TaskRow[],
+  now: Date = new Date(),
+): TaskRow[] {
+  const fromKey = orlandoDateKey(addDays(now, 1));
+  const toKey = orlandoDateKey(addDays(now, 2));
+  return rows
+    .filter((t) => {
+      if (t.dueAt === null) return false;
+      const k = orlandoDateKey(new Date(t.dueAt));
+      return k >= fromKey && k <= toKey;
+    })
+    .sort(taskComparator);
+}
+
+// Shift an instant by whole days. Noon anchoring keeps the resulting Orlando
+// calendar date stable across DST transitions (1h shifts never cross noon).
+function addDays(d: Date, days: number): Date {
+  return new Date(d.getTime() + days * 24 * 60 * 60 * 1000);
+}
+
 // Calendar date in the pilot tz as a sortable YYYY-MM-DD key. Comparing keys
 // (not instants) sidesteps DST/midnight math: "in window" == due on or before
 // today; "overdue" == due strictly before today.
