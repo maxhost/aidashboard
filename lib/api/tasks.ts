@@ -71,6 +71,7 @@ export function updateTaskFields(
     category: TaskCategory | null;
     is_priority: boolean;
     due_at: string | null;
+    due_time: string | null;
     client_name: string | null;
     amount: number | null;
   }>,

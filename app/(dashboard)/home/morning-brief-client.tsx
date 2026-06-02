@@ -36,6 +36,8 @@ import {
   toUiPriority,
   updateTaskFields,
   updateTaskStatus,
+  isoToOrlandoInput,
+  orlandoWallClockToISO,
   type TaskCategory,
   type TaskRow,
 } from "@/lib/api/tasks";
@@ -1248,6 +1250,9 @@ function EditTaskDialog({
 }) {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<TaskCategory>("Send");
+  // datetime-local value ("YYYY-MM-DDTHH:MM" in Orlando wall-clock), "" == no due.
+  const [dueInput, setDueInput] = useState("");
+  const [isPriority, setIsPriority] = useState(false);
   const [saving, setSaving] = useState(false);
 
   // Depend on task?.id, not task. Each useMyTasks poll returns a fresh
@@ -1259,9 +1264,13 @@ function EditTaskDialog({
     if (!task) return;
     setTitle(task.title);
     setCategory(task.category ?? "Send");
+    setDueInput(task.dueAt ? isoToOrlandoInput(task.dueAt) : "");
+    setIsPriority(task.isPriority);
     setSaving(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [task?.id]);
+
+  const initialDueInput = task?.dueAt ? isoToOrlandoInput(task.dueAt) : "";
 
   async function handleSave() {
     if (!task) return;
@@ -1269,11 +1278,24 @@ function EditTaskDialog({
     if (!token) return;
     const trimmed = title.trim();
     if (!trimmed) return;
+    // datetime-local always carries date+time; split it into the orderable
+    // instant (due_at) and the explicit HH:MM (due_time) so the picked hour is
+    // treated as stated, not as a fallback. Empty input clears both.
+    let due_at: string | null = null;
+    let due_time: string | null = null;
+    if (dueInput) {
+      const [date, time] = dueInput.split("T");
+      due_at = orlandoWallClockToISO(date, time);
+      due_time = time;
+    }
     setSaving(true);
     try {
       await updateTaskFields(token, task.id, {
         title: trimmed,
         category,
+        due_at,
+        due_time,
+        is_priority: isPriority,
       });
       onSaved();
     } catch {
@@ -1285,7 +1307,10 @@ function EditTaskDialog({
 
   const isDirty =
     !!task &&
-    (title.trim() !== task.title || category !== (task.category ?? "Send"));
+    (title.trim() !== task.title ||
+      category !== (task.category ?? "Send") ||
+      dueInput !== initialDueInput ||
+      isPriority !== task.isPriority);
 
   return (
     <Dialog open={!!task} onOpenChange={(open) => !open && onClose()}>
@@ -1293,7 +1318,8 @@ function EditTaskDialog({
         <div className="px-6 pt-6 pb-2">
           <DialogTitle className="text-base font-medium">Edit task</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground mt-1">
-            Update the title and category. The change persists immediately.
+            Update the title, category, due date/time and priority. The change
+            persists immediately.
           </DialogDescription>
         </div>
         <div className="px-6 py-4 space-y-4">
@@ -1327,6 +1353,40 @@ function EditTaskDialog({
               ))}
             </select>
           </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">
+              Vence (día y hora)
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="datetime-local"
+                value={dueInput}
+                onChange={(e) => setDueInput(e.target.value)}
+                className="flex-1 h-9 px-3 rounded-md border border-border bg-card text-sm focus:outline-none focus:ring-1 focus:ring-foreground/30"
+              />
+              {dueInput && (
+                <button
+                  type="button"
+                  onClick={() => setDueInput("")}
+                  className="h-9 px-2.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                >
+                  Limpiar
+                </button>
+              )}
+            </div>
+          </div>
+          <label className="flex items-center gap-2 text-sm text-foreground/85 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={isPriority}
+              onChange={(e) => setIsPriority(e.target.checked)}
+              className="h-4 w-4 rounded border-border accent-foreground"
+            />
+            Es urgente
+            <span className="text-xs text-muted-foreground">
+              (manda la tarea al tope)
+            </span>
+          </label>
         </div>
         <div className="flex items-center justify-end gap-2 px-6 py-3 border-t border-border/60">
           <button
