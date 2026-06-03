@@ -101,29 +101,22 @@ export function windowTasks(
     .sort(taskComparator);
 }
 
-// ─── Upcoming: the next 72h that the day view hides by design. windowTasks
-//     shows due <= today; this shows due strictly after today through two days
-//     out (today+1 .. today+2 in Orlando). Same pinned-first / soonest-due
-//     ordering. Tasks with no due_at stay excluded (operator sets one first). ──
-export function upcomingTasks(
+// ─── Pending: everything active the day view doesn't surface. It's the exact
+//     complement of windowTasks among non-done tasks — tasks with no due date,
+//     or due strictly after today (Orlando). Same pinned-first / soonest-due
+//     ordering; undated tasks sort last. ───────────────────────────────────
+export function pendingTasks(
   rows: TaskRow[],
   now: Date = new Date(),
 ): TaskRow[] {
-  const fromKey = orlandoDateKey(addDays(now, 1));
-  const toKey = orlandoDateKey(addDays(now, 2));
+  const todayKey = orlandoDateKey(now);
   return rows
     .filter((t) => {
-      if (t.dueAt === null) return false;
-      const k = orlandoDateKey(new Date(t.dueAt));
-      return k >= fromKey && k <= toKey;
+      if (t.status === "done") return false;
+      if (t.dueAt === null) return true;
+      return orlandoDateKey(new Date(t.dueAt)) > todayKey;
     })
     .sort(taskComparator);
-}
-
-// Shift an instant by whole days. Noon anchoring keeps the resulting Orlando
-// calendar date stable across DST transitions (1h shifts never cross noon).
-function addDays(d: Date, days: number): Date {
-  return new Date(d.getTime() + days * 24 * 60 * 60 * 1000);
 }
 
 // Calendar date in the pilot tz as a sortable YYYY-MM-DD key. Comparing keys

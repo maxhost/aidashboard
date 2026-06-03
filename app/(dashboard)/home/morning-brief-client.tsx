@@ -32,7 +32,7 @@ import { RealtorSelector } from "@/components/dashboard/realtor-selector";
 import {
   listMyTasks,
   windowTasks,
-  upcomingTasks,
+  pendingTasks,
   toUiAttention,
   toUiPriority,
   updateTaskFields,
@@ -549,7 +549,7 @@ export function MorningBriefClient({
         )}
       </section>
 
-      {/* BackOffice-only: other tasks — next 72h + rejected history */}
+      {/* BackOffice-only: other tasks — pending + rejected history */}
       {isBackOffice && isAuthOperator && pickedRealtor && (
         <OtherTasksSection
           realtorId={pickedRealtor.id}
@@ -1419,7 +1419,7 @@ function EditTaskDialog({
 
 // ─── Rejected tasks section (BackOffice only) ─────────────────────────────
 
-type OtherTab = "upcoming" | "rejected";
+type OtherTab = "pending" | "rejected";
 const OTHER_TASKS_PAGE = 10;
 
 function OtherTasksSection({
@@ -1431,7 +1431,7 @@ function OtherTasksSection({
   realTasks: TaskRow[];
   onEditTask: (id: string) => void;
 }) {
-  const [tab, setTab] = useState<OtherTab>("upcoming");
+  const [tab, setTab] = useState<OtherTab>("pending");
   const [visibleCount, setVisibleCount] = useState(OTHER_TASKS_PAGE);
 
   // Rejected history is fetched (≤200 newest-first, no server pagination).
@@ -1442,11 +1442,12 @@ function OtherTasksSection({
   const [selectedRejected, setSelectedRejected] = useState<RejectedItem | null>(
     null,
   );
-  const [selectedUpcoming, setSelectedUpcoming] = useState<TaskRow | null>(null);
+  const [selectedPending, setSelectedPending] = useState<TaskRow | null>(null);
 
-  // Next-72h tasks are already in realTasks (fetched by status, hidden from the
-  // day view by windowTasks). Derive them client-side — no extra request.
-  const upcoming = useMemo(() => upcomingTasks(realTasks), [realTasks]);
+  // Pending tasks are already in realTasks (fetched by status). They're the
+  // active tasks the day view doesn't surface — undated or future-dated, not
+  // done. Derived client-side — no extra request.
+  const pending = useMemo(() => pendingTasks(realTasks), [realTasks]);
 
   useEffect(() => {
     const token = getToken();
@@ -1476,35 +1477,35 @@ function OtherTasksSection({
     setVisibleCount(OTHER_TASKS_PAGE);
   }, [tab]);
 
-  const total = tab === "upcoming" ? upcoming.length : rejected.length;
-  const visibleUpcoming = upcoming.slice(0, visibleCount);
+  const total = tab === "pending" ? pending.length : rejected.length;
+  const visiblePending = pending.slice(0, visibleCount);
   const visibleRejected = rejected.slice(0, visibleCount);
 
   return (
     <section aria-label="Other tasks" className="space-y-3">
       <SectionTitle
         title="Other Tasks"
-        tooltip="Tasks outside today's view: the next 72h (not yet shown in the day) and the rejected history. Read-only — click a row for details."
+        tooltip="Tasks outside today's view: pending tasks not yet shown in the day (undated or future-dated, not done) and the rejected history. Read-only — click a row for details."
       />
       <OtherTasksTabs
         tab={tab}
         onChange={setTab}
-        upcomingCount={upcoming.length}
+        pendingCount={pending.length}
         rejectedCount={rejected.length}
       />
 
-      {tab === "upcoming" ? (
-        upcoming.length === 0 ? (
+      {tab === "pending" ? (
+        pending.length === 0 ? (
           <p className="text-sm text-muted-foreground px-1 py-6">
-            Nothing due in the next 72h.
+            Nothing pending outside today.
           </p>
         ) : (
           <ul className="rounded-xl border border-border bg-card divide-y divide-border/60 overflow-hidden">
-            {visibleUpcoming.map((task) => (
-              <UpcomingRow
+            {visiblePending.map((task) => (
+              <PendingRow
                 key={task.id}
                 task={task}
-                onOpen={() => setSelectedUpcoming(task)}
+                onOpen={() => setSelectedPending(task)}
               />
             ))}
           </ul>
@@ -1546,17 +1547,17 @@ function OtherTasksSection({
       )}
 
       <Dialog
-        open={!!selectedUpcoming}
-        onOpenChange={(open) => !open && setSelectedUpcoming(null)}
+        open={!!selectedPending}
+        onOpenChange={(open) => !open && setSelectedPending(null)}
       >
         <DialogContent className="sm:max-w-lg p-0 gap-0 max-h-[88dvh] flex flex-col overflow-hidden">
-          {selectedUpcoming && (
-            <UpcomingDetail
-              task={selectedUpcoming}
-              onClose={() => setSelectedUpcoming(null)}
+          {selectedPending && (
+            <PendingDetail
+              task={selectedPending}
+              onClose={() => setSelectedPending(null)}
               onEdit={() => {
-                const id = selectedUpcoming.id;
-                setSelectedUpcoming(null);
+                const id = selectedPending.id;
+                setSelectedPending(null);
                 onEditTask(id);
               }}
             />
@@ -1584,16 +1585,16 @@ function OtherTasksSection({
 function OtherTasksTabs({
   tab,
   onChange,
-  upcomingCount,
+  pendingCount,
   rejectedCount,
 }: {
   tab: OtherTab;
   onChange: (next: OtherTab) => void;
-  upcomingCount: number;
+  pendingCount: number;
   rejectedCount: number;
 }) {
   const tabs: { key: OtherTab; label: string; count: number }[] = [
-    { key: "upcoming", label: "Next 72h", count: upcomingCount },
+    { key: "pending", label: "Pending", count: pendingCount },
     { key: "rejected", label: "Rejected", count: rejectedCount },
   ];
   return (
@@ -1642,7 +1643,7 @@ function OtherTasksTabs({
   );
 }
 
-function UpcomingRow({
+function PendingRow({
   task,
   onOpen,
 }: {
@@ -1686,7 +1687,7 @@ function UpcomingRow({
   );
 }
 
-function UpcomingDetail({
+function PendingDetail({
   task,
   onClose,
   onEdit,
@@ -1703,9 +1704,9 @@ function UpcomingDetail({
   if (task.category) rows.push({ label: "Category", value: task.category });
   return (
     <>
-      <DialogTitle className="sr-only">Upcoming task detail</DialogTitle>
+      <DialogTitle className="sr-only">Pending task detail</DialogTitle>
       <DialogDescription className="sr-only">
-        Details for an upcoming task due in the next 72h
+        Details for a pending task not shown in today&apos;s view
       </DialogDescription>
 
       <div className="flex-1 overflow-y-auto px-6 sm:px-8 py-7 pr-12 space-y-6 min-h-0">
