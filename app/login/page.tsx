@@ -5,12 +5,9 @@ import { useSearchParams } from "next/navigation";
 import { ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PulsorLockup } from "@/components/brand/pulsor";
-import { signInWithEmail, signInRealtorWithEmail } from "@/lib/auth";
+import { signInWithEmail } from "@/lib/auth";
 import { cn } from "@/lib/utils";
-
-type Mode = "operator" | "realtor";
 
 export default function LoginPage() {
   return (
@@ -24,9 +21,7 @@ function LoginInner() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/home";
 
-  const [mode, setMode] = useState<Mode>("operator");
   const [email, setEmail] = useState("");
-  const [realtorEmail, setRealtorEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -38,11 +33,9 @@ function LoginInner() {
     setSubmitting(true);
 
     try {
-      if (mode === "operator") {
-        await signInWithEmail(email, password);
-      } else {
-        await signInRealtorWithEmail(realtorEmail, password);
-      }
+      // One form for both roles: the backend resolves the role from the email
+      // and the app routes by user.role after the session is saved.
+      await signInWithEmail(email, password);
       window.location.href = next;
     } catch (err) {
       const msg = err instanceof Error ? err.message : "sign_in_failed";
@@ -71,26 +64,9 @@ function LoginInner() {
               Welcome back to Pulsor.
             </p>
 
-            <Tabs
-              defaultValue="operator"
-              value={mode}
-              onValueChange={(v) => {
-                setMode((v as Mode) ?? "operator");
-                setError(null);
-              }}
-              className="mt-6"
-            >
-              <TabsList className="w-full">
-                <TabsTrigger value="operator" className="flex-1">
-                  Operator
-                </TabsTrigger>
-                <TabsTrigger value="realtor" className="flex-1">
-                  Realtor
-                </TabsTrigger>
-              </TabsList>
-
-              <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-                <TabsContent value="operator" className="space-y-1.5">
+            <div className="mt-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-1.5">
                   <label
                     htmlFor="email"
                     className="text-xs font-semibold text-foreground"
@@ -103,30 +79,11 @@ function LoginInner() {
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@team.com"
-                    required={mode === "operator"}
-                    className="h-10"
-                  />
-                </TabsContent>
-
-                <TabsContent value="realtor" className="space-y-1.5">
-                  <label
-                    htmlFor="realtor-email"
-                    className="text-xs font-semibold text-foreground"
-                  >
-                    Email
-                  </label>
-                  <Input
-                    id="realtor-email"
-                    type="email"
-                    autoComplete="email"
-                    value={realtorEmail}
-                    onChange={(e) => setRealtorEmail(e.target.value)}
                     placeholder="you@example.com"
-                    required={mode === "realtor"}
+                    required
                     className="h-10"
                   />
-                </TabsContent>
+                </div>
 
                 <div className="space-y-1.5">
                   <label
@@ -196,7 +153,7 @@ function LoginInner() {
                   )}
                 </Button>
               </form>
-            </Tabs>
+            </div>
           </div>
 
           <p className="mt-5 text-center text-xs text-muted-foreground">

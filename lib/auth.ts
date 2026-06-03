@@ -1,8 +1,7 @@
 "use client";
 
 import {
-  signInOperator,
-  signInRealtor,
+  signIn,
   signOutRequest,
   type User,
 } from "./api/auth";
@@ -25,16 +24,7 @@ export function getCurrentUser(): User | null {
 }
 
 export async function signInWithEmail(email: string, password: string): Promise<User> {
-  const { user, token } = await signInOperator(email, password);
-  saveSession(token, user);
-  return user;
-}
-
-export async function signInRealtorWithEmail(
-  email: string,
-  password: string,
-): Promise<User> {
-  const { user, token } = await signInRealtor(email, password);
+  const { user, token } = await signIn(email, password);
   saveSession(token, user);
   return user;
 }

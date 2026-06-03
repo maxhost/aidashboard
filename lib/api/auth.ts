@@ -17,21 +17,13 @@ export type SignInResponse = {
   expires_at: string;
 };
 
-export function signInOperator(
+// Single sign-in for both roles. The backend resolves the user (and its role)
+// by email, which is globally unique — the form doesn't pick a role.
+export function signIn(
   email: string,
   password: string,
 ): Promise<SignInResponse> {
-  return apiFetch<SignInResponse>("/auth/operator/sign-in", {
-    method: "POST",
-    body: JSON.stringify({ email, password }),
-  });
-}
-
-export function signInRealtor(
-  email: string,
-  password: string,
-): Promise<SignInResponse> {
-  return apiFetch<SignInResponse>("/auth/realtor/sign-in", {
+  return apiFetch<SignInResponse>("/auth/sign-in", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
